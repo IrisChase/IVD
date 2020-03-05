@@ -1,0 +1,25 @@
+The IVD compiler has encountered the following errors
+Syntax error on line 19:
+    align-x: outer;
+             ^
+Malformed attribute body, expected Property.
+
+Syntax error on line 20:
+    justify: center;
+             ^
+Malformed attribute body, expected Property.
+
+Syntax error on line 25:
+    align-y: center;
+             ^
+Malformed attribute body, expected Property.
+
+---------------------------------------------------
+=================================Element========================================
+Path: i
+------------------------------------------Body
+-----------------------------State default
+=================================Element========================================
+Path: text1
+------------------------------------------Body
+-----------------------------State default

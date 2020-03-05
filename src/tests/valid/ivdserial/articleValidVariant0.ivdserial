@@ -1,0 +1,178 @@
+=================================Element========================================
+Path: anElement
+Model theModel
+------------------------------------------Body
+-----------------------------State default
+--Declared Variable: help
+     |
+10.000000i
+
+--Declared Variable: welp
+          |
+    .....(*)......
+    |            |
+3.000000i   10.000000i
+
+------------Attr Key: position-within
+Single Key: global::header.cell
+------------Attr Key: trans-o
+Main Constraint
+                   |
+          ........(*)........
+          |                 |
+    .....(+).....       3.000000i
+    |           |
+7.000000i   3.000000i
+
+------------Attr Key: trans-a
+Main Constraint
+          |
+    .....(*).....
+    |           |
+3.000000i   4.000000i
+
+------------Attr Key: margin-o-out
+Main Constraint
+    |
+3.000000i
+
+------------Attr Key: margin-o-in
+Main Constraint
+    |
+3.000000i
+
+------------Attr Key: margin-a-in
+Main Constraint
+     |
+23.000000i
+
+------------Attr Key: margin-a-out
+Main Constraint
+     |
+10.000000i
+
+------------Attr Key: padding-o-out
+Clear Inherit
+------------Attr Key: padding-o-in
+Clear Inherit
+------------Attr Key: padding-a-in
+Clear Inherit
+------------Attr Key: padding-a-out
+Clear Inherit
+------------Attr Key: size-o
+Main Constraint
+              |
+     ........(+)........
+     |                 |
+50.000000i       .....(*).....
+                 |           |
+             2.000000i   3.000000i
+
+------------Attr Key: size-a
+Min Constraint
+     |
+45.000000i
+
+Main Constraint
+     |
+40.000000i
+
+------------Attr Key: orientation
+Property: adjacent-is-vertical
+------------Attr Key: layout
+Literal: "sierraGallery"
+------------Attr Key: cell-names
+--Literal List
+blue
+red
+green
+yellow
+-----------------------------State Key: this.hovered
+------------Attr Key: size-o
+Main Constraint
+     |
+20.000000i
+
+------------Attr Key: borderless
+Property: disable
+=================================Element========================================
+Path: i
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: padding-o-out
+Main Constraint
+          |
+    .....(+)......
+    |            |
+3.000000i   300.000000i
+
+------------Attr Key: padding-o-in
+Main Constraint
+          |
+    .....(+)......
+    |            |
+3.000000i   300.000000i
+
+------------Attr Key: padding-a-in
+Main Constraint
+          |
+    .....(+)......
+    |            |
+3.000000i   300.000000i
+
+------------Attr Key: padding-a-out
+Main Constraint
+          |
+    .....(+)......
+    |            |
+3.000000i   300.000000i
+
+------------Attr Key: cell-names
+--Literal List
+blue
+red
+green
+yellow
+-----------------------------State Key: this.hovered
+------------Attr Key: size-o
+Clear Inherit
+=================================Element========================================
+Path: n
+------------------------------------------Body
+-----------------------------State default
+=================================Element========================================
+Path: x
+------------------------------------------Body
+-----------------------------State default
+=================================Element========================================
+Path: anonymous-6-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: cell-names
+--Literal List
+blue
+red
+green
+yellow
+-----------------------------State Key: this.hovered
+------------Attr Key: size-o
+Main Constraint
+     |
+20.000000i
+
+=================================Element========================================
+Path: anonymous-7-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: cell-names
+--Literal List
+blue
+red
+green
+yellow
+-----------------------------State Key: this.hovered
+------------Attr Key: size-o
+Main Constraint
+     |
+20.000000i
+

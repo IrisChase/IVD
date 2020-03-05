@@ -1,0 +1,16 @@
+The IVD compiler has encountered the following errors
+Syntax error on line 19:
+    cell-names: jkfk ajj akakk;
+                     ^
+Was expecting: ";", got: "User Token"
+
+Syntax error on line 20:
+    bind-state: fjjfj ajja ak;
+                      ^
+Was expecting: ";", got: "User Token"
+
+---------------------------------------------------
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default

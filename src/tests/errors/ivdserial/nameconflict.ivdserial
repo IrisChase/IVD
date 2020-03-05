@@ -1,0 +1,20 @@
+The IVD compiler has encountered the following errors
+Syntax error on line 18:
+.class;
+^
+Class name conflicts with previous definition on line: 17:
+.class;
+^
+
+Syntax error on line 21:
+#element;
+^
+Element name conflicts with previous definition on line: 20:
+#element;
+^
+
+---------------------------------------------------
+=================================Element========================================
+Path: element
+------------------------------------------Body
+-----------------------------State default

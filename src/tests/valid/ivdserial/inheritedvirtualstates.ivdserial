@@ -1,0 +1,26 @@
+=================================Element========================================
+Path: anonymous-1-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+-----------------------------State Expression: 
+        |
+   ....and....
+   |         |
+this.x    this.y
+
+------------Attr Key: color
+Color: #00ff00 (0, 255, 0)
+-----------------------------State Expression: 
+        |
+   ....and....
+   |         |
+this.x    this.y
+
+------------Attr Key: color
+Color: #0000ff (0, 0, 255)
+-----------------------------State Expression: 
+     |
+not this.a
+
+------------Attr Key: text
+Literal: "eyeyeyeyee"

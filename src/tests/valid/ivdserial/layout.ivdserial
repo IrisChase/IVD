@@ -1,0 +1,24 @@
+=================================Element========================================
+Path: anonymous-4-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: layout
+Property: standard
+=================================Element========================================
+Path: anonymous-5-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: layout
+Property: vbox
+=================================Element========================================
+Path: anonymous-6-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: layout
+Property: hbox
+=================================Element========================================
+Path: anonymous-7-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: layout
+Literal: "myCustomLayout"

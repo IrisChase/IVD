@@ -1,0 +1,16 @@
+The IVD compiler has encountered the following error:
+Syntax error on line 19:
+    height: 1004.;
+                 ^
+Malformed Expression, expected Scalar or Value Key.
+
+---------------------------------------------------
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: size-a
+Main Constraint
+     |
+100.000000i
+

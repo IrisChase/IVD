@@ -1,0 +1,47 @@
+=================================Element========================================
+Path: isDerived
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: induce-state
+--Key List
+this.frep
+this.blep
+this.beep
+=================================Element========================================
+Path: isDerivedButCleared
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: induce-state
+Clear Inherit
+=================================Element========================================
+Path: isDerivedButClearedAndAddedTo
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: induce-state
+Clear Inherit
+--Key List
+this.fack
+=================================Element========================================
+Path: anonymous-4-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: bind-state
+--Key List
+global.beep
+this.bdff
+this.creep
+=================================Element========================================
+Path: anonymous-5-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: toggle-state
+--Key List
+this.beep
+this.overdidit
+=================================Element========================================
+Path: ff
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: unset-state
+--Key List
+this.beep

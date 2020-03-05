@@ -1,0 +1,15 @@
+=================================Element========================================
+Path: elem
+Model aModel
+------------------------------------------Body
+-----------------------------State default
+--Declared Variable: bloopy
+             |
+    ........(*)........
+    |                 |
+7.000000i   [model::zooper.doop]
+
+--Declared Variable: zoopy
+    |
+8.000000i
+

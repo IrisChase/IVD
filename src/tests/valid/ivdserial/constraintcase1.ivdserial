@@ -1,0 +1,124 @@
+=================================Element========================================
+Path: myBar
+------------------------------------------Body
+-----------------------------State default
+--Declared Variable: offsetFactor
+                                     |
+              ......................(/)......................
+              |                                             |
+[global::myBar::bar.trans-a]                 ..............(-)..............
+                                             |                             |
+                               global::myBar::barArea.size-a   global::myBar::bar.size-a
+
+--Declared Variable: scrollRatio
+                             |
+              ..............(/)...............
+              |                              |
+global::myBar::barArea.size-a   [global::myBar::bar.size-a]
+
+------------Attr Key: layout
+Property: vbox
+------------Attr Key: cell-names
+--Literal List
+upperButter
+middle
+lowerButton
+=================================Element========================================
+Path: myBar::barArea
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: position-within
+Single Key: global::myBar.middle
+------------Attr Key: size-a
+Main Constraint
+     |
+100.000000%
+
+------------Attr Key: layout
+Property: free-layout
+=================================Element========================================
+Path: myBar::bar
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: position-within
+Single Key: global::myBar.barArea
+------------Attr Key: trans-a
+Starting Expression
+    |
+0.000000i
+
+Min Constraint
+    |
+0.000000i
+
+Max Constraint
+                         |
+              ..........(-)...........
+              |                      |
+global::myBar::barArea.size-a   this.size-a
+
+------------Attr Key: size-a
+Starting Expression
+     |
+100.000000%
+
+Min Constraint
+    |
+4.000000%
+
+Max Constraint
+     |
+100.000000%
+
+=================================Element========================================
+Path: myView
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: trans-a
+Main Constraint
+                |
+     ..........(*)...........
+     |                      |
+this.size-a   [global::myBar.offsetFactor]
+
+-----------------------------State Key: this.geometry-updated
+--Set Target: global::myBar.scrollRatio
+                   |
+          ........(/).........
+          |                  |
+global::myPort.size-a   this.size-a
+
+-----------------------------State Key: global::key.specialDownButtonThing
+--Set Target: this.trans-a
+             |
+      ......(+)......
+      |             |
+this.trans-a   20.000000i
+
+-----------------------------State Key: global::key.special-up-button-thing
+--Set Target: this.trans-a
+             |
+      ......(-)......
+      |             |
+this.trans-a   20.000000i
+
+=================================Element========================================
+Path: mySecondDependency
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: trans-o
+Main Constraint
+                |
+     ..........(*)..........
+     |                     |
+this.size-o   global::myBar.offsetFactor
+
+------------Attr Key: size-a
+Main Constraint
+                    |
+           ........(+)........
+           |                 |
+     .....(/).....       3.000000%
+     |           |
+10.000000u   2.000000i
+

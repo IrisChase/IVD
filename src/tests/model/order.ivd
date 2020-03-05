@@ -1,0 +1,58 @@
+// Copyright 2020 Iris Chase
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+
+spec bleeding;
+
+#window
+{
+	position-within: Environment;
+	window-size-strategy: bottom-up;
+
+	layout: vbox;
+
+state IVD-Window-Close:
+	trigger: IVD-Core-Quit;
+}
+
+# -> test-model
+{
+	position-within: window;
+	align-a: align-center;
+
+	padding: 5;
+
+	text: "BIG BAD ERROR YOU SHOULDN'T SEE THISSSSEEEEE";
+
+state model.first-grab:
+	text: "First item added. Press N to swap.";
+
+state model.first-grab & model.swapped:
+	text: "First item, swapped!";
+
+state !model.first-grab:
+	text: "Second item.";
+
+state !model.first-grab & model.swapped:
+	text: "YEE hit X to accept the visual result, or manually close the window with the X window button to reject";
+
+//These are bound to first-grab because I only want one item
+// to execute this. Kinda hacky because this isn't really how they're
+// meant to be used. Ideally you'd have a single parent that manages a
+// container but this will have to do.
+state model.first-grab & ::.IVD-Scan-N-Press:
+	trigger: model.swap;
+
+state model.first-grab & ::.IVD-Scan-X-Press & model.swapped:
+	trigger: model.accept, IVD-Core-Quit;
+}

@@ -1,0 +1,32 @@
+=================================Element========================================
+Path: aCenter
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: align-a
+Property: align-center
+------------Attr Key: align-o
+Property: align-center
+=================================Element========================================
+Path: left
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: align-a
+Property: align-inner
+------------Attr Key: align-o
+Property: align-inner
+=================================Element========================================
+Path: right
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: align-a
+Property: align-outer
+------------Attr Key: align-o
+Property: align-outer
+=================================Element========================================
+Path: anonymous-5-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: align-a
+Property: align-center
+------------Attr Key: align-o
+Property: align-center

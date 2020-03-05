@@ -1,0 +1,82 @@
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+-----------------------------State Expression: 
+         |
+    ....and....
+    |         |
+global.f   this.s
+
+-----------------------------State Expression: 
+                        |
+               ........or.........
+               |                 |
+        ......or........      this.i
+        |              |
+   ....or.....      this.y
+   |         |
+this.f    this.s
+
+-----------------------------State Expression: 
+               |
+        ......and.......
+        |              |
+   ....or.....      this.i
+   |         |
+this.f    this.s
+
+-----------------------------State Expression: 
+          |
+   ......or........
+   |              |
+this.i       ....and....
+             |         |
+          this.s    this.i
+
+-----------------------------State Expression: 
+          |
+     ....or......
+     |          |
+not this.i   this.s
+
+-----------------------------State Expression: 
+           |
+   .......xor.......
+   |               |
+this.i       .....and.....
+             |           |
+          this.s    not this.i
+
+-----------------------------State Expression: 
+            |
+   ........or.........
+   |                 |
+this.i       .......and.......
+             |               |
+          this.s       .....or.......
+                       |            |
+                    this.f    not global.f
+
+-----------------------------State Expression: 
+            |
+   ........or.........
+   |                 |
+this.i       .....not and.....
+             |               |
+          this.s       .....or.......
+                       |            |
+                    this.f    not global.f
+
+-----------------------------State Expression: 
+         |
+    ....and....
+    |         |
+global.f   this.s
+
+-----------------------------State Expression: 
+                 |
+         .......and.......
+         |               |
+global::otherleem.f   this.s
+

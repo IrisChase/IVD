@@ -1,0 +1,78 @@
+// Copyright 2020 Iris Chase
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+
+spec bleeding;
+
+#window -> trigger-state-model
+{
+	//First time we're testing models...
+	position-within: Environment;
+	layout: vbox;
+	window-size-strategy: bottom-up;
+
+state IVD-Window-Close:
+	trigger: IVD-Core-Quit;
+}
+
+.blue-button
+{
+	padding: 10;
+	align-a: align-center;
+
+	font-size: 18;
+
+//state IVD-Item-Hover: //THIS FUCKS UP The anonymous function...
+	//font-color: #0000ff;
+	//font: sans-italic;
+	//color: #808080; 
+}
+
+#button -> trigger-state-model : blue-button
+{
+	position-within: window;
+
+
+	text: "Click to use a model trigger to set a model state.";
+
+
+state model.the-model-state:
+	text: "Toggled on! Click again to toggle off~";
+
+state IVD-Item-Hover & ::.IVD-Mouse-Left-Press & !model.the-model-state:
+	trigger: model.set-the-state;
+	induce-state: this.onOnce;
+
+state IVD-Item-Hover & ::.IVD-Mouse-Left-Press & model.the-model-state:
+	trigger: model.unset-the-state;
+	induce-state: this.offOnce;
+
+state onOnce & offOnce:
+	induce-state: test-done;
+	trigger: model.passed-hard-test;
+}
+
+# -> trigger-state-model : blue-button
+{
+	text: "Passed! Click me to quit.";
+
+
+state button.test-done:
+	position-within: window;
+
+state IVD-Item-Hover:
+	color: #ff0000;
+
+state IVD-Item-Hover & ::.IVD-Mouse-Left-Press & button.test-done:
+	trigger: IVD-Core-Quit;
+}

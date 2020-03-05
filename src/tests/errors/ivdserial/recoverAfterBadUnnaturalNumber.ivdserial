@@ -1,0 +1,16 @@
+The IVD compiler has encountered the following errors
+Syntax error on line 19:
+    margin: 42, 34, 7;
+            ^
+Invalid number of arguments to unatural key margin, must be 1 or 4.
+
+Syntax error on line 20:
+    margin: delay(100ms);
+            ^
+Unnatural key cannot contain delay specifiers.
+
+---------------------------------------------------
+=================================Element========================================
+Path: elem
+------------------------------------------Body
+-----------------------------State default

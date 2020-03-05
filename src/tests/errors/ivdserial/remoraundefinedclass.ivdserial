@@ -1,0 +1,7 @@
+The IVD compiler has encountered the following error:
+Syntax error on line 19:
+@level4.remora : level3;
+ ^
+Remora host class undefined.
+
+---------------------------------------------------

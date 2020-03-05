@@ -1,0 +1,28 @@
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: trans-o
+Main Constraint
+          |
+global::other.eleven
+
+------------Attr Key: trans-a
+Main Constraint
+          |
+global::other.size-o
+
+------------Attr Key: size-o
+Main Constraint
+           |
+     .....(*).....
+     |           |
+this.rel-x   4.000000i
+
+------------Attr Key: size-a
+Main Constraint
+           |
+     .....(*)......
+     |            |
+this.size-o   4.000000i
+

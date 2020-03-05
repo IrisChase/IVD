@@ -1,0 +1,11 @@
+The IVD compiler has encountered the following error:
+Syntax error on line 3:
+    align-horizontal: center;
+                      ^
+Malformed attribute body, expected Property.
+
+---------------------------------------------------
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default

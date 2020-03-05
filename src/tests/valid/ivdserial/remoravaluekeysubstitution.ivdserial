@@ -1,0 +1,29 @@
+=================================Element========================================
+Path: remoraHostInstance
+Model muhModel
+------------------------------------------Body
+-----------------------------State default
+--Declared Variable: halp
+                                      |
+                       ..............(*)...............
+                       |                              |
+[global::remoraHostInstance::remora.dimen-adj]   314.000000i
+
+------------Attr Key: text
+Literal: "Host"
+=================================Element========================================
+Path: remoraHostInstance::remora
+Model muhModel::whee
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: position-within
+Single Key: global::remoraHostInstance
+------------Attr Key: text
+Literal: "Remora"
+------------Attr Key: size-a
+Main Constraint
+                 |
+     ...........(*)...........
+     |                       |
+10.000000i   global::remoraHostInstance.size-o
+

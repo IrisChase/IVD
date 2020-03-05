@@ -1,0 +1,16 @@
+The IVD compiler has encountered the following error:
+Syntax error on line 19:
+    fjkd: rie;
+    ^
+Token is not a state or variable modifier or attribute key.
+
+---------------------------------------------------
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: size-a
+Main Constraint
+      |
+1004.000000i
+

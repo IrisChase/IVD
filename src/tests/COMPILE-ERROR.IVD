@@ -1,0 +1,73 @@
+// Copyright 2020 Iris Chase
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+
+spec bleeding;
+
+
+#window
+{
+	position-within: Environment;
+	window-size-strategy: bottom-up;
+
+	width: 640;
+	height: 400;
+
+	layout: stack;
+
+state IVD-Window-Close:
+	trigger: IVD-Core-Quit;
+}
+
+#main-content-container -> content:
+{
+	position-within: window;
+	layout: hbox;
+
+}
+
+//#welcome;
+
+#sidebar
+{
+	position-within: main-content-container;
+	layout: vbox;
+}
+
+#menu-item -> menu-items
+{
+	position-within: sidebar;
+	text: model.menu-title;
+
+	padding: 10;
+
+	trans-x: -width;
+
+	induce-state: animating;
+
+state animating:
+	trans-x: 0, ease-in(1000ms, graph(linear, 0 @ 0, 1 @ 1));
+	
+
+state IVD-Item-Hover & ::.IVD-Mouse-Left-Press:
+	trigger: model.update-content;
+
+state IVD-Item-Hover:
+	color: purple;
+}
+
+#content -> content
+{
+	position-within: main-content-container;
+	text: model.content;
+}

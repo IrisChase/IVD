@@ -1,0 +1,56 @@
+The IVD compiler has encountered the following errors
+Syntax error on line 19:
+    layout: ...;
+            ^
+Malformed attribute body, expected User Token, or Property.
+
+Syntax error on line 20:
+    position-within: ...;
+                     ^
+Was expecting: "User Token", got: "."
+
+Syntax error on line 21:
+    color: ...;
+           ^
+Malformed attribute body, expected Color Literal.
+
+Syntax error on line 22:
+    induce-state: ...;
+                  ^
+Was expecting: "User Token", got: "."
+
+Syntax error on line 23:
+    text: ...;
+          ^
+Invalid value for key, expected user token or attribute key.
+
+Syntax error on line 24:
+    height: ...;
+            ^
+Malformed Expression, expected Scalar or Value Key.
+
+Syntax error on line 25:
+    cell-names: ...;
+                ^
+Malformed attribute body, expected User Token List.
+
+Syntax error on line 26:
+    font: ...;
+          ^
+Malformed attribute body, expected String Literal, or Property.
+
+Syntax error on line 27:
+    align-x: ...;
+             ^
+Malformed attribute body, expected Property.
+
+Syntax error on line 28:
+    margin: ...;
+            ^
+Malformed Expression, expected Scalar or Value Key.
+
+---------------------------------------------------
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default

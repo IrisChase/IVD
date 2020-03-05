@@ -1,0 +1,88 @@
+// Copyright 2020 Iris Chase
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+
+spec bleeding;
+
+#window
+{
+    position-within: Environment;
+
+    title-text: "First IVD/SDL test!";
+    width: 640u;
+    height: 400u;
+
+    layout: vbox;
+
+    radio-state: titleCleared, titleColored, titleCentered;
+
+state titleColored:
+    title-text: "This window has been colored by F2!";
+
+state titleCleared:
+    title-text: "This window has been cleared by F3!";
+
+state titleCentered:
+    title-text: "This window has been centered by F4!";
+
+
+state colored:
+    color: #571eb2;
+
+state ::.IVD-Key-F1-Active:
+    title-text: "Good ol' yeller!";
+    color: #e8bb09;
+
+state ::.IVD-Key-F2-Press:
+    induce-state: colored, titleColored;
+
+state ::.IVD-Key-F3-Press:
+    unset-state: colored;
+    induce-state: titleCleared;
+
+state ::.IVD-Key-F4-Press:
+    induce-state: titleCentered;
+    trigger-state: align-centerNow;
+
+
+state IVD-Window-Initialized:
+    window-size-strategy: bottom-up;
+    trigger-state: align-centerNow;
+
+state IVD-Window-Close:
+    trigger: IVD-Core-Quit;
+
+//Trigger states
+state align-centerNow:
+    align-y: align-center;
+    align-x: align-center;
+}
+
+#abox
+{
+    color: #251eb2;
+    width: 100u;
+    height: 30u;
+    
+    position-within: window;
+
+    align-x: align-center;
+    align-y: align-center;
+
+state this.IVD-Item-Hover:
+    color: #C8A2C8;
+	width: 200, ease-in(100ms, graph(linear, 0 @ 0, 1 @ 1));
+
+state ::.IVD-Mouse-Left-Active:
+    color: #25f221;
+}

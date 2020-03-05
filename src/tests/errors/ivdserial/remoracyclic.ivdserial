@@ -1,0 +1,11 @@
+The IVD compiler has encountered the following error:
+Syntax error on line 19:
+@top
+ ^
+Remora host class already finalized.
+
+---------------------------------------------------
+=================================Element========================================
+Path: topInstance
+------------------------------------------Body
+-----------------------------State default

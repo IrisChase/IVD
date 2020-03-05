@@ -1,0 +1,7 @@
+The IVD compiler has encountered the following error:
+Syntax error on line 15:
+#{};
+^
+Expected Spec declaration.
+
+---------------------------------------------------

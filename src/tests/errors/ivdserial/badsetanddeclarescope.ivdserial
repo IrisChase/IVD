@@ -1,0 +1,17 @@
+The IVD compiler has encountered the following errors
+Syntax error on line 19:
+    set: width = 4;
+    ^
+Set not allowed in default state.
+
+Syntax error on line 21:
+    declare expression: f = width * 4;
+    ^
+Declare not allowed in non-default state.
+
+---------------------------------------------------
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+-----------------------------State Key: this.s

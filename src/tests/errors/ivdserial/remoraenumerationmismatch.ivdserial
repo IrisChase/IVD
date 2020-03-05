@@ -1,0 +1,20 @@
+The IVD compiler has encountered the following errors
+Syntax error on line 19:
+#instance : host;
+^
+Remorial instance does not declare a model.
+
+Syntax error on line 18:
+@host -> @::ayee;
+         ^
+But remora requires one.
+
+---------------------------------------------------
+=================================Element========================================
+Path: instance
+------------------------------------------Body
+-----------------------------State default
+=================================Element========================================
+Path: instance::anonymous-1-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default

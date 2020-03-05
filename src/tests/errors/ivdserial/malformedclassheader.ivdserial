@@ -1,0 +1,20 @@
+The IVD compiler has encountered the following errors
+Syntax error on line 17:
+# : .class1, .class2;
+    ^
+Was expecting: "User Token", got: "."
+
+Syntax error on line 18:
+# : .class2, .class1;
+    ^
+Was expecting: "User Token", got: "."
+
+---------------------------------------------------
+=================================Element========================================
+Path: anonymous-0-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+=================================Element========================================
+Path: anonymous-1-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default

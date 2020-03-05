@@ -1,0 +1,16 @@
+The IVD compiler has encountered the following error:
+Syntax error on line 19:
+    width: model.widthat; //shit shit shit models can have this names fuck fuck
+           ^
+Model scoped value key in non-enumerated element.
+
+---------------------------------------------------
+=================================Element========================================
+Path: anonymous-1-HORRIBLY-MAANGLED
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: size-a
+Main Constraint
+      |
+model.widthat
+

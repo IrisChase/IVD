@@ -1,0 +1,65 @@
+=================================Element========================================
+Path: elem
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: margin-o-out
+Main Constraint
+     |
+42.000000i
+
+------------Attr Key: margin-o-in
+Main Constraint
+     |
+69.000000i
+
+------------Attr Key: margin-a-in
+Main Constraint
+     |
+34.000000i
+
+------------Attr Key: margin-a-out
+Main Constraint
+    |
+7.000000i
+
+=================================Element========================================
+Path: elem2
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: margin-o-in
+Clear Inherit
+------------Attr Key: margin-a-out
+Main Constraint
+    |
+1.000000i
+
+=================================Element========================================
+Path: elem3
+Model m
+------------------------------------------Body
+-----------------------------State default
+------------Attr Key: margin-o-out
+Main Constraint
+          |
+    .....(-)......
+    |            |
+2.000000i   [model.val]
+
+------------Attr Key: margin-a-in
+Main Constraint
+    |
+0.000000i
+
+------------Attr Key: margin-a-out
+Main Constraint
+    |
+1.000000i
+
+------------Attr Key: padding-o-out
+Clear Inherit
+------------Attr Key: padding-o-in
+Clear Inherit
+------------Attr Key: padding-a-in
+Clear Inherit
+------------Attr Key: padding-a-out
+Clear Inherit
