@@ -652,6 +652,15 @@ void SDLdriver::refresh()
             pairData.invalidVisibility = false;
         }
 
+        {
+            const Bitmap bipbap = window->getCanvas()->getBitmap();
+            reprodyne_validate_bitmap_hash(item, "bitmap",
+                                           bipbap.width * bipbap.channels,
+                                           bipbap.height,
+                                           bipbap.stride,
+                                           bipbap.data);
+        }
+
         ++it;
     }
 }

@@ -210,6 +210,7 @@ Bitmap CairoCanvas::getBitmap()
     bitmap.width = cairo_image_surface_get_width(surface);
     bitmap.height = cairo_image_surface_get_height(surface);
     bitmap.data = cairo_image_surface_get_data(surface);
+    bitmap.channels = 3; //rgb24 see above
 
     return bitmap;
 }
