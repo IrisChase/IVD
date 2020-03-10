@@ -658,11 +658,10 @@ void SDLdriver::refresh()
 
 bool SDLdriver::checkAnythingToDo()
 {
-#warning This needs to capture the indeterminates.
     if(hoverInvalidated)
         return true;
 
-    if(SDL_HasEvents(SDL_FIRSTEVENT, SDL_LASTEVENT))
+    if(reprodyne_intercept_double(this, "has-event", SDL_HasEvents(SDL_FIRSTEVENT, SDL_LASTEVENT)))
         return true;
 
 
