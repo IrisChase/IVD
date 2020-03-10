@@ -565,7 +565,7 @@ void Environment::run()
 
         myDriver->processEvents();
         if(myDriver->checkHoverInvalidated()) updateHover();
-        myDriver->refresh();
+        myDriver->refresh(); //<--- This is expected to handle reprodyne video frame validation
 
         if(!attributeWantsAnimationTick.size() &&
            !myDriver->checkAnythingToDo() &&
