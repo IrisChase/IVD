@@ -143,6 +143,7 @@ double Expression::solveForUnknownNode(ExpressionNode* theNode, const double req
         case Keyword::OperatorDivide:
             if(leftUnknown) return knownValue * requiredResult;
             else            return knownValue / requiredResult;
+        default: throw std::logic_error("Unsupported operator in solveUnknownNode. This can't happen.");
         }
     }());
 }
