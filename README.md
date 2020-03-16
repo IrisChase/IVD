@@ -122,20 +122,73 @@ So no position is really the "normal" one. It's all dynamic, based on the state 
 
 One place where traditional toolkits beat HTML/CSS I think unequivically, is in their layout system. Floats... Are unnecessarily complicated to reason about.
 
-IVD follows a typical nested layout system. Built in layouts include hbox and vbox, for horizontal and vertical rows respectively, and the stack layout which covers layering elements.
+IVD follows a typical nested layout system. Built in layouts include hbox and vbox, for horizontal and vertical rows respectively, and the stack layout for layering.
 
-    layout example
+    #window
+    {
+        position-within: Environment; //Give us a window
+        layout: hbox;
+    }
+
+    #
+    {
+        position-within: window;
+        text: "Aye";
+    }
+
+    #
+    {
+        position-within: window;
+        text: "Bye";
+    }
+
+    #
+    {
+        position-within: window;
+        text: "Cye";
+    }
+
+Which would produce a layout as such (please excuse the crudity of this model, I didn't have time to build it to scale or paint it):
+
+    [AyeByeCye]
 
 That's great, but then the order is almost arbitrary (It's actually based on the order of element declaration but bear with me). To reserve specific "slots", we have a feature called "named-cells":
 
-    same example but named cells
+    #window
+    {
+        position-within: Environment; //Give us a window
+        layout: hbox;
 
+        named-cells: first, middle, last;
+    }
 
-And layouts are totally extensible. I feel like these three cover 95% of use cases, but anything more complex can be handled by a custom layout material.
+    #
+    {
+        position-within: window.last;
+        text: "Cye";
+    }
+
+    #
+    {
+        position-within: window.first;
+        text: "Aye";
+    }
+
+    #
+    {
+        position-within: window.middle;
+        text: "Bye";
+    }
+
+Producing the same output:
+
+    [AyeByeCye]
+
+The built-in layouts should cover 95% of use cases simply enough. But for special cases you can define your own.
 
 ## Models
 
-A model defines a hierarchy, but elements bound to specific model items don't have to respect it too much.
+A model may define a hierarchy, but elements bound to specific model items don't necessarily have to reflect it directly, and are free to position select leaf items in a root element or separate window, if need be.
 
 The IVD philosophy is that a model shouldn't *ridgedly* define how the presentation should look. Contrast with HTML where absolutely everything is a part of the DOM in a very specific order and hierarchy, even unrelated models must be encoded in an arbitrary order.
 
@@ -178,9 +231,11 @@ It's important to think of this as more of a suggestion than an absolute order. 
 
 Everything always obeys the constraints as defined, but you also have the power to update the observed values arbitrarily, giving you the best of both worlds.
 
-# What's Working?
+## And Other Stuff Probably
 
-The above all works (Mostly)
+This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned variables or classes! It is meant simply to give you a taste for the project. Think of it as a highlight reel.
+
+# What's Working?
 
 - The compiler, which produces friendly error messages.
 - Basic element styling.
