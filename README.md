@@ -6,7 +6,7 @@ IVD is a declarative GUI programming language and framework implementation. The 
 
 The decision to create IVD was not reached lightly. I knew it would be a huge undertaking (Although I underestimated how huge), and spent considerable time trying to talk myself out of doing it.
 
-I have experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/Javascript), and played around a bit with QML, which was somewhat inspiring for this project. All of these had their pros and cons, but none of them seemed to get at the heart of the problem.
+I have experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/JavaScript), and played around a bit with QML, which was somewhat inspiring for this project. All of these had their pros and cons, but none of them seemed to get at the heart of the problem.
 
 # A Quick(ish) and Mostly Incomplete Rundown of IVD
 
@@ -104,7 +104,7 @@ Widget hierarchies tend to be very ridged. In traditional GUI toolkits, this is 
 
 This makes it difficult to create GUIs that are easy to re-arrange.
 
-The two points that make IVD different here is that elements are completely symmetric, and the fact that the visual element's structure isn't tightly bound to the model. The model only enforces it's hierarchy locally; that is, the hierarchy is fixed, but it can be placed anywhere. So you get the power of binding the structure of the layout to a model, but with the flexibility to freely position the elements according to the visual theme, which need not be encoded in the model. ([More on models below](#models)).
+The two points that make IVD different here are that elements are completely symmetric, and the fact that the visual element's structure isn't tightly bound to a model. When in use, a model's hierarchy only applies locally, and is largely optional (The element hierarchy doesn't necessarily have to map 1:1 to the model). [More on models below](#models).
 
 IVD's structure being symmetric just means that positioning is always conditional. An element must choose to position itself within another element. It always starts out flat:
 
@@ -202,7 +202,7 @@ Which would produce:
 
     [ByeAyeCye]
 
-The built-in layouts should cover 95% of use cases simply enough. But for special cases you can define your own.
+The built-in layouts should cover 95% (totally legit stat) of use cases simply enough. But for special cases you can extend IVD with custom materials.
 
 ## Models
 
@@ -316,7 +316,7 @@ Everything is fine and perfect and good until... You need to reuse that. You can
 
 Remorial classes are a way of defining a "composite" element. You define the class as normal, and then attach "remoras" (get it?) which are just a special kind of element to it. Whenever an element derives from this class, a copy of each remora is also spun up as well, facilitating reuse of complex elements.
 
-And the syntax is only minimally different from normal:
+And the syntax is quite simple:
 
     same example but with remoras instead.
 
@@ -325,18 +325,21 @@ Remoras work with models, and common parent deduction and all that good stuff as
 
 ## And Other Stuff Probably
 
-This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned variables or the ability to "declare" coefficients! It is meant to simply give you a taste for the project.
+This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned variables, the (working!) animation system or the ability to "declare" coefficients! It is meant to simply give you a taste for the project.
 
 # What's Working?
 
+Have a near arbitrarily chosen list in no particular order:
+
 - The compiler, which produces friendly error messages.
+- Remorial class instantiation.
 - Basic element styling.
 - States and state expressions.
 - The layout/material system.
 - Text layouts (Although laggy, see [issue](https://github.com/IrisChase/IVD/issues/2)).
 - Models.
 - Animations of arbitrary scalar attributes.
-- The expression solver (Not tested thoroughly enough for my tastes though).
+- The equation solver (Not tested thoroughly enough for my tastes though).
 
 And other things too boring or obvious to list or remember.
 
