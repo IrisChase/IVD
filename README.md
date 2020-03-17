@@ -9,8 +9,16 @@ The decision to create IVD was not reached lightly. I knew it would be a huge un
 I have experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/Javascript), and played around a bit with QML, which was somewhat inspiring for this project. All of these had their pros and cons, but none of them seemed to get at the heart of the problem.
 
 # A Quick(ish) and Mostly Incomplete Rundown of IVD
+
+## IVD is *Not* CSS++
+Before we get started, it's important to acknowledge that although the syntax is superficially similar, the theory of IVD is *very* different from the theory of CSS. Elements in IVD aren't bound to models by default, and they don't inherit attributes from their "parents" (Because they don't really have *true* parents). About the only concepts that carry over from CSS are some attribute names, and the box model for styling. Most everything else is either taken more from traditional GUI toolkits or is novel.
+
+IVD allows for visual elements to be free and not bound to the model, so that your data model isn't corrupted with irrelevant noise which only exists for the presentation, as is always the case with `<DIV>` tags in any reasonably complex webpage.
+
+CSS is for *styling* models, IVD is for *defining* complete user interfaces with [*style*](https://i.redd.it/vq2q5dqh16qy.png).
+
 ## Events Kinda Suck, State System to The Rescue
-One great problem I think is the low level nature of typical GUI events. Take for example the case of an element needing to style itself differently when hovered in a scroll area. A naive approach involves monitoring "mouse motion in" and "mouse motion out" event, and setting your internal hover state accordingly. This is all fine and good until you have the cursor hovering over an element, and without moving the mouse, the user scrolls, suddenly throwing the hover out of sync.
+One great problem I think is the low level nature of typical GUI events. Take for example the case of an element needing to style itself differently when hovered in a scroll area. A naive approach involves monitoring "mouse motion in" and "mouse motion out" events, and setting your internal hover state accordingly. This is all fine and good until you have the cursor hovering over an element, and without moving the mouse, the user scrolls, suddenly throwing the hover out of sync.
 
 It's easy enough to fix said issue, but even easier to break again because the solution isn't intuitive. It's fun to watch applications gain and lose this bug as they go through updates. The idea is to leave these tricky edge cases to the GUI framework, instead of fixing and breaking (solved) problems like this all the time while in the middle of trying to fix something completely unrelated.
 
@@ -23,10 +31,10 @@ The problem with individual widgets processing events is that they have no conte
     state this.hovered:
         color: blue;
 
-    state IVD-Mouse-Clicked:
+    state ::.IVD-Mouse-Clicked:
         color: green;
 
-    state IVD-Mouse-Clicked & this.hovered:
+    state ::.IVD-Mouse-Clicked & this.hovered:
         color: purple; //etc
     }
 
@@ -47,13 +55,6 @@ Unlike CSS's pseudo-classes, IVD has a very powerful state system and allows boo
         attr: three;        //"three" is chosen by the runtime
     }
 
-Models can have states:
-
-    # -> modelname
-    {
-    state model.aState:
-        //do something
-    }
 
 Elements can manipulate states, even in other elements:
 
@@ -75,10 +76,10 @@ Elements can manipulate states, even in other elements:
 
 Event-like behavior is handled by "trigger-states". These are states that are guaranteed by the runtime to last only a single frame. A bit janky conceptually, but it works:
 
-    # -> myModel
+    #
     {
     state this.clicked:
-        trigger: model.action; //Call a function defined by the model
+        trigger: IVD-Core-Quit;
     }
 
 
@@ -184,6 +185,22 @@ Producing the same output:
 
     [AyeByeCye]
 
+Which makes it painless to slip a column in between two elements later in the development cycle, without touching anything that already works. Empty cells are simply ignored, so they're great to declare where a notification or context popout should appear when it feels like it.
+
+Of course, it also makes it trivial to rearrange items:
+
+    #
+    {
+        named-cells: first, middle, last;
+    
+    state a-state:
+        named-cells: middle, first, last; //Please use better names tho
+    }
+
+Which would produce:
+
+    [ByeAyeCye]
+
 The built-in layouts should cover 95% of use cases simply enough. But for special cases you can define your own.
 
 ## Models
@@ -193,6 +210,17 @@ A model may define a hierarchy, but elements bound to specific model items don't
 The IVD philosophy is that a model shouldn't *ridgedly* define how the presentation should look. Contrast with HTML where absolutely everything is a part of the DOM in a very specific order and hierarchy, even unrelated models must be encoded in an arbitrary order.
 
 There are two types of elements in IVD. "Free elements", which are not bound to a model and there is exactly one instance, and "enumerated elements", which are bound to a model instance, and there can be zero or more of them (one for each instance).
+
+Models can have states:
+
+    # -> modelname
+    {
+    state model.aState:
+        //do something
+    }
+
+Models can have trigger slots...
+
 
 ## Equation Solver
 
@@ -230,6 +258,69 @@ What happens in the above is that the expression in `element1.width` is solved f
 It's important to think of this as more of a suggestion than an absolute order. `otherElement.height` might have a min/max constraint which rounds off the value being propogated, and then THAT value is what is observed when `element1.width` is reevaluated. Nothing is ever left in an inconsistent state.
 
 Everything always obeys the constraints as defined, but you also have the power to update the observed values arbitrarily, giving you the best of both worlds.
+
+## Classes
+
+Classes are very simple. They're really just templates where the attributes are copied from:
+
+    .class-name
+    {
+        color: blue;
+    }
+
+    # : class-name
+    {
+        //color is blue
+    }
+
+Shorthand version if you don't need to declare anything in the body:
+
+    # : class-name;
+
+An element case derive from an arbitrary number of classes, and the attributes are overriden in the order that the classes are declared:
+
+    .another-class
+    {
+        color: yellow;
+
+    state ::.IVD-Mouse-Motion:
+        color: green;
+    }
+
+    # : another-class, class-name
+    {
+        //color is blue
+
+    state ::.IVD-Mouse-Motion:
+        //color is green
+    }
+
+    # : class-name, another-class //Class list order different
+    {
+        //color is yellow this time
+
+    state ::.IVD-Mouse-Motion:
+        //color is still green because it's not in conflict
+    }
+
+## Remorial Classes for Code Reuse
+
+And last but certainly not least.
+
+Suppose you have the following construct:
+
+    exampLEEE
+
+Everything is fine and perfect and good until... You need to reuse that. You can't simply use a class because a class only helps with a single element, and the above can only work with several elements.
+
+Remorial classes are a way of defining a "composite" element. You define the class as normal, and then attach "remoras" (get it?) which are just a special kind of element to it. Whenever an element derives from this class, a copy of each remora is also spun up as well, facilitating reuse of complex elements.
+
+And the syntax is only minimally different from normal:
+
+    same example but with remoras instead.
+
+Remoras work with models, and common parent deduction and all that good stuff as well. They're just an additional type of template which tag alongside otherwise normal classes.
+
 
 ## And Other Stuff Probably
 
