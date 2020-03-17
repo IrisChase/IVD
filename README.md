@@ -28,14 +28,14 @@ The problem with individual widgets processing events is that they have no conte
     {
         color: red;
 
-    state this.hovered:
+    state this.IVD-Item-Hovered:
         color: blue;
 
     state ::.IVD-Mouse-Clicked:
         color: green;
 
-    state ::.IVD-Mouse-Clicked & this.hovered:
-        color: purple; //etc
+    state ::.IVD-Mouse-Clicked & this.IVD-Item-Hovered:
+        color: purple;
     }
 
 Unlike CSS's pseudo-classes, IVD has a very powerful state system and allows boolean comparisons on states:
@@ -94,21 +94,21 @@ Say you have a group of states, and only one can be active at any given time. It
     state three:
     }
 
-And then only one of those states will be active in that element at any given time.
+And then only the last state to be set will be active in that element at any given time.
 
 
 
 ## Positioning
 
-Widget hierarchies tend to be very ridged. In traditional GUI toolkits, this is because each widget "owns" it's children, and reparenting is an arduous task. HTML isn't much better, where even if you use Javascript to restructure the DOM, it still has a specific default defined in a very different way from the dynamic structure.
+Widget hierarchies tend to be very ridged. In traditional GUI toolkits, this is because each widget "owns" it's children, and reparenting is an arduous task. HTML isn't much better, where even if you use JavaScript to restructure the DOM, it still has a specific default defined in a very different way from the way that your dynamic structure is defined.
 
-This makes it difficult to create GUIs that are easy to re-arrange, or to exhibit dynamic, drag and drop behavior.
+This makes it difficult to create GUIs that are easy to re-arrange.
 
-Part of what makes IVD different here is the fact that the visual element's structure is only loosely bound to the model. The model's structure is essentially ridgid, but it only enforces it's hierarchy locally; that is, the hierarchy is fixed, but it can be placed anywhere. So you get the power of binding the structure of the layout to a model, but with the flexibility to freely position the elements according to the visual theme, which need not be encoded in the model. ([More on models below](#models)).
+The two points that make IVD different here is that elements are completely symmetric, and the fact that the visual element's structure isn't tightly bound to the model. The model only enforces it's hierarchy locally; that is, the hierarchy is fixed, but it can be placed anywhere. So you get the power of binding the structure of the layout to a model, but with the flexibility to freely position the elements according to the visual theme, which need not be encoded in the model. ([More on models below](#models)).
 
-IVD has a completely dynamic, conditional positioning system. An element must choose to position itself within another element. There is no "default" hierarchy:
+IVD's structure being symmetric just means that positioning is always conditional. An element must choose to position itself within another element. It always starts out flat:
 
-    #someElement
+    #
     {
     state someCondition:
         position-within: window;
@@ -117,13 +117,14 @@ IVD has a completely dynamic, conditional positioning system. An element must ch
         position-within: anotherElement;
     }
 
-So no position is really the "normal" one. It's all dynamic, based on the state of the system, and largely independent of the model structure, except for when and where you want it to mirror the model.
 
 ## Layouts/Materials
 
-One place where traditional toolkits beat HTML/CSS I think unequivically, is in their layout system. Floats... Are unnecessarily complicated to reason about.
+One place where traditional toolkits beat HTML/CSS I think unequivically, is in their layout system. Floats... Are unnecessarily complicated to reason about, and enough tears have been shed over that system that I feel I need not ever speak of it again.
 
 IVD follows a typical nested layout system. Built in layouts include hbox and vbox, for horizontal and vertical rows respectively, and the stack layout for layering.
+
+Given the following example:
 
     #window
     {
@@ -149,7 +150,7 @@ IVD follows a typical nested layout system. Built in layouts include hbox and vb
         text: "Cye";
     }
 
-Which would produce a layout as such (please excuse the crudity of this model, I didn't have time to build it to scale or paint it):
+The following is produced (please excuse the crudity of this model, I didn't have time to build it to scale or paint it):
 
     [AyeByeCye]
 
@@ -181,15 +182,15 @@ That's great, but then the order is almost arbitrary (It's actually based on the
         text: "Bye";
     }
 
-Producing the same output:
+Which produces the same output:
 
     [AyeByeCye]
 
-Which makes it painless to slip a column in between two elements later in the development cycle, without touching anything that already works. Empty cells are simply ignored, so they're great to declare where a notification or context popout should appear when it feels like it.
+This makes it painless to slip a column in between two elements later in the development cycle, without touching anything that already works. Empty cells are simply ignored, so they're great to declare where a notification or context popout should appear when it feels like it.
 
 Of course, it also makes it trivial to rearrange items:
 
-    #
+    #window
     {
         named-cells: first, middle, last;
     
@@ -253,7 +254,7 @@ Wouldn't it be nice if you could get IVD to figure out what `otherElement.height
     }
 
 
-What happens in the above is that the expression in `element1.width` is solved for `otherElement.height`, and the result is backpropogated to `otherElement.height` (Which may also be defined as an expression with a weak value, it can be turtles all the way down). Once that is updated, the expression in `element1.width` is reevaluated.
+What happens in the above is that the expression in `element1.width` is solved for `otherElement.height`, and the result is backpropogated to `otherElement.height` (Which may be defined as a variable or an expression with a weak value, it can be turtles all the way down). Once that is updated, the expression in `element1.width` is reevaluated.
 
 It's important to think of this as more of a suggestion than an absolute order. `otherElement.height` might have a min/max constraint which rounds off the value being propogated, and then THAT value is what is observed when `element1.width` is reevaluated. Nothing is ever left in an inconsistent state.
 
@@ -261,7 +262,7 @@ Everything always obeys the constraints as defined, but you also have the power 
 
 ## Classes
 
-Classes are very simple. They're really just templates where the attributes are copied from:
+Classes are very simple. They're really just templates from which attributes are copied:
 
     .class-name
     {
@@ -273,11 +274,11 @@ Classes are very simple. They're really just templates where the attributes are 
         //color is blue
     }
 
-Shorthand version if you don't need to declare anything in the body:
+Shorthand version if you don't need to declare anything in the body of the deriving element:
 
     # : class-name;
 
-An element case derive from an arbitrary number of classes, and the attributes are overriden in the order that the classes are declared:
+An element can derive from an arbitrary number of classes, and the attributes are overriden in the order that the classes are declared:
 
     .another-class
     {
@@ -305,7 +306,7 @@ An element case derive from an arbitrary number of classes, and the attributes a
 
 ## Remorial Classes for Code Reuse
 
-And last but certainly not least.
+And last but *certainly* not least.
 
 Suppose you have the following construct:
 
@@ -324,7 +325,7 @@ Remoras work with models, and common parent deduction and all that good stuff as
 
 ## And Other Stuff Probably
 
-This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned variables or classes! It is meant simply to give you a taste for the project. Think of it as a highlight reel.
+This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned variables or the ability to "declare" coefficients! It is meant to simply give you a taste for the project.
 
 # What's Working?
 
@@ -344,6 +345,9 @@ And other things too boring or obvious to list or remember.
 
 See [Alpha Release Checklist](https://github.com/IrisChase/IVD/issues/1)
 
+# Contributing
+
+\*sounds of deranged laughter echoing in the distance\*
 
 # Credits
 
