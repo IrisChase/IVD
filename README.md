@@ -347,7 +347,7 @@ See [Alpha Release Checklist](https://github.com/IrisChase/IVD/issues/1)
 
 # Contributing
 
-\*sounds of deranged cackling echoing in the distance\*
+\*sounds of deranged cackling echo in the distance\*
 
 # Credits
 
