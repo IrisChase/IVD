@@ -472,7 +472,7 @@ This is by no means a complete overview of the features developed or in developm
 
 # What's Working?
 
-Have a near arbitrarily chosen list in no particular order:
+In no particular order:
 
 - The compiler, which produces friendly error messages.
 - Remorial class instantiation.
@@ -483,8 +483,8 @@ Have a near arbitrarily chosen list in no particular order:
 - Models, enumeration, common ancestor deduction, etc.
 - Animations of arbitrary scalar attributes.
 - The equation solver (Not tested thoroughly enough for my tastes though).
+- And a bunch of other stuff, probably.
 
-And other things too boring or obvious to list or remember and maybe something cool I forgot.
 
 
 # What is blocking alpha?
