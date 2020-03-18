@@ -222,7 +222,7 @@ In the previous examples, you've seen elements declared as such:
 
 This instantiates a single element.
 
-Suppose you have a model uncreatively called `my-model`:
+Suppose you have a model uncreatively named `my-model`:
 
     #an-enumerated-element -> my-model {}
 
@@ -241,7 +241,7 @@ A model item can define strings, integers, trigger slots and states. All of whic
         trigger: model.react-to-click;
     }
 
-References to the model within an element are prefixed with the keyword `model` and not the model's identifier because it allows you to easily rename the model, use generic models in classes and because I felt like it.
+References to the model within an element are prefixed with the keyword `model` and not the model's identifier because it allows you to easily rename the model, use generic models in classes, and because I felt like it.
 
 Values from a model item that are used by IVD are always kept in sync. If the value changes in the model, the change is reflected in the IVD runtime.
 
@@ -255,7 +255,7 @@ Model states can be manipulated directly by IVD code as well:
 
 Models themselves can contain child items, allowing for complex nested data structures.
 
-You can't position a free element within an enumerated element (You can however, position an enumerated element within a free element). But you can position a enumerated element within another enumerated element which share a model in common:
+You can't position a free element within an enumerated element, you can however, position an enumerated element within a free element, or position a enumerated element within another enumerated element which share a model in common:
 
     #Nietzsche -> model-name;
 
@@ -304,7 +304,7 @@ IVD allows you to define scalar constraints as equations which are kept up-to-da
         width: other-element.height * 2;
     }
 
-The trouble with the above, is that it isn't flexible. What if you wanted just really wanted for `element1.width == 200` to be true, but without violating the constraint?
+The trouble with the above, is that it isn't flexible. What if you just really wanted for `element1.width == 200` to be true, but without violating the constraint?
 
     #element2
     {
@@ -417,7 +417,7 @@ Suppose you have the following construct:
 
     //etc just use your imagination for the confirmation cell
 
-Everything is fine and perfect and good until... You need to reuse that. You can't simply use a class because a class only helps with a single element, and the above can only work with several elements.
+Everything is fine and good until... You need to reuse that. You can't simply use a class because a class only helps with a single element, and the above can only work with several elements.
 
 Remorial classes are a way of defining a "composite" element. You define the class as normal, and then attach "remoras" (get it?) which are just a special kind of element to it. Whenever an element derives from this class, a copy of each remora is also spun up as well, facilitating reuse of complex elements.
 
@@ -456,19 +456,19 @@ This is equivalent to the previous example, except that it is reusable, of cours
 
 Where the remora operator (`@`) is used within an element, it is substituted by the actual instance name given to the element which derives from the remorial class. In the above examples, this name is auto-generated as the elements are anonymous.
 
-One special feature of remora substitution is that you can address any remora in the "school" (GET IT??) from any other element in the school using the `@::element-name` syntax, which is substituted with the name generated for it by the compiler. [This allows for a remorial class to export values from a child remora](https://github.com/IrisChase/IVD/blob/11066e421ff74b9418b420a3890e5d9fdcf40f6e/src/tests/valid/remoravaluekeysubstitution.ivd#L19) (Which are all otherwise unaddressable), but the implications of this are outside the scope of this little hoe-down.
+One special feature of remora substitution is that you can address any remora in the "school" (get it???) from any other element in the school using the `@::element-name` syntax, which is substituted with the name generated for it by the compiler. [This allows for a remorial class to export values from a child remora](https://github.com/IrisChase/IVD/blob/11066e421ff74b9418b420a3890e5d9fdcf40f6e/src/tests/valid/remoravaluekeysubstitution.ivd#L19) (Which are all otherwise unaddressable), but the implications of this are outside the scope of this little hoe-down.
 
 The remora example above is obviously incomplete. The biggest failing is that it really should be bound to a model in order to have a place to actually send input data and triggers for buttons. 
 Remoras work with nested models, and common parent deduction and all that good stuff as well. They're just an additional type of template which tag alongside otherwise normal classes.
 
 And of course remoras can be nested but an example that *proves* as much is a bear to read (or write) so I'll spare you (and myself).
 
-Again, remoras are just syntactic sugar, they are expanded by the compiler. The resulting elements are exactly the same as if they had been defined manually. A little bit of witchcraft and some symbol substitution makes it all come together quite nicely~
+Again, remoras are just syntactic sugar, they are expanded by the compiler. The resulting elements are exactly the same as if they had been defined manually. A little bit of witchcraft and maybe some symbol substitution makes it all come together quite nicely~
 
 
 ## And Other Stuff Probably
 
-This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned the (working!) animation system or the ability to declare expressions (which is to allow for complex widget interactions such as scrollbars or sliders affection viewports, all defined within IVD), or the [C](https://github.com/IrisChase/IVD/blob/development/src/user_include/IVD_c.h) and [C++](https://github.com/IrisChase/IVD/blob/development/src/user_include/IVD_cpp.h) bindings... It is simply meant to give you a taste for the project.
+This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned the (working!) animation system or the ability to declare expressions (which is to allow for complex widget interactions such as scrollbars or sliders affecting viewports, all defined within IVD), or the [C](https://github.com/IrisChase/IVD/blob/development/src/user_include/IVD_c.h) and [C++](https://github.com/IrisChase/IVD/blob/development/src/user_include/IVD_cpp.h) bindings... It is simply meant to give you a taste for the project.
 
 # What's Working?
 
