@@ -6,7 +6,7 @@ IVD is a declarative GUI programming language and framework implementation. The 
 
 The decision to create IVD was not reached lightly. I knew it would be a huge undertaking (Although I underestimated how huge), and spent considerable time trying to talk myself out of doing it.
 
-I have experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/JavaScript), and played around a bit with QML, which was somewhat inspiring for this project. All of these had their pros and cons, but none of them seemed to get at the heart of the problem.
+I have experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/JavaScript), and played around a bit with QML, which was somewhat inspiring for this project. All of these had their pros and cons, but none of them seemed represent a true advancement in the problem space, and I'm arrogant enough that I thought I could maybe move the needle myself.
 
 # A Quick(ish) and Mostly Incomplete Rundown of IVD
 
@@ -24,7 +24,7 @@ It's easy enough to fix said issue, but even easier to break again because the s
 
 The problem with individual widgets processing events is that they have no context (At least at the level that your typical GUI events exist, it is certainly possible to have higher level events, but would still require a new framework and IVD as a language has other benefits as well). In IVD, the environment is responsible for determining whether an item is hovered or not (Which was in part inspired by CSS's pseudo-classes):
 
-    #elementName
+    #element-name
     {
         color: red;
 
@@ -44,7 +44,7 @@ Unlike CSS's pseudo-classes, IVD has a very powerful state system and allows boo
 
 "Overlapping" attributes, where two active states define a different value for a given attribute, override in descending order:
 
-    # //anonymous element
+    # //anonymous element because you shouldn't be forced to name things you don't want to
     {
         attr: one;
 
@@ -58,7 +58,7 @@ Unlike CSS's pseudo-classes, IVD has a very powerful state system and allows boo
 
 Elements can manipulate states, even in other elements:
 
-    #anElement
+    #an-element
     {
     state coordinatedState:
         color: blue;
@@ -67,14 +67,14 @@ Elements can manipulate states, even in other elements:
     #
     {
     state aState:
-        induce-state: anElement.coordinatedState;
+        induce-state: an-element.coordinatedState;
 
         //Can also toggle, unset, etc
         toggle-state: state;
         unset-state: state;
     }
 
-Event-like behavior is handled by "trigger-states". These are states that are guaranteed by the runtime to last only a single frame. A bit janky conceptually, but it works:
+Event-like behavior is handled by "trigger-states". These are states that are guaranteed by the runtime to last only a single frame. This allows you to set processes extern to IVD in motion using the `trigger` attribute:
 
     #
     {
@@ -110,11 +110,11 @@ IVD's structure being symmetric just means that positioning is always conditiona
 
     #
     {
-    state someCondition:
+    state some-condition:
         position-within: window;
 
-    state someOtherCondition:
-        position-within: anotherElement;
+    state some-other-condition:
+        position-within: another-element;
     }
 
 
@@ -212,16 +212,66 @@ The IVD philosophy is that a model shouldn't *ridgedly* define how the presentat
 
 There are two types of elements in IVD. "Free elements", which are not bound to a model and there is exactly one instance, and "enumerated elements", which are bound to a model instance, and there can be zero or more of them (one for each instance).
 
-Models can have states:
+In the previous examples, you've seen elements declared as such:
 
-    # -> modelname
+    #name-optional {}
+
+This instantiates a single element.
+
+Suppose you have a model uncreatively called `myModel`:
+
+    #an-enumerated-element -> myModel {}
+
+This creates a single instance of `an-enumerated-element` for every item in `myModel`. A "root" model declares a list of model items. The process of binding elements to model items is known in IVD parlance as "enumeration", as elements are *enumerated* by the model.
+
+A model item can define strings, integers, trigger slots and states. All of which may be used by elements in IVD:
+
+    # -> model-name
     {
+        text: model.theText;
+
     state model.aState:
-        //do something
+        width: model.widthForAstate;
+
+    state this.clicked:
+        trigger: model.reactToClick;
     }
 
-Models can have trigger slots...
+Values from a model that are used by IVD are always kept in sync. If the value changes in the model, the change is reflected in the IVD runtime.
 
+Model states can be manipulated directly by IVD code as well:
+
+    # -> arbitrarily-named-model-42
+    {
+    state x:
+        induce-state: model.a-model-state;
+    }
+
+References to the model within an element are prefixed with the keyword `model` and not the model's identifier because reasons and because it allows you to easily rename the model.
+
+Models themselves can contain child items, allowing for complex nested data structures.
+
+You can't position a free element within an enumerated element (You can however, position an enumerated element within a free element). But you can position a enumerated element within another enumerated element which share a model in common:
+
+    #Nietzsche -> model-name;
+
+    # -> model-name
+    {
+        position-within: Nietzsche;
+    }
+
+The runtime will find the correct instance of `Nietzsche` to position the anonymous element within.
+
+This actually works with any common ancestor, suppose the following:
+
+    #an-elephant -> elephants;
+
+    #leg -> elephants::legs
+    {
+        position-within: an-elephant;
+    }
+
+This allows you to create an element for each collection of an item, and allow it to contain each child instance of said collection.
 
 ## Equation Solver
 
@@ -229,7 +279,7 @@ IVD allows you to define scalar constraints as equations which are kept up-to-da
 
     #element1
     {
-        width: otherElement.height * 2;
+        width: other-element.height * 2;
     }
 
 The trouble with the above, is that you can't set it.
@@ -240,23 +290,31 @@ The trouble with the above, is that you can't set it.
         set: element1 = 200; //error because it doesn't know what to do
     }
 
-Wouldn't it be nice if you could get IVD to figure out what `otherElement.height` needs to be in order for `element1.width` to equal 200?
+Wouldn't it be nice if you could get IVD to figure out what `other-element.height` needs to be in order for `element1.width` to equal 200?
 
     #element1
     {
-        width: [otherElement.height] * 2; //Declare which value in the expression is weak
+        width: [other-element.height] * 2; //Declare which value in the expression is weak
     }
 
     #element2
     {
     state I-want-to-set-something:
-        set: element1 = 200; //Works, because now it knows to solve for otherElement.height
+        set: element1 = 200; //Works, because now it knows to solve for other-element.height
     }
 
 
-What happens in the above is that the expression in `element1.width` is solved for `otherElement.height`, and the result is backpropogated to `otherElement.height` (Which may be defined as a variable or an expression with a weak value, it can be turtles all the way down). Once that is updated, the expression in `element1.width` is reevaluated.
+What happens in the above is that the expression in `element1.width` is solved for `other-element.height`, and the result is backpropogated to `other-element.height` (Which may be defined as a variable or an expression with a weak value, it can be turtles all the way down). Once that is updated, the expression in `element1.width` is reevaluated.
 
-It's important to think of this as more of a suggestion than an absolute order. `otherElement.height` might have a min/max constraint which rounds off the value being propogated, and then THAT value is what is observed when `element1.width` is reevaluated. Nothing is ever left in an inconsistent state.
+It's important to think of this as more of a suggestion than an absolute order. `other-element.height` might have a min/max constraint which rounds off the value being propogated, and then THAT value is what is observed when `element1.width` is reevaluated. Nothing is ever left in an inconsistent state.
+
+Integers declared by a model can be back-propogated to as well:
+
+
+    #element1 -> my-model
+    {
+        width: [model.a-val] * 2;
+    }
 
 Everything always obeys the constraints as defined, but you also have the power to update the observed values arbitrarily, giving you the best of both worlds.
 
@@ -310,7 +368,32 @@ And last but *certainly* not least.
 
 Suppose you have the following construct:
 
-    exampLEEE
+    #contextual-dialog
+    {
+        layout: vbox;
+        named-cells: message-cell, input-cell, confirmation-cell;
+    }
+
+    #message-area
+    {
+        position-within: contextual-dialog.message-cell;
+        layout: hbox;
+        named-cells: image-cell, text-cell;
+    }
+
+    #message-image
+    {
+        position-within: message-area.image-cell;
+        image: "image-uri";
+    }
+
+    #message-text
+    {
+        position-within: message-area.text-cell;
+        text: "Enter info below";
+    }
+
+    //etc just use your imagination for the confirmation cell
 
 Everything is fine and perfect and good until... You need to reuse that. You can't simply use a class because a class only helps with a single element, and the above can only work with several elements.
 
@@ -318,14 +401,52 @@ Remorial classes are a way of defining a "composite" element. You define the cla
 
 And the syntax is quite simple:
 
-    same example but with remoras instead.
+    .contextual-dialog
+    {
+        layout: vbox;
+        named-cells: message-cell, input-cell, confirmation-cell;
+    }
 
-Remoras work with models, and common parent deduction and all that good stuff as well. They're just an additional type of template which tag alongside otherwise normal classes.
+    @contextual-dialog.message-area
+    {
+        position-within: @.message-cell;
+        layout: hbox;
+        named-cells: image-cell, text-cell;
+    }
+
+    @conceptual-dialog.message-image
+    {
+        position-within: @::message-area.image-cell;
+        image: "image-uri";
+    }
+
+    @conceptual-dialog.message-text
+    {
+        position-within: @::message-area.text-cell;
+        text: "Enter info below";
+    }
+
+    //etc
+
+    # : contextual-dialog;
+
+This is equivalent to the previous example, except that it is reusable, of course.
+
+Where the remora operator (`@`) is used within an element, it is substituted by the actual instance name given to the element which derives from the remorial class. In the above examples, this name is auto-generated as the elements are anonymous.
+
+One special feature of remora substitution is that you can address any remora in the "school" (GET IT??) from any other element in the school using the `@::element-name` syntax, which is substituted with the name generated for it by the runtime. [This allows for a remorial class to export values from a child remora](https://github.com/IrisChase/IVD/blob/11066e421ff74b9418b420a3890e5d9fdcf40f6e/src/tests/valid/remoravaluekeysubstitution.ivd#L19) (Which are all otherwise unaddressable), but the implications of this are outside the scope of this little hoe-down.
+
+The remora example above is obviously incomplete. The biggest failing is that it really should be bound to a model in order to have a place to actually send input data and triggers for buttons. 
+Remoras work with nested models, and common parent deduction and all that good stuff as well. They're just an additional type of template which tag alongside otherwise normal classes.
+
+And of course remoras can be nested but that hurts to read (or write) so I'll spare you (and myself) that trouble. I don't think they'll be a problem in practice, but reasoning about an example that *proves* that they work is just arduous. Think C++ error messages involving templates, all those cute little niceties explode into an indecipherable mess when you have to think about how they actually work.
+
+Again, remoras are just syntactic sugar, they are expanded by the compiler. The resulting elements are exactly the same as if they had been defined manually. A little bit of witchcraft and some symbol substitution makes it all come together quite nicely~
 
 
 ## And Other Stuff Probably
 
-This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned variables, the (working!) animation system or the ability to "declare" coefficients! It is meant to simply give you a taste for the project.
+This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned the (working!) animation system or the ability to declare expressions (which is to allow for complex widget interactions such as scrollbars or sliders affection viewports, all defined within IVD). It is simply meant to give you a taste for the project.
 
 # What's Working?
 
