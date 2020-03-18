@@ -461,7 +461,7 @@ One special feature of remora substitution is that you can address any remora in
 The remora example above is obviously incomplete. The biggest failing is that it really should be bound to a model in order to have a place to actually send input data and triggers for buttons. 
 Remoras work with nested models, and common parent deduction and all that good stuff as well. They're just an additional type of template which tag alongside otherwise normal classes.
 
-And of course remoras can be nested but an example that *proves* as much is a bear to read (or write) so I'll spare you (and myself).
+And of course remoras can be nested but [an example that *proves* as much is a bear to understand](https://github.com/IrisChase/IVD/issues/20#issuecomment-600876528) so I'll spare you (and myself).
 
 Again, remoras are just syntactic sugar, they are expanded by the compiler. The resulting elements are exactly the same as if they had been defined manually. A little bit of witchcraft and maybe some symbol substitution makes it all come together quite nicely~
 
