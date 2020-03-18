@@ -4,14 +4,18 @@ IVD is a declarative GUI programming language and framework implementation. The 
 
 # Why?
 
-The decision to create IVD was not reached lightly. I knew it would be a huge undertaking (Although I underestimated how huge), and spent considerable time trying to talk myself out of doing it.
+The decision to create IVD was not reached lightly. I knew it would be a huge undertaking (Although I underestimated how huge...), and spent considerable time trying to talk myself out of doing it.
 
-I have experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/JavaScript), and played around a bit with QML, which was somewhat inspiring for this project. All of these had their pros and cons, but none of them seemed represent a true advancement in the problem space, and I'm arrogant enough that I thought I could maybe move the needle myself.
+I have experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/JavaScript), and played around a bit with QML, which was somewhat inspiring for this project. All of these had their pros and cons, but none of them seemed to represent a true advancement in the problem space, and I'm arrogant enough that I thought I could maybe move the needle myself.
 
 # A Quick(ish) and Mostly Incomplete Rundown of IVD
 
+## IVD is Not Ready
+
+IVD is still in heavy development and as such this readme should be treated as a writeup of the project, rather than a guide on using it. It's okay if you don't get the syntax completely, just read on and the high level ought to stand out at least.
+
 ## IVD is *Not* CSS++
-Before we get started, it's important to acknowledge that although the syntax is superficially similar, the theory of IVD is *very* different from the theory of CSS. Elements in IVD aren't bound to models by default, and they don't inherit attributes from their "parents" (Because they don't really have *true* parents). About the only concepts that carry over from CSS are some attribute names, and the box model for styling. Most everything else is either taken more from traditional GUI toolkits or is novel.
+Before we get started, it's important to acknowledge that although the syntax is superficially similar, the theory of IVD is *very* different from the theory of CSS. Elements in IVD aren't bound to models by default, and they don't inherit attributes from their "parents" (Because they don't really have *true* parents). About the only concepts that carry over from CSS are some attribute names (Although I've renamed some that are otherwise equivalent, just to piss you off), and the box model for styling. Most everything else is either taken more from traditional GUI toolkits or is novel.
 
 IVD allows for visual elements to be free and not bound to the model, so that your data model isn't corrupted with irrelevant noise which only exists for the presentation, as is always the case with `<DIV>` tags in any reasonably complex webpage.
 
@@ -434,7 +438,7 @@ This is equivalent to the previous example, except that it is reusable, of cours
 
 Where the remora operator (`@`) is used within an element, it is substituted by the actual instance name given to the element which derives from the remorial class. In the above examples, this name is auto-generated as the elements are anonymous.
 
-One special feature of remora substitution is that you can address any remora in the "school" (GET IT??) from any other element in the school using the `@::element-name` syntax, which is substituted with the name generated for it by the runtime. [This allows for a remorial class to export values from a child remora](https://github.com/IrisChase/IVD/blob/11066e421ff74b9418b420a3890e5d9fdcf40f6e/src/tests/valid/remoravaluekeysubstitution.ivd#L19) (Which are all otherwise unaddressable), but the implications of this are outside the scope of this little hoe-down.
+One special feature of remora substitution is that you can address any remora in the "school" (GET IT??) from any other element in the school using the `@::element-name` syntax, which is substituted with the name generated for it by the compiler. [This allows for a remorial class to export values from a child remora](https://github.com/IrisChase/IVD/blob/11066e421ff74b9418b420a3890e5d9fdcf40f6e/src/tests/valid/remoravaluekeysubstitution.ivd#L19) (Which are all otherwise unaddressable), but the implications of this are outside the scope of this little hoe-down.
 
 The remora example above is obviously incomplete. The biggest failing is that it really should be bound to a model in order to have a place to actually send input data and triggers for buttons. 
 Remoras work with nested models, and common parent deduction and all that good stuff as well. They're just an additional type of template which tag alongside otherwise normal classes.
@@ -446,7 +450,7 @@ Again, remoras are just syntactic sugar, they are expanded by the compiler. The 
 
 ## And Other Stuff Probably
 
-This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned the (working!) animation system or the ability to declare expressions (which is to allow for complex widget interactions such as scrollbars or sliders affection viewports, all defined within IVD). It is simply meant to give you a taste for the project.
+This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned the (working!) animation system or the ability to declare expressions (which is to allow for complex widget interactions such as scrollbars or sliders affection viewports, all defined within IVD), or the [C](https://github.com/IrisChase/IVD/blob/development/src/user_include/IVD_c.h) and [C++](https://github.com/IrisChase/IVD/blob/development/src/user_include/IVD_cpp.h) bindings... It is simply meant to give you a taste for the project.
 
 # What's Working?
 
