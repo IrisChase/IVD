@@ -474,7 +474,7 @@ This is by no means a complete overview of the features developed or in developm
 
 In no particular order:
 
-- The compiler, which produces friendly error messages.
+- The compiler, [which produces friendly error messages](https://github.com/IrisChase/IVD/blob/development/src/tests/errors/ivdserial/remoradeepEnumerationMismatch.ivdserial).
 - Remorial class instantiation.
 - Basic element styling.
 - States and state expressions.
