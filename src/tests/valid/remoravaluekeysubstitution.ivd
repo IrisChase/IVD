@@ -16,15 +16,15 @@ spec bleeding;
 
 .host
 {
-	declare expression: halp = [@::remora.dimen-adj] * 314;
+    declare expression: halp = [@::remora.dimen-adj] * 314;
     text: "Host";
 }
 
 @host.remora -> @::whee
 {
-	position-within: @;
+    position-within: @;
     text: "Remora";
-	size-x: 10 * @.height;
+    size-x: 10 * @.height;
 }
 
 #remoraHostInstance -> muhModel : host;
