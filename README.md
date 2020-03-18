@@ -26,7 +26,7 @@ One great problem I think is the low level nature of typical GUI events. Take fo
 
 It's easy enough to fix said issue, but even easier to break again because the solution isn't intuitive. It's fun to watch applications gain and lose this bug as they go through updates. The idea is to leave these tricky edge cases to the GUI framework, instead of fixing and breaking (solved) problems like this all the time while in the middle of trying to fix something completely unrelated.
 
-The problem with individual widgets processing events is that they have no context (At least at the level that your typical GUI events exist, it is certainly possible to have higher level events, but would still require a new framework and IVD as a language has other benefits as well). In IVD, the environment is responsible for determining whether an item is hovered or not (Which was in part inspired by CSS's pseudo-classes):
+The problem with individual widgets processing events is that they have no context (At least at the level that your typical GUI events exist, it is certainly possible to have higher level events, but IVD as a language has other benefits as well). In IVD, the environment is responsible for determining whether an item is hovered or not (Which was in part inspired by CSS's pseudo-classes):
 
     #element-name
     {
@@ -78,7 +78,7 @@ Elements can manipulate states, even in other elements:
         unset-state: state;
     }
 
-Event-like behavior is handled by "trigger-states". These are states that are guaranteed by the runtime to last only a single frame. This allows you to set processes extern to IVD in motion using the `trigger` attribute:
+Event-like behavior is handled by "trigger-states". These are states that are guaranteed by the runtime to last only a single frame. This allows you to set processes external to IVD in motion using the `trigger` attribute:
 
     #
     {
@@ -104,7 +104,7 @@ And then only the last state to be set will be active in that element at any giv
 
 ## Positioning
 
-Widget hierarchies tend to be very ridged. In traditional GUI toolkits, this is because each widget "owns" it's children, and reparenting is an arduous task. HTML isn't much better, where even if you use JavaScript to restructure the DOM, it still has a specific default defined in a very different way from the way that your dynamic structure is defined.
+Widget hierarchies tend to be very ridged. In traditional GUI toolkits, this is because each widget "owns" it's children, and reparenting is an arduous task. HTML isn't much better, where even if you use JavaScript to restructure the DOM, it still has a specific default defined in a very different way from how your dynamic structure is defined.
 
 This makes it difficult to create GUIs that are easy to re-arrange.
 
@@ -210,7 +210,7 @@ The built-in layouts should cover 95% (totally legit stat) of use cases simply e
 
 ## Models
 
-A model may define a hierarchy, but elements bound to specific model items don't necessarily have to reflect it directly, and are free to position select leaf items in a root element or separate window, if need be.
+A model may define a hierarchy, but elements bound to specific model items don't necessarily have to reflect it directly, and are free to position items in a root element or separate window, for example.
 
 The IVD philosophy is that a model shouldn't *ridgedly* define how the presentation should look. Contrast with HTML where absolutely everything is a part of the DOM in a very specific order and hierarchy, even unrelated models must be encoded in an arbitrary order.
 
@@ -222,26 +222,28 @@ In the previous examples, you've seen elements declared as such:
 
 This instantiates a single element.
 
-Suppose you have a model uncreatively called `myModel`:
+Suppose you have a model uncreatively called `my-model`:
 
-    #an-enumerated-element -> myModel {}
+    #an-enumerated-element -> my-model {}
 
-This creates a single instance of `an-enumerated-element` for every item in `myModel`. A "root" model declares a list of model items. The process of binding elements to model items is known in IVD parlance as "enumeration", as elements are *enumerated* by the model.
+This creates a single instance of `an-enumerated-element` for every item in `my-model`. A "model" simply declares a list of model items. The process of binding elements to model items is known in IVD parlance as "enumeration", as elements are *enumerated* by the model.
 
 A model item can define strings, integers, trigger slots and states. All of which may be used by elements in IVD:
 
     # -> model-name
     {
-        text: model.theText;
+        text: model.the-text;
 
-    state model.aState:
-        width: model.widthForAstate;
+    state model.a-state:
+        width: model.width-for-a-state;
 
     state this.clicked:
-        trigger: model.reactToClick;
+        trigger: model.react-to-click;
     }
 
-Values from a model that are used by IVD are always kept in sync. If the value changes in the model, the change is reflected in the IVD runtime.
+References to the model within an element are prefixed with the keyword `model` and not the model's identifier because it allows you to easily rename the model, use generic models in classes and because I felt like it.
+
+Values from a model item that are used by IVD are always kept in sync. If the value changes in the model, the change is reflected in the IVD runtime.
 
 Model states can be manipulated directly by IVD code as well:
 
@@ -250,8 +252,6 @@ Model states can be manipulated directly by IVD code as well:
     state x:
         induce-state: model.a-model-state;
     }
-
-References to the model within an element are prefixed with the keyword `model` and not the model's identifier because reasons and because it allows you to easily rename the model.
 
 Models themselves can contain child items, allowing for complex nested data structures.
 
@@ -268,7 +268,10 @@ The runtime will find the correct instance of `Nietzsche` to position the anonym
 
 This actually works with any common ancestor, suppose the following:
 
-    #an-elephant -> elephants;
+    #an-elephant -> elephants
+    {
+        layout: vbox;
+    }
 
     #leg -> elephants::legs
     {
@@ -276,6 +279,21 @@ This actually works with any common ancestor, suppose the following:
     }
 
 This allows you to create an element for each collection of an item, and allow it to contain each child instance of said collection.
+
+Suppose you want ordered items (As one often does). Perhaps the model has triggers defined for sorting the model according to different criteria. The order of elements in IVD can be bound to the model order:
+
+    #an-elephant -> elephants
+    {
+        layout: vbox;
+        model-order: enable; //Sort child elements according to model
+    }
+
+    #leg -> elephants::legs
+    {
+        position-within: an-elephant;
+    }
+
+The plan is to be able to rearrange items in IVD, and then have the new order backpropogated to the model as well.
 
 ## Equation Solver
 
@@ -286,7 +304,7 @@ IVD allows you to define scalar constraints as equations which are kept up-to-da
         width: other-element.height * 2;
     }
 
-The trouble with the above, is that you can't set it.
+The trouble with the above, is that it isn't flexible. What if you wanted just really wanted for `element1.width == 200` to be true, but without violating the constraint?
 
     #element2
     {
@@ -310,9 +328,9 @@ Wouldn't it be nice if you could get IVD to figure out what `other-element.heigh
 
 What happens in the above is that the expression in `element1.width` is solved for `other-element.height`, and the result is backpropogated to `other-element.height` (Which may be defined as a variable or an expression with a weak value, it can be turtles all the way down). Once that is updated, the expression in `element1.width` is reevaluated.
 
-It's important to think of this as more of a suggestion than an absolute order. `other-element.height` might have a min/max constraint which rounds off the value being propogated, and then THAT value is what is observed when `element1.width` is reevaluated. Nothing is ever left in an inconsistent state.
+It's important to think of this as more of a suggestion than an absolute order. `other-element.height` might have a min/max constraint which rounds off the value being propogated, and then ***that*** value is what is observed when `element1.width` is reevaluated. Nothing is ever left in an inconsistent state.
 
-Integers declared by a model can be back-propogated to as well:
+Scalars declared by a model can be back-propogated to as well:
 
 
     #element1 -> my-model
@@ -443,7 +461,7 @@ One special feature of remora substitution is that you can address any remora in
 The remora example above is obviously incomplete. The biggest failing is that it really should be bound to a model in order to have a place to actually send input data and triggers for buttons. 
 Remoras work with nested models, and common parent deduction and all that good stuff as well. They're just an additional type of template which tag alongside otherwise normal classes.
 
-And of course remoras can be nested but that hurts to read (or write) so I'll spare you (and myself) that trouble. I don't think they'll be a problem in practice, but reasoning about an example that *proves* that they work is just arduous. Think C++ error messages involving templates, all those cute little niceties explode into an indecipherable mess when you have to think about how they actually work.
+And of course remoras can be nested but an example that *proves* as much is a bear to read (or write) so I'll spare you (and myself).
 
 Again, remoras are just syntactic sugar, they are expanded by the compiler. The resulting elements are exactly the same as if they had been defined manually. A little bit of witchcraft and some symbol substitution makes it all come together quite nicely~
 
@@ -462,11 +480,11 @@ Have a near arbitrarily chosen list in no particular order:
 - States and state expressions.
 - The layout/material system.
 - Text layouts (Although laggy, see [issue](https://github.com/IrisChase/IVD/issues/2)).
-- Models.
+- Models, enumeration, common ancestor deduction, etc.
 - Animations of arbitrary scalar attributes.
 - The equation solver (Not tested thoroughly enough for my tastes though).
 
-And other things too boring or obvious to list or remember.
+And other things too boring or obvious to list or remember and maybe something cool I forgot.
 
 
 # What is blocking alpha?
