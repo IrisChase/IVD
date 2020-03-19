@@ -19,7 +19,7 @@ Before we get started, it's important to acknowledge that although the syntax is
 
 IVD allows for visual elements to be free and not bound to the model, so that your data model isn't corrupted with irrelevant noise which only exists for the presentation, as is always the case with `<DIV>` tags in any reasonably complex webpage. As such, it allows your data to be truly semantic.
 
-CSS is for *styling* models, IVD is for *defining* complete user interfaces with [*style*](https://i.redd.it/vq2q5dqh16qy.png).
+CSS is for *styling* models, and requires something like HTML and JavaScript to create a GUI with it. IVD on the other hand is for *defining* complete user interfaces with [*style*](https://i.redd.it/vq2q5dqh16qy.png).
 
 ## Events Kinda Suck, State System to The Rescue
 One great problem I think is the low level nature of typical GUI events. Take for example the case of an element needing to style itself differently when hovered in a scroll area. A naive approach involves monitoring "mouse motion in" and "mouse motion out" events, and setting your internal hover state accordingly. This is all fine and good until you have the cursor hovering over an element, and without moving the mouse, the user scrolls, suddenly throwing the hover out of sync.
@@ -212,7 +212,7 @@ The built-in layouts should cover 95% (totally legit stat) of use cases simply e
 
 A model may define a hierarchy, but elements bound to specific model items don't necessarily have to reflect it directly, and are free to position items in a root element or separate window, for example.
 
-The IVD philosophy is that a model shouldn't *ridgedly* define how the presentation should look. Contrast with HTML where absolutely everything is a part of the DOM in a very specific order and hierarchy, even unrelated models must be encoded in an arbitrary order.
+The IVD philosophy is that a model shouldn't *ridgedly* define the presentation. Contrast with HTML where absolutely everything is a part of the DOM in a very specific order and hierarchy, even unrelated models must be encoded in an arbitrary order.
 
 There are two types of elements in IVD. "Free elements", which are not bound to a model and there is exactly one instance, and "enumerated elements", which are bound to a model instance, and there can be zero or more of them (one for each instance).
 
@@ -255,7 +255,7 @@ Model states can be manipulated directly by IVD code as well:
 
 Models themselves can contain child items, allowing for complex nested data structures.
 
-You can't position a free element within an enumerated element, you can however, position an enumerated element within a free element, or position a enumerated element within another enumerated element which share a model in common:
+You can't position a free element within an enumerated element, you can however, position an enumerated element within a free element, or position an enumerated element within another enumerated element which share a model in common:
 
     #Nietzsche -> model-name;
 
@@ -278,7 +278,7 @@ This actually works with any common ancestor, suppose the following:
         position-within: an-elephant;
     }
 
-This allows you to create an element for each collection of an item, and allow it to contain each child instance of said collection.
+This enumerates an element for each instance of `elephant` and each instance of `elephant::legs`. Notice that before the `position-within` attribute is set, the item `leg` has no visual relationship to `an-elephant`. Common model deduction is what allows you to position elements enumerated across a model, within elements enumerated by *that model's ancestor*.
 
 Suppose you want ordered items (As one often does). Perhaps the model has triggers defined for sorting the model according to different criteria. The order of elements in IVD can be bound to the model order:
 
@@ -312,7 +312,7 @@ The trouble with the above, is that it isn't flexible. What if you just really w
         set: element1 = 200; //error because it doesn't know what to do
     }
 
-Wouldn't it be nice if you could get IVD to figure out what `other-element.height` needs to be in order for `element1.width` to equal 200?
+Wouldn't it be nice if you could get IVD to figure out what `other-element.height` needs to be in order for `element1.width == 200` to be true?
 
     #element1
     {
@@ -419,7 +419,7 @@ Suppose you have the following construct:
 
 Everything is fine and good until... You need to reuse that. You can't simply use a class because a class only helps with a single element, and the above can only work with several elements.
 
-Remorial classes are a way of defining a "composite" element. You define the class as normal, and then attach "remoras" (get it?) which are just a special kind of element to it. Whenever an element derives from this class, a copy of each remora is also spun up as well, facilitating reuse of complex elements.
+Remorial classes are a way of defining a "composite" element. You define the class as normal, and then attach "remoras" (get it?), which are just a special kind of element to it. Whenever an element derives from this class, a copy of each remora is also spun up as well, facilitating reuse of complex elements.
 
 And the syntax is quite simple:
 
@@ -454,7 +454,7 @@ And the syntax is quite simple:
 
 This is equivalent to the previous example, except that it is reusable, of course.
 
-Where the remora operator (`@`) is used within an element, it is substituted by the actual instance name given to the element which derives from the remorial class. In the above examples, this name is auto-generated as the elements are anonymous.
+Where the remora operator (`@`) is used within an element, it is substituted by the actual instance name given to the element which derives from the remorial class (Which is auto-generated in the above example as it's an anonymous element).
 
 One special feature of remora substitution is that you can address any remora in the "school" (get it???) from any other element in the school using the `@::element-name` syntax, which is substituted with the name generated for it by the compiler. [This allows for a remorial class to export values from a child remora](https://github.com/IrisChase/IVD/blob/11066e421ff74b9418b420a3890e5d9fdcf40f6e/src/tests/valid/remoravaluekeysubstitution.ivd#L19) (Which are all otherwise unaddressable), but the implications of this are outside the scope of this little hoe-down.
 
@@ -466,7 +466,7 @@ And of course remoras can be nested but [an example that *proves* as much is a b
 Again, remoras are just syntactic sugar, they are expanded by the compiler. The resulting elements are exactly the same as if they had been defined manually. A little bit of witchcraft and maybe some symbol substitution makes it all come together quite nicely~
 
 
-## And Other Stuff Probably
+## But That's Not All!
 
 This is by no means a complete overview of the features developed or in development for IVD. We haven't even mentioned the (working!) animation system or the ability to declare expressions (which is to allow for complex widget interactions such as scrollbars or sliders affecting viewports, all defined within IVD), or the [C](https://github.com/IrisChase/IVD/blob/development/src/user_include/IVD_c.h) and [C++](https://github.com/IrisChase/IVD/blob/development/src/user_include/IVD_cpp.h) bindings... It is simply meant to give you a taste for the project.
 
