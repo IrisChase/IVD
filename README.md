@@ -6,18 +6,18 @@ IVD is a declarative GUI programming language and framework implementation. The 
 
 The decision to create IVD was not reached lightly. I knew it would be a huge undertaking (Although I underestimated how huge...), and spent considerable time trying to talk myself out of doing it.
 
-I have experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/JavaScript), and played around a bit with QML, which was somewhat inspiring for this project. All of these had their pros and cons, but none of them seemed to represent a true advancement in the problem space, and I'm arrogant enough that I thought I could maybe move the needle myself.
+Aside from looking at all the GUI toolkits I could find before I broke ground, I had experienced developing user interfaces in the classical way (Qt/GTK), the "modern" way (HTML/CSS/JavaScript), and played around a bit with QML (which inspired some aspects of this project). All of these had their pros and cons, but none of them seemed to represent a true advancement in the problem space, and I'm arrogant enough that I thought I could maybe move the needle myself.
 
 # A Quick(ish) and Mostly Incomplete Rundown of IVD
 
 ## IVD is Not Ready
 
-IVD is still in heavy development and as such this readme should be treated as a writeup of the project, rather than a guide on using it. It's okay if you don't get the syntax completely, just read on and the high level ought to stand out at least.
+IVD is still in heavy development and as such this readme should be treated as a writeup of the project, rather than as a guide on using it. It's okay if you don't get the syntax completely, it's not written so that you are supposed to; just read on and the high level ought to stand out at least.
 
 ## IVD is *Not* CSS++
 Before we get started, it's important to acknowledge that although the syntax is superficially similar, the theory of IVD is *very* different from the theory of CSS. Elements in IVD aren't bound to models by default, and they don't inherit attributes from their "parents" (Because they don't really have *true* parents). About the only concepts that carry over from CSS are some attribute names (Although I've renamed some that are otherwise equivalent, just to piss you off), and the box model for styling. Most everything else is either taken more from traditional GUI toolkits or is novel.
 
-IVD allows for visual elements to be free and not bound to the model, so that your data model isn't corrupted with irrelevant noise which only exists for the presentation, as is always the case with `<DIV>` tags in any reasonably complex webpage.
+IVD allows for visual elements to be free and not bound to the model, so that your data model isn't corrupted with irrelevant noise which only exists for the presentation, as is always the case with `<DIV>` tags in any reasonably complex webpage. As such, it allows your data to be truly semantic.
 
 CSS is for *styling* models, IVD is for *defining* complete user interfaces with [*style*](https://i.redd.it/vq2q5dqh16qy.png).
 
