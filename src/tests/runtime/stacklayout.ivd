@@ -12,46 +12,49 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+
 spec bleeding;
 
 
 #window
 {
-	position-within: Environment;
-	window-size-strategy: bottom-up;
+    position-within: Environment;
+    window-size-strategy: bottom-up;
 
-	layout: stack;
+    layout: stack;
 
 state IVD-Window-Close:
 	trigger: IVD-Core-Quit;
 }
 
+//Horizontal bar (Should end up behind vertical)
 #
 {
-	position-within: window;
+    position-within: window;
 
+    width: 100;
+    height: 10;
 
-	width: 100;
-	height: 10;
+    align-y: align-center;
 
-	align-y: align-center;
-
-	color: blue;
+    color: blue;
+    
 state IVD-Item-Hover:
 	color: red;
 }
 
+//Vertical bar (Should always be on top)
 #
 {
-	position-within: window;
+    position-within: window;
 
+    height: 100;
+    width:  10;
 
-	height: 100;
-	width:  10;
+    align-x: align-center;
 
-	align-x: align-center;
-
-	color: green;
+    color: green;
+    
 state IVD-Item-Hover:
 	color: red;
 }
