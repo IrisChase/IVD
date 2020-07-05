@@ -49,11 +49,10 @@ state  IVD-Item-Hover:
 state !greedy & IVD-Item-Hover & ::.IVD-Mouse-Left-Press:
 	induce-state: greedy;
 
-state greedy & IVD-Item-Hover & ::.IVD-Mouse-Left-Press:
+state greedy & IVD-Item-Hover & ::.IVD-Mouse-Right-Press:
 	unset-state: greedy;
 
 state greedy:
-	greedy-y: enable;
 	color: cyan;
 }
 
