@@ -162,6 +162,9 @@ addFont("contrib/fonts/LiberationMono-Bold.ttf"       "corefontmonobold")
 addFont("contrib/fonts/LiberationMono-Italic.ttf"     "corefontmonoitalic")
 addFont("contrib/fonts/LiberationMono-BoldItalic.ttf" "corefontmonobolditalic")
 
+configure_file("contrib/test-images/jpeg_test_article.jpg" "jpeg_test_article.jpg" COPYONLY)
+configure_file("contrib/test-images/png_test_article.png" "png_test_article.png" COPYONLY)
+
 add_executable(ivdruntime src/tests/lightruntime.cpp)
 target_include_directories(ivdruntime PRIVATE src)
 target_link_libraries(ivdruntime PRIVATE
