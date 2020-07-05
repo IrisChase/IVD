@@ -320,6 +320,9 @@ public:
     int load_IVD_from_file(const std::string& path)
     { return IVD_environment_load_file(internal.get(), path.c_str()); }
 
+    std::string get_compiler_errors()
+    { return std::string(IVD_environment_get_compiler_errors(internal.get())); }
+
     void run()
     { IVD_environment_run(internal.get()); }
 };

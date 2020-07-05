@@ -46,6 +46,11 @@ int IVD_environment_load_file(IVD_Runtime* environment, const char* path)
     auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);
     return properEnv->loadFromIVDFile(path);
 }
+const char* IVD_environment_get_compiler_errors(IVD_Runtime* environment)
+{
+   auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);
+   return properEnv->getCompilerErrors();
+}
 void IVD_environment_run(IVD_Runtime* environment)
 {
     auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);

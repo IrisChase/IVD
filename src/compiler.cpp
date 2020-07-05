@@ -2026,4 +2026,17 @@ void Compiler::compile(std::string code)
     myErrors.clear();
 }
 
+const std::string& Compiler::getErrorMessageDigest()
+{
+   publicErrorBuffer.clear();
+
+   for(const auto err : getErrorMessages())
+   {
+       publicErrorBuffer += err;
+       publicErrorBuffer += '\n';
+   }
+
+   return publicErrorBuffer;
+}
+
 }//IVD

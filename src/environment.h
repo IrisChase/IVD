@@ -19,6 +19,7 @@
 #include <vector>
 #include <list>
 
+#include "compiler.h"
 #include "statemanager.h"
 #include "displayitem.h"
 #include "element.h"
@@ -53,6 +54,8 @@ class Environment
         friend bool operator<(const DisplayItemKey& left, const DisplayItemKey& right)
         { return std::tie(left.element, left.model) < std::tie(right.element, right.model); }
     };
+
+    Compiler myComp;
 
 
     EventQueue mainEventQueue;
@@ -115,6 +118,9 @@ public:
     }
 
     int loadFromIVDFile(const char* path);
+
+    const char* getCompilerErrors()
+    { return myComp.getErrorMessageDigest().c_str(); }
 
     double getInteger(DisplayItem* context, const ScopedValueKey key);
 

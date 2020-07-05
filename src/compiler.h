@@ -103,6 +103,7 @@ class Compiler
     int lastElementStamp;
 
     std::vector<std::string> errorMessages;
+    std::string publicErrorBuffer;
     //Warnings?
 
     std::map<std::string, CodePosition> elementNamePositions;
@@ -199,6 +200,8 @@ public:
 
     std::vector<std::string> getErrorMessages()
     { return errorMessages; }
+
+    const std::string& getErrorMessageDigest();
 };
 
 }//IVD

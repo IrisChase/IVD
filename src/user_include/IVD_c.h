@@ -45,6 +45,7 @@ void IVD_destroy_environment(IVD_Runtime*);
 
 IVD_Model* IVD_environment_add_model(IVD_Runtime*, const char* name);
 int IVD_environment_load_file(IVD_Runtime*, const char* path);
+const char* IVD_environment_get_compiler_errors(IVD_Runtime*);
 void IVD_environment_run(IVD_Runtime*);
 
 //-------------------------------------------------------------------------------------------------------Model

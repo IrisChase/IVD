@@ -39,9 +39,9 @@ int main(int argc, char** argv)
     if(stat == IVD_STATUS_SUCCESS)
         rt.run();
     else if(stat == IVD_STATUS_FILE_NOT_FOUND)
-        std::cout << "File note found." << std::endl;
+        std::cout << "File note found: " << path << std::endl;
     else if(stat == IVD_STATUS_COMPILE_ERROR)
-        std::cout << "Erorrs in code" << std::endl;
+        std::cout << "Erorrs in code: " << std::endl << rt.get_compiler_errors() << std::endl;
     else
         std::cout << "An unknown error occoured" << std::endl;
 

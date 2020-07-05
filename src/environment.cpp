@@ -13,7 +13,6 @@
 //   limitations under the License.
 
 #include "environment.h"
-#include "compiler.h"
 #include "allmaterials.h"
 #include "displayitem.h"
 #include "modelitembase.h"
@@ -579,7 +578,6 @@ void Environment::run()
 
 int Environment::loadFromIVDFile(const char* path)
 {
-    Compiler myComp;
     if(!myComp.compileFile(path)) return IVD_STATUS_FILE_NOT_FOUND;
     if(myComp.getErrorMessages().size()) return IVD_STATUS_COMPILE_ERROR;
 
