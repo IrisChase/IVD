@@ -15,50 +15,28 @@
 spec bleeding;
 
 
-#window
+#i
 {
 	position-within: Environment;
+	layout: inline;
+
+	align-x: align-outer;
+	justify: align-center;
+
+
+state IVD-Window-Initialized:
 	window-size-strategy: bottom-up;
-
-	height: 300;
-	width: 400;
-
-	layout: vbox;
 
 state IVD-Window-Close:
 	trigger: IVD-Core-Quit;
 }
 
-.meep
+#text1
 {
-	position-within: window;
-	width: 100;
-	height: 30;
+	text: "Henloooo, ";
+	position-within: i;
+
+	align-y: align-center;
+
+	font: serif;
 }
-
-# : meep
-{
-	color: blue;
-}
-# : meep
-{
-	color: green;
-}
-
-#cell-expander
-{
-	position-within: window;
-
-	color: purple;
-
-state !expand & IVD-Item-Hover & ::.IVD-Mouse-Left-Press:
-	induce-state: expand;
-
-state expand & IVD-Item-Hover & ::.IVD-Mouse-Left-Press:
-	unset-state: expand;
-
-state expand:
-	greedy-y: enable;
-	color: clear;
-}
-
