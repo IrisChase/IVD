@@ -37,7 +37,7 @@ std::optional<double> Attribute::getValue()
     // the two values must agree if they both have constraints.
     //tl;dl local attribute min/max takes precedence over everything else.
 
-    std::optional<double> value = 0;
+    std::optional<double> value;
 
     if(!expr) return value;
 
