@@ -85,7 +85,10 @@ void AttributeSet::executeStateChangers()
     //We only update state modifiers every time the attribute set is updated. Not triggers.
     //TODO unclear code...
     for(KeyType key = AttributeKey::InduceState; key != AttributeKey::LastStateKeyAttr + 1; ++key)
-    { attr.at(key).executeChangeAcceptor(); }
+    {
+        if(attr.at(key).delay) continue; //Not considered for quick, logical things
+        attr.at(key).executeChangeAcceptor();
+    }
 }
 
 void AttributeSet::fireSets()

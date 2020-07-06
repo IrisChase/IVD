@@ -21,9 +21,10 @@ spec bleeding;
 
 	text: "ayee";
 
-	induce-state: dying, delay(3000ms);
+	induce-state: dying, delay(2000ms);
 
 state dying:
 	text: "Dying in 3...";
 	trigger: IVD-Core-Quit, delay(3000ms);
+
 }
