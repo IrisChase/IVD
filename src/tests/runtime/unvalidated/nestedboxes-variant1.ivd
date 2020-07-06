@@ -14,16 +14,62 @@
 
 spec bleeding;
 
-#
+#window
 {
 	position-within: Environment;
 	window-size-strategy: bottom-up;
+	layout: stack;
 
-	text: "ayee";
+	width: 300;
+	height: 300;
 
-	induce-state: dying, delay(3000ms);
+state IVD-Window-Close:
+	trigger: IVD-Core-Quit;
+}
 
-state dying:
-	text: "Dying in 3...";
-	trigger: IVD-Core-Quit, delay(3000ms);
+#root
+{
+	position-within: window;
+	layout: hbox;
+}
+
+
+#inner1
+{
+	position-within: root;
+	layout: vbox;
+	
+	width: 50;
+
+
+	color: CornflowerBlue;
+
+state IVD-Item-Hover:
+	color: green;
+}
+
+.inner1ItemClass
+{
+	position-within: inner1;
+	text: "ayeeee";
+	color: blue;
+
+state IVD-Item-Hover:
+	color: yellow;
+}
+
+# : inner1ItemClass;
+# : inner1ItemClass
+{
+    align-x: align-right;
+}
+
+#
+{
+	position-within: root;
+	text: "meep";
+	align-x: align-left;
+
+state IVD-Item-Hover:
+	color: red;
 }

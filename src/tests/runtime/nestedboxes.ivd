@@ -14,28 +14,50 @@
 
 spec bleeding;
 
-#i
+#window
 {
-    position-within: Environment;
+	position-within: Environment;
+	window-size-strategy: bottom-up;
+	layout: stack;
 
-	//width: 30u;
-	justify: align-center;
-
-    title-text: "First IVD Text Demo";
-    text: "Henlo, IVD!";
-
-	font: sans;
-
-    color: #e5b8ff;
-
-state IVD-Item-Hover:
-	font: mono-bold;
-
-
-state IVD-Window-Initialized:
-    window-size-strategy: bottom-up;
-
+	width: 300;
+	height: 300;
 
 state IVD-Window-Close:
-    trigger: ::.IVD-Core-Quit;
+	trigger: IVD-Core-Quit;
+}
+
+#root
+{
+	position-within: window;
+	layout: hbox;
+}
+
+
+#inner1
+{
+	position-within: root;
+	layout: vbox;
+	color: CornflowerBlue;
+}
+
+.inner1ItemClass
+{
+	position-within: inner1;
+	text: "ayeeee";
+	color: blue;
+
+state IVD-Item-Hover:
+	color: yellow;
+}
+
+# : inner1ItemClass;
+# : inner1ItemClass;
+
+#
+{
+	position-within: root;
+	text: "meep";
+state IVD-Item-Hover:
+	color: red;
 }
