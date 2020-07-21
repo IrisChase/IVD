@@ -19,6 +19,7 @@ if(CCACHE_PROGRAM)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
 endif()
 
+
 project(IVD CXX)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -121,9 +122,13 @@ contrib/irisutils/routine.h
 contrib/irisutils/easyuniquepointer.h
 )
 
+
 add_library(ivd ${ivd_core_sources})
 add_library(ivdHarnessed ${ivd_core_sources})
 target_compile_definitions(ivdHarnessed PUBLIC REPRODYNE_AVAILABLE)
+
+set_target_properties(ivd PROPERTIES PUBLIC_HEADER
+  "${PROJECT_SOURCE_DIR}/src/user_include/IVD_c.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_cpp.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_status.h")
 
 target_include_directories(ivd PRIVATE src contrib)
 target_include_directories(ivdHarnessed PRIVATE src contrib)
@@ -220,3 +225,35 @@ if(systemIsBigEndian)
 else()
     add_compile_definitions(LITTLE_ENDIAN_SYSTEM)
 endif()
+
+set(IVD_MAJOR_VERSION 0)
+set(IVD_MINOR_VERSION 0)
+set(IVD_PATCH_VERSION 0)
+
+set(IVD_API_VERSION ${IVD_MAJOR_VERSION}.${IVD_MINOR_VERSION})
+set(IVD_VERSION ${IVD_API_VERSION}.${IVD_PATCH_VERSION})
+
+set(IVD_DEST_NAME IVD-${IVD_API_VERSION})
+
+set(IVD_USER_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include/${IVD_DEST_NAME})
+
+install(TARGETS ivd EXPORT ivd-targets
+        ARCHIVE
+            DESTINATION lib/${IVD_DEST_NAME}
+        PUBLIC_HEADER
+            DESTINATION ${IVD_USER_INCLUDE_DIRS})
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(ivd-config-version.cmake
+  VERSION ${IVD_VERSION}
+  COMPATIBILITY SameMajorVersion)
+
+configure_file(ivd-config.cmake.in
+    ${CMAKE_BINARY_DIR}/ivd-config.cmake @ONLY)
+
+install(FILES ${CMAKE_BINARY_DIR}/ivd-config.cmake ${CMAKE_BINARY_DIR}/ivd-config-version.cmake
+    DESTINATION lib/cmake/${IVD_DEST_NAME})
+
+install(EXPORT ivd-targets
+    DESTINATION lib/cmake/${IVD_DEST_NAME})
