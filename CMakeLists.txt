@@ -122,25 +122,37 @@ contrib/irisutils/routine.h
 contrib/irisutils/easyuniquepointer.h
 )
 
+find_package(reprodyne 1.0.0 REQUIRED)
+find_package(Freetype REQUIRED)
+find_package(Catch2 REQUIRED)
 
-add_library(ivd ${ivd_core_sources})
-add_library(ivdHarnessed ${ivd_core_sources})
-target_compile_definitions(ivdHarnessed PUBLIC REPRODYNE_AVAILABLE)
+SET(IVD_COMMON_LIBS
+  SDL2
+  cairo
+  harfbuzz
+  freetype
+  OpenImageIO)
+
+SET(IVD_INTERNAL_INCLUDES
+  src
+  contrib
+  ${REPRODYNE_INCLUDE_DIRS}
+  ${FREETYPE_INCLUDE_DIRS})
+
+add_library(ivd SHARED ${ivd_core_sources})
+target_include_directories(ivd PRIVATE PRIVATE ${IVD_INTERNAL_INCLUDES})
+target_link_libraries(ivd PRIVATE ${IVD_COMMON_LIBS})
 
 set_target_properties(ivd PROPERTIES PUBLIC_HEADER
   "${PROJECT_SOURCE_DIR}/src/user_include/IVD_c.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_cpp.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_status.h")
 
-target_include_directories(ivd PRIVATE src contrib)
-target_include_directories(ivdHarnessed PRIVATE src contrib)
 
-find_package(reprodyne 1.0.0 REQUIRED)
+add_executable(ivdRepro ${ivd_core_sources} src/tests/recordplayback.cpp)
+target_include_directories(ivdRepro PRIVATE ${IVD_INTERNAL_INCLUDES})
+target_link_libraries(ivdRepro PRIVATE ${IVD_COMMON_LIBS} reprodyne)
+target_compile_definitions(ivdRepro PUBLIC REPRODYNE_AVAILABLE)
 
-find_package(Freetype REQUIRED)
-target_include_directories(ivd PRIVATE ${REPRODYNE_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
-target_include_directories(ivdHarnessed PUBLIC ${REPRODYNE_INCLUDE_DIRS})
-target_include_directories(ivdHarnessed PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
-find_package(Catch2 REQUIRED)
 
 find_package(Python3 REQUIRED)
 function(addFont sourcettf constantsymbol)
@@ -172,50 +184,20 @@ configure_file("contrib/test-images/png_test_article.png" "png_test_article.png"
 
 add_executable(ivdruntime src/tests/lightruntime.cpp)
 target_include_directories(ivdruntime PRIVATE src)
-target_link_libraries(ivdruntime PRIVATE
-ivd
-SDL2
-cairo
-harfbuzz
-freetype
-OpenImageIO)
+target_link_libraries(ivdruntime PRIVATE ivd)
 
 add_executable(ivdserializingcompiler src/tests/serializingcompiler.cpp)
 target_include_directories(ivdserializingcompiler PRIVATE src contrib)
-target_link_libraries(ivdserializingcompiler PRIVATE
-ivd
-SDL2
-cairo
-harfbuzz
-freetype
-OpenImageIO)
+target_link_libraries(ivdserializingcompiler PRIVATE ivd)
 
 add_executable(ivdmodeltests
     src/tests/modeltests.cpp
     src/tests/catch2testmain.cpp
     src/tests/linkedlist.cpp
-    src/tests/nestedmodels.cpp )
+    src/tests/nestedmodels.cpp)
 target_include_directories(ivdmodeltests PRIVATE src contrib)
-target_link_libraries(ivdmodeltests PRIVATE
-ivd
-SDL2
-cairo
-harfbuzz
-freetype
-OpenImageIO)
+target_link_libraries(ivdmodeltests PRIVATE ivd)
 
-add_executable(ivdharness
-    src/tests/recordplayback.cpp
-    )
-target_include_directories(ivdharness PRIVATE src contrib)
-target_link_libraries(ivdharness PRIVATE
-ivdHarnessed
-SDL2
-cairo
-harfbuzz
-freetype
-OpenImageIO
-reprodyne)
 
 
 include(TestBigEndian)
@@ -235,7 +217,7 @@ set(IVD_VERSION ${IVD_API_VERSION}.${IVD_PATCH_VERSION})
 
 set(IVD_DEST_NAME IVD-${IVD_API_VERSION})
 
-set(IVD_USER_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include/${IVD_DEST_NAME})
+set(IVD_USER_INCLUDE_DIRS include/${IVD_DEST_NAME})
 
 install(TARGETS ivd EXPORT ivd-targets
         ARCHIVE
