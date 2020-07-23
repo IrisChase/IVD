@@ -234,6 +234,8 @@ public:
 
     Coords getTranslationOffset();
 
+    int getSizeForAngle(const Angle theAngle);
+
 
     //Materials
     Material* getMaterial()

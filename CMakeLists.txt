@@ -80,6 +80,7 @@ src/shaping/line.h
 src/material/rowlayoutmaterial.cpp
 src/material/rowlayoutmaterial.h
 src/material/simplematerial.h
+src/material/simplematerial.cpp
 src/material/fallbackparagraphmaterial.cpp
 src/material/fallbackparagraphmaterial.h
 src/material/inlinelayoutmaterial.h

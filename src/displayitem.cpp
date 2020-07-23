@@ -203,6 +203,20 @@ Coords DisplayItem::getTranslationOffset()
     return trans;
 }
 
+int DisplayItem::getSizeForAngle(const Angle theAngle)
+{
+    auto optionalSize = [&]()
+    {
+        if(correctAngle(theAngle) == Angle::Adjacent)
+            return myAttrs.getInt(AttributeKey::SizeA);
+        else
+            return myAttrs.getInt(AttributeKey::SizeO);
+    }();
+
+    return optionalSize ? *optionalSize
+                        : 0;
+}
+
 std::vector<Material*> DisplayItem::getChildMaterials()
 {
     std::vector<Material*> childMaterials;

@@ -67,8 +67,11 @@ Dimens line(Cont theMaterials, const GeometryProposal proposal, const Angle Adja
                                            GeometryProposal childProposal,
                                            std::function<int(Material*)> adjacentFormula)
     {
+        //Please leave this here I'm sick of adding it back for debugging
+        const auto proposedAdjacentSize = adjacentFormula(material);
+
         //----------Adjacent
-        childProposal.proposedDimensions.get(Adjacent) = adjacentFormula(material);
+        childProposal.proposedDimensions.get(Adjacent) = proposedAdjacentSize;
 
         material->shape(childProposal);
         const Dimens childDimens = material->getViewport().d;
@@ -119,6 +122,8 @@ Dimens line(Cont theMaterials, const GeometryProposal proposal, const Angle Adja
             //I can't think of anything but the most contrived scenario where
             // the adjacent would shrink further. But I also don't see why we
             // *have to* lock it...
+            //(Wouldn't it shrink if we increase the opposite in a vertical text flow scenario?)
+            //Yeah... Lock it.
 
             //The computed adjacent is always big enough to handle the computed opposite
             // or larger. We won't be suggesting a smaller opposite, so the adjacent should
@@ -131,6 +136,7 @@ Dimens line(Cont theMaterials, const GeometryProposal proposal, const Angle Adja
             childProposal.expandForAngle(Opposite) = false;
             childProposal.shrinkForAngle(Opposite) = false;
             childProposal.expandForAngle(Adjacent) = false;
+            childProposal.shrinkForAngle(Adjacent) = false;
 
             material->shape(childProposal);
             const Dimens childDimens = material->getViewport().d;
@@ -198,6 +204,9 @@ Dimens line(Cont theMaterials, const GeometryProposal proposal, const Angle Adja
             auto& theSet = greedy.size() ? greedy
                                          : shrinky;
 
+            auto& opposet = greedy.size() ? shrinky
+                                          : greedy;
+
             const int padSize = (AvailableAdjacentSpace - usedAdjacentSpace) / theSet.size();
             resetWorkingDimensions();
 
@@ -208,6 +217,21 @@ Dimens line(Cont theMaterials, const GeometryProposal proposal, const Angle Adja
             childProposal.shrinkForAngle(Adjacent) = false;
 
             applyToSet(theSet, childProposal, padFormula);
+
+            //One last problem, we gotta add the opposets to the usedAdjacent and Opposite(?) spaces...
+            //(This could maybe be abstracted with some code from applyToSet TODO)
+            for(Material* m : opposet)
+            {
+                const Dimens d = m->getViewport().d;
+                if(d.get(Opposite) > usedOppositeSpace)
+                {
+                    //Does this ever happen????? TODO
+                    usedOppositeSpace = d.get(Opposite);
+                    invalidOpposite = true;
+                }
+                usedAdjacentSpace += d.get(Adjacent);
+            }
+
             adjustOpposite();
         }
     }
