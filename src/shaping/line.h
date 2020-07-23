@@ -153,7 +153,7 @@ Dimens line(Cont theMaterials, const GeometryProposal proposal, const Angle Adja
         childProposal.expandForAngle(Adjacent) = true;
         childProposal.shrinkForAngle(Adjacent) = true;
 
-        auto initalCellSizeFormula = [&](Material*) -> int
+        auto initalCellSizeFormula = [=](Material*) -> int
         { return zeroGuard((AvailableAdjacentSpace - usedAdjacentSpace) / CellCount); };
 
         applyToSet(shrinky, childProposal, initalCellSizeFormula);
