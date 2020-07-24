@@ -1,0 +1,31 @@
+spec bleeding;
+
+#window
+{
+    position-within: Environment;
+    width: 640;
+    height: 400;
+    window-size-strategy: bottom-up;
+    title-text: "WRONG WRONG WRONG";
+
+    layout: vbox;
+
+state IVD-Window-Close:
+    trigger: IVD-Core-Quit;
+}
+
+
+#left-most
+{
+    position-within: window;
+    color: yellow;
+    fill-precedence-y: greedy;
+    height: 100;
+}
+
+#affff
+{
+    position-within: window;
+    height: 100;
+    color: blue;
+}

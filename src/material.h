@@ -55,6 +55,7 @@ protected:
     bool applyToCollidingMultiFlat(const Rect box, std::function<bool(DisplayItem*)> fun);
 
     FillPrecedence returnGreedyIfEVENONECHILDBLINKS(const Angle theAngle);
+    FillPrecedence filterFillPrecedence(const FillPrecedence fill, const Angle theAngle);
 
 public:
     Material(DisplayItem* theItem): myItem(theItem) {}
@@ -77,7 +78,9 @@ public:
 
     void draw(Canvas* theCanvas);
 
-    virtual FillPrecedence getFillPrecedenceForAngle(const Angle theAngle) = 0;
+    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle);
+
+    virtual FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) = 0;
     virtual void shape(const GeometryProposal officialProposal);
     virtual void shapeDrawingArea(const GeometryProposal officalProposal) = 0;
 

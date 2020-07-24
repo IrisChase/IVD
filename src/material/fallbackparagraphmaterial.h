@@ -27,7 +27,7 @@ class FallbackParagraphMaterial : public Material
 public:
     FallbackParagraphMaterial(DisplayItem* item): Material(item) {}
 
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle) final
+    FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) final
     { return FillPrecedence::Shrinky; }
 
     void shape(const GeometryProposal officialProposal) override;

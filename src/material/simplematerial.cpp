@@ -6,7 +6,7 @@ namespace IVD
 {
 
 //Not as simple as we thought.
-FillPrecedence SimpleMaterial::getFillPrecedenceForAngle(const Angle theAngle)
+FillPrecedence SimpleMaterial::computerFillPrecedenceForAngle(const Angle theAngle)
 {
     //It'll accept anything you give it, unless it has a size defined, in which case it's shrinky.
     if(myItem->getReservedDimens().get(theAngle) + myItem->getSizeForAngle(theAngle))

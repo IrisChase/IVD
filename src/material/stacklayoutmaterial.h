@@ -24,7 +24,7 @@ class StackLayoutMaterial : public Material
 public:
     StackLayoutMaterial(DisplayItem* item): Material(item) {}
 
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle) final
+    FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) final
     { return returnGreedyIfEVENONECHILDBLINKS(theAngle); }
 
     void shapeDrawingArea(const GeometryProposal officalProposal) final;

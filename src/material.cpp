@@ -74,6 +74,15 @@ void Material::draw(Canvas* theCanvas)
     theCanvas->popClip();
 }
 
+FillPrecedence Material::getFillPrecedenceForAngle(const Angle theAngle)
+{
+    const auto optionalOverride = myItem->filterFillPrecedenceForAngle(theAngle);
+
+    if(optionalOverride) return *optionalOverride;
+
+    return computerFillPrecedenceForAngle(theAngle);
+}
+
 void Material::shape(const GeometryProposal officialProposal)
 {
     assert(myItem);

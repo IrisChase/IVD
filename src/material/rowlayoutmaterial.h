@@ -32,7 +32,7 @@ protected:
 
 
 public:
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle) final
+    FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) final
     { return returnGreedyIfEVENONECHILDBLINKS(theAngle); }
 
     void shapeDrawingArea(const GeometryProposal officialProposal) final;

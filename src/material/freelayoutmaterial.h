@@ -24,7 +24,7 @@ class FreeLayoutMaterial : public Material
 public:
     FreeLayoutMaterial(DisplayItem* item): Material(item) {}
 
-    FillPrecedence getFillPrecedenceForAngle(const Angle) final
+    FillPrecedence computerFillPrecedenceForAngle(const Angle) final
     { return FillPrecedence::Shrinky; }
 
     void shapeDrawingArea(const GeometryProposal officalProposal) final;

@@ -716,6 +716,8 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
     case Justify:
     case AlignAdjacent:
     case AlignOpposite:
+    case OverrideFillPrecedenceAdjacent:
+    case OverrideFillPrecedenceOpposite:
         attr->setChangeAcceptor([&](Attribute* attr)
         {
             markAsBadGeometry(attr->revealContext());

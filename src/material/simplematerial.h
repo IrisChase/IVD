@@ -26,7 +26,7 @@ class SimpleMaterial : public Material
 public:
     SimpleMaterial(DisplayItem* theItem): Material(theItem) {}
 
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle) final;
+    FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) final;
 
     void shapeDrawingArea(const GeometryProposal officialProposal) final
     { simpleShape(officialProposal); }

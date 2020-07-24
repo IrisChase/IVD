@@ -43,7 +43,7 @@ class InlineLayoutMaterial final : public Material
 public:
     InlineLayoutMaterial(DisplayItem* theItem): Material(theItem) {}
 
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle) final
+    FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) final
     { return FillPrecedence::Shrinky; };
 
     void shapeDrawingArea(const GeometryProposal officalProposal) final;

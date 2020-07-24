@@ -33,7 +33,7 @@ public:
         cache(cache)
     {}
 
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle) final
+    FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) final
     { return FillPrecedence::Shrinky; }
 
     void setAbsoluteOffset(const Coords offset) final

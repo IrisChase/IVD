@@ -29,7 +29,7 @@ class TextRunMaterial final : public Material
 public:
     TextRunMaterial(DisplayItem* theItem): Material(theItem) {}
 
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle) override
+    FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) override
     { return FillPrecedence::Shrinky; }
 
     void shapeDrawingArea(const GeometryProposal officalProposal) override;

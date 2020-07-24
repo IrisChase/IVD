@@ -217,6 +217,26 @@ int DisplayItem::getSizeForAngle(const Angle theAngle)
                         : 0;
 }
 
+std::optional<FillPrecedence> DisplayItem::filterFillPrecedenceForAngle(const Angle theAngle)
+{
+
+    const auto attrKey = correctAngle(theAngle) == Angle::Adjacent ? AttributeKey::OverrideFillPrecedenceAdjacent
+                                                                   : AttributeKey::OverrideFillPrecedenceOpposite;
+    const auto optionalAttr = myAttrs.getProperty(attrKey);
+
+    if(optionalAttr)
+    {
+        switch(*optionalAttr)
+        {
+        case Property::Shrinky: return FillPrecedence::Shrinky;
+        case Property::Greedy:  return FillPrecedence::Greedy;
+        default: std::terminate(); //Prolly a little drastic... TODO
+        }
+    }
+
+    return std::optional<FillPrecedence>();
+}
+
 std::vector<Material*> DisplayItem::getChildMaterials()
 {
     std::vector<Material*> childMaterials;

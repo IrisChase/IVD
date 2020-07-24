@@ -236,6 +236,8 @@ public:
 
     int getSizeForAngle(const Angle theAngle);
 
+    std::optional<FillPrecedence> filterFillPrecedenceForAngle(const Angle theAngle);
+
 
     //Materials
     Material* getMaterial()

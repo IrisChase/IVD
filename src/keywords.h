@@ -75,6 +75,9 @@ enum
     AlignAdjacent,
     AlignOpposite,
 
+    OverrideFillPrecedenceAdjacent,
+    OverrideFillPrecedenceOpposite,
+
     Justify,
 
     WindowSizeStrategy,
@@ -214,6 +217,9 @@ enum
 
     AdjacentIsHorizontal,
     AdjacentIsVertical,
+
+    Greedy,
+    Shrinky,
 
     Maximized,
     Minimized,
@@ -404,6 +410,10 @@ inline std::vector<int> getValidPropertyValuesForType(const int type)
     case AttributeKey::Orientation:
         return {Property::AdjacentIsHorizontal, Property::AdjacentIsVertical};
 
+    case AttributeKey::OverrideFillPrecedenceAdjacent:
+    case AttributeKey::OverrideFillPrecedenceOpposite:
+        return {Property::Greedy, Property::Shrinky};
+
     case AttributeKey::WindowState:
         return {Property::Maximized,
                 Property::Minimized,
@@ -560,6 +570,15 @@ inline std::vector<KeywordSymbolValuePair> getSymbolValuePairs()
                 {"align-x", AttributeKey::AlignAdjacent},
                 {"align-y", AttributeKey::AlignOpposite},
 
+                {"fill-precedence-adjacent", AttributeKey::OverrideFillPrecedenceAdjacent},
+                {"fill-precedence-opposite", AttributeKey::OverrideFillPrecedenceOpposite},
+
+                {"fill-precedence-a", AttributeKey::OverrideFillPrecedenceAdjacent},
+                {"fill-precedence-o", AttributeKey::OverrideFillPrecedenceOpposite},
+
+                {"fill-precedence-x", AttributeKey::OverrideFillPrecedenceAdjacent},
+                {"fill-precedence-y", AttributeKey::OverrideFillPrecedenceOpposite},
+
                 {"justify", AttributeKey::Justify},
 
                 {"window-size-strategy", AttributeKey::WindowSizeStrategy},
@@ -599,6 +618,9 @@ inline std::vector<KeywordSymbolValuePair> getSymbolValuePairs()
 
                 {"adjacent-is-horizontal", Property::AdjacentIsHorizontal},
                 {"adjacent-is-vertical", Property::AdjacentIsVertical},
+
+                {"greedy", Property::Greedy},
+                {"shrinky", Property::Shrinky},
 
                 {"maximize", Property::Maximized},
                 {"minimize", Property::Minimized},
