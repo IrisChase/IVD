@@ -94,6 +94,7 @@ void DisplayItem::prepareToDie()
     for(DisplayItem* child : children) child->deparent();
 }
 
+//The root of the tree is *this* if no parents.
 DisplayItem* DisplayItem::getRoot()
 {
     DisplayItem* root;

@@ -440,7 +440,8 @@ void SDLdriver::processEvents()
 
 void SDLdriver::invalidateGeometry(DisplayItem *item)
 {
-    pairs[item->getRoot()].invalidGeometry = true;
+    if(pairs.count(item->getRoot()))
+        pairs.at(item->getRoot()).invalidGeometry = true;
 }
 
 void SDLdriver::invalidatePosition(DisplayItem* item)
@@ -455,7 +456,8 @@ void SDLdriver::invalidatePosition(DisplayItem* item)
 
 void SDLdriver::invalidateCanvas(DisplayItem *item)
 {
-    pairs.at(item->getRoot()).invalidCanvas = true;
+    if(pairs.count(item->getRoot()))
+        pairs.at(item->getRoot()).invalidCanvas = true;
 }
 
 void SDLdriver::invalidateTitleText(DisplayItem *item)
