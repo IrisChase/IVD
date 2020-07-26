@@ -1,0 +1,44 @@
+spec bleeding;
+
+//This is a regression test for a bug where if a sibling object was positioned within
+// a layout bound to a model with children. The sibling is then not considered.
+//This test shows this by requiring an offset which never gets calculated.
+//The geometry itself gets calculated, but that is because the geo-solver is unordered.
+
+//This test requires a model with children (Not necessarily ones bound to an element)
+
+#window
+{
+    position-within: Environment;
+    width: 640;
+    height: 400;
+    window-size-strategy: bottom-up;
+    title-text: "Etch Kinetic Prototype";
+
+    layout: vbox;
+
+state IVD-Window-Close:
+    trigger: IVD-Core-Quit;
+}
+
+//This creates an offset for the items below, enforcing the need for proper model offsetting.
+//(Bound to the model because otherwise it's computed *after*, at the time of writing)
+# -> timelines
+{
+    position-within: window.viewport;
+}
+
+#sibling-container -> timelines
+{
+    position-within: window;
+    layout: hbox;
+    color: green;
+}
+
+#playhead-title -> timelines
+{
+    position-within: sibling-container;
+    width: 100;
+    height: 10;
+    color: blue;
+}

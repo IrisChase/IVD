@@ -12,6 +12,8 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+#include <unordered_set>
+
 #include "displayitem.h"
 #include "modelitembase.h"
 
@@ -269,16 +271,40 @@ std::vector<Material*> DisplayItem::getChildMaterialsInModelOrder()
         assert(container); //THIS CANNOT BE NULL MOTHERFUCKERRRR
     }
 
-    //TODO?: Undefined behavior when you mix model and non-model children...
+
+    std::vector<Material*> nonModelChildren;
+    std::unordered_set<Material*> modelMaterials;
+
     for(ModelItemBase* mitem : *container)
     {
         //M'Item~
         for(DisplayItem* childItem : mitem->internalDisplayItems)
         {
-            if(childItem->getParent() == this)
-                sorted.push_back(childItem->getMaterial());
+            if(childItem->getParent() != this) continue;
+
+            sorted.push_back(childItem->getMaterial());
+            modelMaterials.insert(childItem->getMaterial());
         }
     }
+
+
+    //This, as far as I know, can only happen in the sibling model positioning within
+    // a model with children (not necessarily children positioned within it).
+    for(DisplayItem* child : children)
+    {
+        if(modelMaterials.count(child->getMaterial())) continue;
+        sorted.push_back(child->getMaterial());
+    }
+
+    //TODO
+    //I would like to issue a warning whenever someone positions an element within a sibling element
+    // that has child elements poisitioned within it already. (The warning is because the positioning
+    // is undefined... Unless it's named cells?)
+
+    //But it's supposed to be standard to position enumerated elements alongside "regular" ones, right?
+    //Consider a static window. Should we be enforcing enumeration here? Either way, it might be legal
+    // but the actual layout order is undefined (Unless it's named-cells???)
+
 
     return sorted;
 }
