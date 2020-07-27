@@ -23,7 +23,7 @@
 namespace IVD
 {
 
-std::optional<double> Attribute::getValue()
+std::optional<double> RuntimeAttribute::getValue(DisplayItem* theContext) const
 {
     //For simplicity's sake, min/max are used to round off observed values,
     // but are not calculated in back-propogation, and thus there is no
@@ -41,14 +41,6 @@ std::optional<double> Attribute::getValue()
 
     if(!expr) return value;
 
-    if(myAnimationData.lastRatio != 1)
-    {
-        const double origin = myAnimationData.originExpr->solve(theContext);
-        const double dest = expr->solve(theContext);
-        value = ease->graph.getInterpolatedScalarForPercentage(origin, dest, myAnimationData.lastRatio);
-    }
-    else value = expr->solve(theContext);
-
     if(min)
     {
         const double computedMin = min->solve(theContext);
@@ -64,135 +56,79 @@ std::optional<double> Attribute::getValue()
     return value;
 }
 
-void Attribute::setValue(const double proposed)
+void RuntimeAttribute::setValue(const double proposed, DisplayItem* theContext)
 {
-    starting.reset();
+    starting = nullptr;
 
     if(expr) expr->solveForAndPropogateWeak(theContext, proposed);
 }
 
-void Attribute::updateToReferenceAttribute(const Attribute& other)
+template<typename T, typename TO>
+static void mergeHelper(T& mine, const TO& other)
 {
-
-    if(checkSameInPractice(other)) return;
-
-    cancelAnimationTicker(this);
-    const auto saved = *this;
-
-    //See you... On the other side~
-    operator=(other);
-
-    if(ease || delay)
-    {
-        *myAnimationData.outgoingAttribute = saved;
-        *myAnimationData.pendingAttribute  = *this;
-
-        myAnimationData.originExpr = myAnimationData.outgoingAttribute->expr;
-    }
-
-    signalChange();
+    if(other) mine = &other;
 }
 
-template<typename T>
-bool innerHelper(Attribute* attr, T& location, const T start, const T end, const double ratio)
+template<typename T, typename TO>
+static void mergeHelper(T& mine, const std::optional<TO>& other)
 {
-    if(ratio == 0)
-    {
-        if(location == start) return false;
-
-        location = start;
-    }
-    else if(ratio == 1)
-    {
-        if(location == end) return false;
-
-        location = end;
-        attr->quitAnimation();
-    }
-    else return false;
-    return true;
+    if(other) mine = &*other;
 }
 
-template<typename T>
-bool helper(Attribute* attr, T& location, const T& start, const T& end, const double ratio)
-{ return innerHelper(attr, location, start, end, ratio); }
-
-template<typename T>
-bool helper(Attribute* attr,
-            std::optional<T>& location,
-            const std::optional<T>& start,
-            const std::optional<T>& end,
-            const double ratio)
+template<typename T, typename TO>
+static void mergeHelper(T& mine, const std::vector<TO>& other)
 {
-    if(!start)
-    {
-        std::optional<T> anustart = T();
-        auto a = anustart;
-        return innerHelper(attr, location, anustart, end, ratio);
-    }
-    return innerHelper(attr, location, start, end, ratio);
+    if(other.size()) mine = other;
 }
 
-bool Attribute::transitionCreeper(const double ratio)
+void RuntimeAttribute::merge(const ReferenceAttribute& other)
 {
-    assert(myAnimationData.outgoingAttribute);
-    assert(myAnimationData.pendingAttribute);
+    mergeHelper(property, other.property);
 
-    const auto& outgoing = myAnimationData.outgoingAttribute;
-    const auto& pendingAttr = myAnimationData.pendingAttribute;
+    mergeHelper(starting, other.starting);
+    mergeHelper(min, other.min);
+    mergeHelper(max, other.max);
+    mergeHelper(expr, other.expr);
 
-    //I could do you one better in lisp but alas I'm writing in a crippled language.
-    auto setupStandardDelay = [&](auto& location, const auto& origin, const auto& dest)
-    {
-        return helper(this, location, origin, dest, ratio);
-    };
+    mergeHelper(color, other.color);
 
+    mergeHelper(literal, other.literal);
+    mergeHelper(singleKey, other.singleKey);
 
-    if(checkAttributeKeyForExpressionBodyType(myAttributeKey))
-    {
-        if(ratio == 1) cancelAnimationTicker(this);
-
-        if(myAnimationData.lastRatio <= ratio)
-        {
-            myAnimationData.lastRatio = ratio; //eeeehh
-            return true; //Signal that we changed things.
-        }
-        return false;
-
-        //We just compute it on the fly in getInteger.
-    }
-    else if(checkAttributeKeyForPropertyBodyType(myAttributeKey))
-        return setupStandardDelay(property, outgoing->property, pendingAttr->property);
-    else if(checkAttributeKeyForStringLiteralType(myAttributeKey) || checkAttributeKeyForUserTokenType(myAttributeKey))
-    {
-        return setupStandardDelay(literal, outgoing->literal, pendingAttr->literal);
-    }
-    else if(checkAttributeKeyForUserTokenList(myAttributeKey))
-        return setupStandardDelay(literalList, outgoing->literalList, pendingAttr->literalList);
-    if(checkAttributeKeyForStateKeyListType(myAttributeKey))
-    {
-        //SPECIAL CASE: Do NOT use the previous value. Otherwise triggers and state changers
-        // would continue to execute...
-        return setupStandardDelay(keys, std::vector<ScopedValueKey>{}, pendingAttr->keys);
-    }
-    else if(checkAttributeKeyForSingleScopedValueKeyType(myAttributeKey))
-        return setupStandardDelay(singleKey, outgoing->singleKey, pendingAttr->singleKey);
-    else if(checkAttributeKeyForColorType(myAttributeKey))
-    {
-        //TODO: color interpolation.
-        return setupStandardDelay(color, outgoing->color, pendingAttr->color);
-    }
-    assert(false);
+    IrisUtils::Routine::appendContainer(keys, other.keys);
+    IrisUtils::Routine::appendContainer(literalList, other.literalList);
 }
 
-void Attribute::animationTick()
+void RuntimeAttribute::updateToReferenceAttribute(const ReferenceAttribute& other)
+{
+    clear = nullptr;
+    starting = min = max = expr = nullptr;
+    color = nullptr;
+    literal = nullptr;
+    literalList.clear();
+    singleKey = nullptr;
+    keys.clear();
+
+    mergeHelper(clear, other.clear);
+    mergeHelper(starting, other.starting);
+    mergeHelper(min, other.min);
+    mergeHelper(max, other.max);
+    mergeHelper(expr, other.expr);
+    mergeHelper(color, other.color);
+    mergeHelper(literal, other.literal);
+    mergeHelper(literalList, other.literalList);
+    mergeHelper(singleKey, other.singleKey);
+    mergeHelper(keys, other.keys);
+}
+
+void AnimatableAttribute::animationTick()
 {
     double changeRatio = 0;
 
-    if(!myAnimationData.animationStart)
+    if(!animationStart)
     {
-        myAnimationData.animationStart = std::chrono::steady_clock::now();
-        myAnimationData.lastRatio = 0; //todo
+        animationStart = std::chrono::steady_clock::now();
+        lastRatio = 0; //todo
     }
     else
     {
@@ -200,7 +136,7 @@ void Attribute::animationTick()
         const auto maxDuration = std::chrono::milliseconds(ease ? ease->miliseconds
                                                                 : *delay);
 
-        const auto startTimePoint   = (*myAnimationData.animationStart);
+        const auto startTimePoint   = (*animationStart);
         const auto elapsedTime      = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - startTimePoint);
 
 
@@ -232,83 +168,84 @@ void Attribute::animationTick()
     //TODO: Busy atm but I just realized that there is absolutely no reason for non-ease type
     // attributes to call transition every damn time. Only on changes, people. FIX IT
 
-    if(transitionCreeper(changeRatio)) signalChangedAttribute(this);
+
+    if(lastRatio < changeRatio)
+    {
+        lastRatio = changeRatio;
+
+        if(checkAttributeKeyForExpressionBodyType(myAttributeKey))
+            signalChangedAttribute(this);
+    }
+
+    if(lastRatio == 1) cancelAnimationTicker(this);
 }
 
-void Attribute::internalMerge(const Attribute& other, const bool modeDerive)
+void AnimatableAttribute::updateToReferenceAttribute(const ReferenceAttribute& ref)
 {
-    //This seems backwards for the runtime... Should just copy-in the cleared
-    // attribute if we're not in mode-derive?
-    // Shouldn't this be read ther otherway around? TODO
-    if(clear) return;
+    cancelAnimationTicker(this); //Why not call "quitAnimation"? TODO
+    ease  = ref.ease  ? &*ref.ease  : nullptr;
+    delay = ref.delay ? &*ref.delay : nullptr;
 
-    if(!other.active) return;
-
-    active = true;
-
-    auto mergeHelper = [modeDerive](auto& mine, const auto& other)
+    if(ease || delay)
     {
-        if(modeDerive  && !mine) mine = other;
-        if(!modeDerive && other) mine = other;
-    };
+        lastRatio = 0;
+        previousRTA = currentRTA;
+    }
+    else lastRatio = 1;
 
-    mergeHelper(property, other.property);
+    currentRTA.updateToReferenceAttribute(ref);
 
-    mergeHelper(starting, other.starting);
-    mergeHelper(min, other.min);
-    mergeHelper(max, other.max);
-    mergeHelper(expr, other.expr);
+    //It's enough to signal change once, it won't be processed until all merging is done anyway
+    signalChange();
+}
 
-    mergeHelper(color, other.color);
+std::optional<double> AnimatableAttribute::getValue() const
+{
+    std::optional<double> result;
 
-    mergeHelper(literal, other.literal);
-    mergeHelper(singleKey, other.singleKey);
+    if(lastRatio != 1)
+    {
+        auto optionalOrigin = previousRTA.getValue(theContext);
+        auto optionalDest   =  currentRTA.getValue(theContext);
 
-    mergeHelper(delay, other.delay);
-    mergeHelper(ease, other.ease);
+        if(!optionalOrigin || !optionalDest) return result; //wtf condition
 
-    IrisUtils::Routine::appendContainer(keys, other.keys);
-    IrisUtils::Routine::appendContainer(literalList, other.literalList);
+        return ease->graph.getInterpolatedScalarForPercentage(*optionalOrigin,
+                                                              *optionalDest,
+                                                              lastRatio);
+    }
+    else return currentRTA.getValue(theContext);
 }
 
 
-
-
-void Attribute::applyToEachScopedValueKey(std::function<void (ScopedValueKey &)> fun)
+std::optional<int> AnimatableAttribute::getProperty() const
 {
-    auto guard = [&](std::optional<Expression>& optExpr)
-    {
-        if(optExpr) optExpr->applyToEachScopedValueKey(fun);
-    };
-
-    guard(starting);
-    guard(min);
-    guard(max);
-    guard(expr);
-
-    for(ScopedValueKey& key : keys) fun(key);
-    if(singleKey) fun(*singleKey);
+    return lastRatio == 1 ? *currentRTA.property
+                          : *previousRTA.property;
 }
 
-bool Attribute::checkSameInPractice(const Attribute& other)
+std::optional<ScopedValueKey> AnimatableAttribute::getSingleValueKey() const
 {
-    auto tie = [](const Attribute& theAttr)
-    {
-        return std::tie(theAttr.property,
-                        theAttr.starting,
-                        theAttr.min,
-                        theAttr.max,
-                        theAttr.expr,
-                        theAttr.color,
-                        theAttr.literal,
-                        theAttr.literalList,
-                        theAttr.singleKey,
-                        theAttr.keys,
-                        theAttr.delay,
-                        theAttr.ease);
-    };
+    return lastRatio == 1 ? *currentRTA.singleKey
+                          : *previousRTA.singleKey;
+}
 
-    return tie(*this) == tie(other);
+std::vector<ScopedValueKey> AnimatableAttribute::getValueKeyList() const
+{
+    return lastRatio == 1 ? currentRTA.keys
+                          : previousRTA.keys;
+}
+
+std::optional<std::string> AnimatableAttribute::getUserToken() const
+{
+    return lastRatio == 1 ? *currentRTA.literal
+                          : *previousRTA.literal;
+}
+
+std::optional<Color> AnimatableAttribute::getColor() const
+{
+    return lastRatio == 1 ? *currentRTA.color
+                          : *previousRTA.color;
 }
 
 

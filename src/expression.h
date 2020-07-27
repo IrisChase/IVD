@@ -81,23 +81,21 @@ struct ExpressionNode
 
 class Expression
 {
-    DisplayItem* myContext;
-
     ExpressionNode root;
 
-    double solveNode(ExpressionNode* theNode);
-    double solveForUnknownNode(ExpressionNode* theNode, const double requiredResult);
+    double solveNode(const ExpressionNode* theNode, DisplayItem* theContext) const;
+    double solveForUnknownNode(const ExpressionNode* theNode,
+                               DisplayItem* theContext,
+                               const double requiredResult) const;
 
 public:
-    Expression(): myContext(nullptr) {}
+    Expression() {}
 
     Expression(const ExpressionNode& sourceRoot):
-        myContext(nullptr),
         root(sourceRoot)
     {}
 
     Expression(const ExpressionNode& sourceRoot, const CodePosition codepos):
-        myContext(nullptr),
         root(sourceRoot),
         definedAt(codepos)
     {}
@@ -111,16 +109,14 @@ public:
     bool checkContainsWeak()
     { return root.weakTerm || root.weakBranch; }
 
-    double solve(DisplayItem* theContext)
+    double solve(DisplayItem* theContext) const
     {
-        myContext = theContext;
-        return solveNode(&root);
+        return solveNode(&root, theContext);
     }
 
-    void solveForAndPropogateWeak(DisplayItem* theContext, const double requiredResult)
+    void solveForAndPropogateWeak(DisplayItem* theContext, const double requiredResult) const
     {
-        myContext = theContext;
-        solveForUnknownNode(&root, requiredResult);
+        solveForUnknownNode(&root, theContext, requiredResult);
     }
 
     void applyToEachScopedValueKey(std::function<void(ScopedValueKey&)> fun);

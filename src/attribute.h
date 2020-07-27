@@ -25,101 +25,108 @@
 #include "expression.h"
 #include "graph.h"
 
+#include "referenceattribute.h"
+
 
 namespace IVD
 {
 
-class Attribute;
-typedef std::optional<std::reference_wrapper<Attribute>> OptionalAttributeReference;
 
-class Attribute
+class AnimatableAttribute;
+
+
+class RuntimeAttribute //1224 bytes before 632 after~ NOW 248... 96... 128 Fack
 {
-    friend class Compiler;
-    friend class AttributeSet;
-    friend void ::printOutAttributes(IVD::Element);
+    friend class AnimatableAttribute;
+    int myAttributeKey; //TODO: make constant
 
-    int myAttributeKey;
+    //No "active" because if this exists, it's active
 
-    DisplayItem* theContext;
-
-    bool active;
-    bool clear;
-
-    std::optional<int> property;
-
-    std::optional<Expression> starting;
-    std::optional<Expression> min;
-    std::optional<Expression> max;
-
-    std::optional<Expression> expr;
-
-    std::optional<Color> color;
-
-    std::optional<std::string> literal;
+    const bool* clear;
+    const int* property;
+    const Expression* starting;
+    const Expression* min;
+    const Expression* max;
+    const Expression* expr;
+    const Color* color;
+    const std::string* literal;
     std::vector<std::string> literalList; //Don't be such a literalist GODDDDDDDD
-
-    std::optional<ScopedValueKey> singleKey;
+    const ScopedValueKey* singleKey;
     std::vector<ScopedValueKey> keys;
 
-    std::optional<int> delay;
-    std::optional<Animation::Transition> ease;
-
-    std::function<void(Attribute*)> requestAnimationTicker;
-    std::function<void(Attribute*)> cancelAnimationTicker;
-    std::function<void(Attribute*)> signalChangedAttribute;
-    std::function<void(Attribute*)> changeAcceptor;
-
-
-    struct AnimationData
-    {
-        std::optional<std::chrono::time_point<std::chrono::steady_clock>> animationStart;
-        IrisUtils::DeepCopyableUnique<Attribute> pendingAttribute;
-        IrisUtils::DeepCopyableUnique<Attribute> outgoingAttribute;
-
-        double lastRatio;
-
-        std::optional<Expression> originExpr;
-
-        //lastRatio == 1 means that getValue won't try to animate
-        AnimationData(): lastRatio(1) {}
-    };
-
-    AnimationData myAnimationData;
-
-    bool transitionCreeper(const double ratio);
-
-
-    void internalMerge(const Attribute& other, const bool modeDerive);
-
-
 public:
-    Attribute(): theContext(nullptr), active(false), clear(false) {}
+    RuntimeAttribute(): clear(nullptr) {}
 
     void initializeTransitionSystem(const int key)
-    {
-        myAttributeKey = key;
-        myAnimationData.pendingAttribute.makeCopy(Attribute());
-        myAnimationData.outgoingAttribute.makeCopy(Attribute());
-    }
+    { myAttributeKey = key; }
+
+    void updateToReferenceAttribute(const ReferenceAttribute& ref);
+
+
+    std::optional<double> getValue(DisplayItem* theContext) const;
+    void setValue(const double proposed, DisplayItem* theContext);
+
+    void merge(const ReferenceAttribute& other);
+
+    void applyToEachScopedValueKey(std::function<void(ScopedValueKey&)> fun);
+
+    auto getScopedValueKeys()
+    { return keys; }
+
+
+    bool checkClear()
+    { return clear; }
+};
+
+class AnimatableAttribute //440 byte struct replacing a 1224 byte struct, noice
+{
+    int myAttributeKey;
+    DisplayItem* theContext;
+
+    RuntimeAttribute previousRTA; //Lol RTA
+    RuntimeAttribute currentRTA;
+
+    //These point to the (current) reference attribute
+    const int* delay; //Yeah it's silly indirection for an integer but it's consistent.
+    const Animation::Transition* ease;
+
+    std::optional<std::chrono::time_point<std::chrono::steady_clock>> animationStart;
+    double lastRatio;
+
+    std::function<void(AnimatableAttribute*)> signalChangedAttribute;
+    std::function<void(AnimatableAttribute*)> changeAcceptor;
+    std::function<void(AnimatableAttribute*)> requestAnimationTicker;
+    std::function<void(AnimatableAttribute*)> cancelAnimationTicker;
+
+public:
+    //lastRatio == 1 means animation is finished.
+    AnimatableAttribute(): lastRatio(1) {}
 
     DisplayItem* revealContext()
     { return theContext; }
 
-    void setAnimationTickRequester(std::function<void(Attribute*)> fun)
-    { requestAnimationTicker = fun; } //I mean, it *is* a lot of fun!
-     void setCancelAnimationTicker(std::function<void(Attribute*)> fun)
-    { cancelAnimationTicker = fun; }
-     void setSignalChangedAttribute(std::function<void(Attribute*)> fun)
+     void setSignalChangedAttribute(std::function<void(AnimatableAttribute*)> fun)
     { signalChangedAttribute = fun; }
-     void setChangeAcceptor(std::function<void(Attribute*)> fun)
+     void setChangeAcceptor(std::function<void(AnimatableAttribute*)> fun)
     { changeAcceptor = fun; }
+    void setAnimationTickRequester(std::function<void(AnimatableAttribute*)> fun)
+    { requestAnimationTicker = fun; } //I mean, it *is* a lot of fun!
+     void setCancelAnimationTicker(std::function<void(AnimatableAttribute*)> fun)
+    { cancelAnimationTicker = fun; }
 
-    std::optional<double> getValue();
-    void setValue(const double proposed);
+    void animationTick();
 
-    void derive(const Attribute& other) { internalMerge(other, true); }
-    void merge(const Attribute& other)  { internalMerge(other, false); }
-    void updateToReferenceAttribute(const Attribute& other);
+    void quitAnimation()
+    {
+        cancelAnimationTicker(this);
+        animationStart.reset();
+    }
+
+    void executeChangeAcceptor()
+    {
+        assert(changeAcceptor); //Because assert gives line numbers and a bad function call exception does not.
+        changeAcceptor(this);
+    }
 
     void signalChange()
     {
@@ -130,39 +137,28 @@ public:
         else signalChangedAttribute(this);
     }
 
-    void executeChangeAcceptor()
+    RuntimeAttribute& getCurrent()
+    { return currentRTA; }
+
+    void merge(const ReferenceAttribute& ref)
     {
-        assert(changeAcceptor); //Because assert gives line numbers and a bad function call exception does not.
-        changeAcceptor(this);
+        if(currentRTA.checkClear() || !ref.active) return;
+
+        if(ref.ease)   ease = &*ref.ease;
+        if(ref.delay) delay = &*ref.delay;
+
+        currentRTA.merge(ref);
     }
 
-    void animationTick();
+    void updateToReferenceAttribute(const ReferenceAttribute& ref);
 
-    void quitAnimation()
-    {
-        cancelAnimationTicker(this);
-        myAnimationData.animationStart.reset();
-    }
-
-
-    void applyToEachScopedValueKey(std::function<void(ScopedValueKey&)> fun);
-
-    auto getScopedValueKeys()
-    { return keys; }
-
-    bool checkSameInPractice(const Attribute& other);
-
-
-    IRISUTILS_DEFINE_COMP(Attribute,
-                          theContext,
-                          active, clear,
-                          property,
-                          starting, min, max, expr,
-                          color,
-                          literal, literalList,
-                          singleKey, keys,
-                          delay,
-                          ease)
+    //data interface
+    std::optional<double> getValue() const;
+    std::optional<int> getProperty() const;
+    std::optional<ScopedValueKey> getSingleValueKey() const;
+    std::vector<ScopedValueKey> getValueKeyList() const;
+    std::optional<std::string> getUserToken() const;
+    std::optional<Color> getColor() const;
 };
 
 

@@ -64,12 +64,12 @@ std::string ExpressionNode::printoutThySelf() const
     return literal;
 }
 
-double Expression::solveNode(ExpressionNode* theNode)
+double Expression::solveNode(const ExpressionNode* theNode, DisplayItem* theContext) const
 {
     if(!theNode) return 0;
 
-    const double left =  solveNode(theNode->left.get());
-    const double right = solveNode(theNode->right.get());
+    const double left =  solveNode(theNode->left.get(), theContext);
+    const double right = solveNode(theNode->right.get(), theContext);
 
     switch(theNode->operation)
     {
@@ -77,8 +77,8 @@ double Expression::solveNode(ExpressionNode* theNode)
     case Keyword::UnitStandard:
     case Keyword::ScalarType: return theNode->val;
     case Keyword::ScopedValueKey:
-        assert(myContext);
-        return myContext->getEnv()->getInteger(myContext, theNode->extVal);
+        assert(theContext);
+        return theContext->getEnv()->getInteger(theContext, theNode->extVal);
     case Keyword::OperatorPlus:
         return left + right;
     case Keyword::OperatorMinus:
@@ -91,12 +91,14 @@ double Expression::solveNode(ExpressionNode* theNode)
     }
 }
 
-double Expression::solveForUnknownNode(ExpressionNode* theNode, const double requiredResult)
+double Expression::solveForUnknownNode(const ExpressionNode* theNode,
+                                       DisplayItem* theContext,
+                                       const double requiredResult) const
 {
     if(theNode->weakTerm)
     {
         assert(myContext);
-        myContext->getEnv()->setInteger(myContext, theNode->extVal, requiredResult);
+        theContext->getEnv()->setInteger(theContext, theNode->extVal, requiredResult);
         return requiredResult;
     }
 
@@ -115,9 +117,9 @@ double Expression::solveForUnknownNode(ExpressionNode* theNode, const double req
     const double knownValue = [&]
     {
         if(leftUnknown)
-            return solveNode(theNode->right.get());
+            return solveNode(theNode->right.get(), theContext);
         else
-            return solveNode(theNode->left.get());
+            return solveNode(theNode->left.get(), theContext);
     }();
 
     ExpressionNode* weakNode = [&]
@@ -129,7 +131,7 @@ double Expression::solveForUnknownNode(ExpressionNode* theNode, const double req
     }();
 
     //wheee
-    return solveForUnknownNode(weakNode, [&]() -> double
+    return solveForUnknownNode(weakNode, theContext, [&]() -> double
     {
         switch(theNode->operation)
         {

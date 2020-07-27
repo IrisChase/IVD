@@ -50,10 +50,10 @@ private:
 
     int interpolationMode;
     
-    TwoSamplePoints getSamplePoints(double percent);
+    TwoSamplePoints getSamplePoints(double percent) const;
     
-    double getLinearWeightForPercentage(double percent);
-    double getSmoothWeightForPercentage(double percent);
+    double getLinearWeightForPercentage(double percent) const;
+    double getSmoothWeightForPercentage(double percent) const;
 
 public:
     Graph();
@@ -67,7 +67,7 @@ public:
 
     int getInterpolatedScalarForPercentage(const int origin,
                                      const int dest,
-                                     const double percentage);
+                                     const double percentage) const;
 
 
 

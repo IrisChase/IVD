@@ -70,6 +70,9 @@ src/virtualstatekey.h
 src/virtualstatekey.cpp
 src/binaryexpressionprinter.h
 src/cbindings.cpp
+src/referenceattribute.h
+src/referenceattribute.cpp
+
 
 src/user_include/IVD_c.h
 src/user_include/IVD_cpp.h

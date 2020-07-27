@@ -23,7 +23,7 @@ namespace IVD
 namespace Animation
 {
 
-Graph::TwoSamplePoints Graph::getSamplePoints(double percent)
+Graph::TwoSamplePoints Graph::getSamplePoints(double percent) const
 {
     Sample leftSample  = {0, 0};
     Sample rightSample = {1, 1};
@@ -65,7 +65,7 @@ Graph::TwoSamplePoints Graph::getSamplePoints(double percent)
     return {leftSample, rightSample};
 }
 
-double Graph::getLinearWeightForPercentage(double xpos)
+double Graph::getLinearWeightForPercentage(double xpos) const
 {
 	const TwoSamplePoints points = getSamplePoints(xpos);
     
@@ -76,7 +76,7 @@ double Graph::getLinearWeightForPercentage(double xpos)
     return points.left.y * (1 - xpos) + points.right.y * xpos;
 }
 
-double Graph::getSmoothWeightForPercentage(double xpos)
+double Graph::getSmoothWeightForPercentage(double xpos) const
 {
 	const TwoSamplePoints points = getSamplePoints(xpos);
     
@@ -93,7 +93,7 @@ Graph::Graph(): interpolationMode(Keyword::Linear) {}
 
 int Graph::getInterpolatedScalarForPercentage(const int origin,
                                               const int dest,
-                                              const double percentage)
+                                              const double percentage) const
 {
     const double destWeight = [&]
     {
