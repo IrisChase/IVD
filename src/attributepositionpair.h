@@ -18,15 +18,15 @@
 namespace IVD
 {
 
-class AttributeSet;
+class ReferenceAttributeSet;
 
 struct AttributePositionPair
 {
     int position;
-    AttributeSet* attrs;
+    ReferenceAttributeSet* attrs;
     
     AttributePositionPair() {}
-    AttributePositionPair(const int p, AttributeSet* a): position(p), attrs(a) {}
+    AttributePositionPair(const int p, ReferenceAttributeSet* a): position(p), attrs(a) {}
 };
 
 }//IVD

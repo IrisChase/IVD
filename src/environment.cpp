@@ -423,7 +423,7 @@ void Environment::run()
         }
 
 
-        for(Attribute* a : attributeWantsAnimationTick)
+        for(AnimatableAttribute* a : attributeWantsAnimationTick)
         {
             //There's a bug in GCC's std::set that I haven't been able to reliably reproduce to report.
             // (Aggressive compiler optimizations probably makes isolation difficult...)
@@ -524,7 +524,7 @@ void Environment::run()
         {
             auto myDrawTreeMutatingAttributes = attributesThatMutateTheDrawTree;
             attributesThatMutateTheDrawTree.clear();
-            for(Attribute* attr : myDrawTreeMutatingAttributes)
+            for(AnimatableAttribute* attr : myDrawTreeMutatingAttributes)
             {
                 attr->executeChangeAcceptor();
             }
@@ -532,7 +532,7 @@ void Environment::run()
             //Do the do
             auto myAttributesChanged = attributesThatHaveChanged;
             attributesThatHaveChanged.clear();
-            for(Attribute* attr : myAttributesChanged)
+            for(AnimatableAttribute* attr : myAttributesChanged)
             {
                 attr->executeChangeAcceptor();
             }
@@ -637,30 +637,33 @@ std::string Environment::getString(DisplayItem* context, const ScopedValueKey ke
     return context->getModel()->getString(*key.key);
 }
 
-void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, const int key)
+void Environment::setupEnvironmentCallbacksOnAttributeForKey(AnimatableAttribute* attr, const int key)
 {
+    //Maybe check if even active?
+
+    //Bleh, these should all be stored lambdas, and just send a reference to the attributes.......
     using namespace AttributeKey;
-    attr->setAnimationTickRequester([&](Attribute* attr)
+    attr->setAnimationTickRequester([&](AnimatableAttribute* attr)
     { attributeWantsAnimationTick.insert(attr); });
 
-    attr->setCancelAnimationTicker([&](Attribute* attr)
+    attr->setCancelAnimationTicker([&](AnimatableAttribute* attr)
     { attributeWantsAnimationTick.erase(attr); });
 
     if(key == PositionWithin)
     {
-        attr->setSignalChangedAttribute([&](Attribute* attr)
+        attr->setSignalChangedAttribute([&](AnimatableAttribute* attr)
         { attributesThatMutateTheDrawTree.insert(attr); });
     }
     else
     {
-        attr->setSignalChangedAttribute([&](Attribute* attr)
+        attr->setSignalChangedAttribute([&](AnimatableAttribute* attr)
         { attributesThatHaveChanged.insert(attr); });
     }
 
     //Just a little helper for the state changing attributes~
-    auto applyToStates = [&](Attribute* attr, std::function<void(const StateKey key)> fun)
+    auto applyToStates = [&](AnimatableAttribute* attr, std::function<void(const StateKey key)> fun)
     {
-        auto states = attr->getScopedValueKeys();
+        auto states = attr->getValueKeyList();
         if(!states.size()) return; //TODO Should this... EVER be possible? Assert here fails.
 
         for(const ScopedValueKey pre : states)
@@ -674,14 +677,14 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
     switch(key)
     {
     case PositionWithin:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             positionDisplayItemInDrawTree(attr->revealContext());
         });
         break;
 
     case TitleText:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             myDriver->invalidateTitleText(attr->revealContext());
         });
@@ -689,7 +692,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
 
     case Text:
     case ImagePath:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             setLayout(attr->revealContext());
             markAsBadGeometry(attr->revealContext());
@@ -718,14 +721,14 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
     case AlignOpposite:
     case OverrideFillPrecedenceAdjacent:
     case OverrideFillPrecedenceOpposite:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             markAsBadGeometry(attr->revealContext());
         });
         break;
 
     case Visibility:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             myDriver->invalidateVisibility(attr->revealContext());
         });
@@ -733,7 +736,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
 
     case Borderless:
     case Resizable:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             assert(false);
         });
@@ -742,28 +745,28 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
     case ElementColor:
     case FontColor:
     case BorderColor:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             markAsBadCanvas(attr->revealContext());
         });
         break;
 
     case Layout:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             setLayout(attr->revealContext());
         });
         break;
 
     case WindowState:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             assert(false); //I dunno
         });
         break;
 
     case InduceState:
-        attr->setChangeAcceptor([&, applyToStates](Attribute* attr)
+        attr->setChangeAcceptor([&, applyToStates](AnimatableAttribute* attr)
         {
             applyToStates(attr, [&](const StateKey key)
             {
@@ -773,14 +776,14 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
         break;
 
     case BindState:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             //silent failure... Feck.
         });
         break;
 
     case ToggleState:
-        attr->setChangeAcceptor([&, applyToStates](Attribute* attr)
+        attr->setChangeAcceptor([&, applyToStates](AnimatableAttribute* attr)
         {
             applyToStates(attr, [&](const StateKey key)
             {
@@ -793,7 +796,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
         break;
 
     case UnsetState:
-        attr->setChangeAcceptor([&, applyToStates](Attribute* attr)
+        attr->setChangeAcceptor([&, applyToStates](AnimatableAttribute* attr)
         {
             applyToStates(attr, [&](const StateKey key)
             {
@@ -803,7 +806,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
         break;
 
     case TriggerState:
-        attr->setChangeAcceptor([&, applyToStates](Attribute* attr)
+        attr->setChangeAcceptor([&, applyToStates](AnimatableAttribute* attr)
         {
             applyToStates(attr, [&](const StateKey key)
             {
@@ -813,7 +816,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
         break;
 
     case RadioState:
-        attr->setChangeAcceptor([&, applyToStates](Attribute* attr)
+        attr->setChangeAcceptor([&, applyToStates](AnimatableAttribute* attr)
         {
             StateKey topKey;
             uint64_t lastStamp = 0;
@@ -847,7 +850,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, co
         break;
 
     case Triggers:
-        attr->setChangeAcceptor([&](Attribute* attr)
+        attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             DisplayItem* item = attr->revealContext();
             auto triggers = item->getAttr().getValueKeyList(AttributeKey::Triggers);

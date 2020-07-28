@@ -38,4 +38,20 @@ void ReferenceAttribute::derive(const ReferenceAttribute& other)
 
     IrisUtils::Routine::appendContainer(keys, other.keys);
     IrisUtils::Routine::appendContainer(literalList, other.literalList);}
+
+void ReferenceAttribute::applyToEachScopedValueKey(std::function<void (ScopedValueKey&)> fun)
+{
+    auto guard = [&](std::optional<Expression> optExpr)
+    {
+        if(optExpr) optExpr->applyToEachScopedValueKey(fun);
+    };
+
+    guard(starting);
+    guard(min);
+    guard(max);
+    guard(expr);
+
+    for(ScopedValueKey& key : keys) fun(key);
+    if(singleKey) fun(*singleKey);
+}
 }//IVD

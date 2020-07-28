@@ -21,7 +21,7 @@
 #include "assert.h"
 
 #include "statekey.h"
-#include "attributeset.h"
+#include "referenceattributeset.h"
 #include "modelcontainer.h"
 #include "attributepositionpair.h"
 #include "virtualstatekey.h"
@@ -40,9 +40,9 @@ class Element
     ValueKeyPath path;
     ValueKeyPath modelPath;
 
-    AttributeSet defaultAttr;
+    ReferenceAttributeSet defaultAttr;
     
-    std::vector<AttributeSet> keyedAttributes;
+    std::vector<ReferenceAttributeSet> keyedAttributes;
     std::map<ScopedValueKey, int> keyedAttributeMap;
 
     std::vector<VirtualStateKeyPrecursor> virtualKeys;
@@ -90,11 +90,11 @@ public:
     { return variableInitialExpressions; }
 
     std::vector<VirtualStateKeyPrecursor> getVirtualKeys() { return virtualKeys; }
-    AttributeSet& getDefaultAttr() { return defaultAttr; }
+    ReferenceAttributeSet& getDefaultAttr() { return defaultAttr; }
     std::map<ScopedValueKey, int> getKeyedAttributeMap() { return keyedAttributeMap; }
     ValueKeyPath getModelPath() const { return modelPath; }
     
-    AttributeSet& getAttributeSetForStateKey(ScopedValueKey statePre)
+    ReferenceAttributeSet& getAttributeSetForStateKey(ScopedValueKey statePre)
     {
         if(!statePre.key) return defaultAttr;
         

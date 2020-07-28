@@ -19,7 +19,7 @@
 #include <map>
 
 #include "attributepositionpair.h"
-#include "attributeset.h"
+#include "runtimeattributeset.h"
 #include "material.h"
 
 #include <reprodyne.h>
@@ -33,9 +33,6 @@ class ModelItemBase;
 class Canvas;
 
 
-class DisplayItem;
-
-
 class DisplayItem
 {
     Environment* myEnv;
@@ -44,9 +41,9 @@ class DisplayItem
 
     const ValueKeyPath elementPath;
 
-    const AttributeSet defaultState;
-    std::map<int, const AttributeSet*> contributingAttrs;
-    AttributeSet myAttrs;
+    const ReferenceAttributeSet defaultState;
+    std::map<int, const ReferenceAttributeSet*> contributingAttrs;
+    RuntimeAttributeSet myAttrs;
 
     Coords shapePos;
     Dimens totalCellDimens;
@@ -72,13 +69,13 @@ class DisplayItem
 public:
     DisplayItem(Environment* theEnv,
                 ModelItemBase* theModel,
-                const AttributeSet& theDefaultState,
+                const ReferenceAttributeSet& theDefaultState,
                 const ValueKeyPath &elemPath):
         myEnv(theEnv),
         parent(nullptr),
         myModel(theModel),
         elementPath(elemPath),
-        defaultState(AttributeSet(this, theDefaultState)),
+        defaultState(theDefaultState),
         myAttrs(this)
     {
         reprodyne_open_scope(this);
@@ -98,7 +95,7 @@ public:
     void removeAttributeSet(const AttributePositionPair pair);
     void recomputeAttributeSet();
 
-    AttributeSet getAttr()
+    RuntimeAttributeSet getAttr()
     { return myAttrs; }
 
     void setParent(DisplayItem* item);

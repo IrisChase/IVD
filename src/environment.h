@@ -77,9 +77,9 @@ class Environment
     std::set<DisplayItem*> itemsWithChangedAttributeSets;
 
     //These are for tracking attributes that have been recomputingted.
-    std::set<Attribute*> attributeWantsAnimationTick;
-    std::set<Attribute*> attributesThatHaveChanged; //No really we're changed let us out
-    std::set<Attribute*> attributesThatMutateTheDrawTree; //Not convinced this is necessary...
+    std::set<AnimatableAttribute*> attributeWantsAnimationTick;
+    std::set<AnimatableAttribute*> attributesThatHaveChanged; //No really we're changed let us out
+    std::set<AnimatableAttribute*> attributesThatMutateTheDrawTree; //Not convinced this is necessary...
 
 
     std::map<DisplayItem*, std::vector<ScopedValueKey>> triggerMap;
@@ -132,7 +132,7 @@ public:
     void markAsChangedAttributes(DisplayItem* item)
     { itemsWithChangedAttributeSets.insert(item); }
 
-    void setupEnvironmentCallbacksOnAttributeForKey(Attribute* attr, const int key);
+    void setupEnvironmentCallbacksOnAttributeForKey(AnimatableAttribute* attr, const int key);
 
     StateKey generateStateKeyFromPrecursor(ScopedValueKey precursor, DisplayItem* baseContext);
 };

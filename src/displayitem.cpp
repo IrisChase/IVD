@@ -64,12 +64,13 @@ void DisplayItem::removeAttributeSet(const AttributePositionPair pair)
 
 void DisplayItem::recomputeAttributeSet()
 {
-    AttributeSet fresh(this);
-    fresh.mergeIn(defaultState);
-    for(auto pair : contributingAttrs)
-        fresh.mergeIn(*pair.second);
+    myAttrs.beginAttributeSetRecompute();
+    myAttrs.mergeIn(defaultState);
 
-    myAttrs.updateToReferenceSet(fresh);
+    for(auto pair : contributingAttrs)
+        myAttrs.mergeIn(*pair.second);
+
+    myAttrs.commitAttributeSetRecompute();
 }
 
 void DisplayItem::setParent(DisplayItem* item)

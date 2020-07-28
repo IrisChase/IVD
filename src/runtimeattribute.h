@@ -60,7 +60,7 @@ public:
     void initializeTransitionSystem(const int key)
     { myAttributeKey = key; }
 
-    void updateToReferenceAttribute(const ReferenceAttribute& ref);
+    void reset();
 
 
     std::optional<double> getValue(DisplayItem* theContext) const;
@@ -83,6 +83,8 @@ class AnimatableAttribute //440 byte struct replacing a 1224 byte struct, noice
     int myAttributeKey;
     DisplayItem* theContext;
 
+    bool active;
+
     RuntimeAttribute previousRTA; //Lol RTA
     RuntimeAttribute currentRTA;
 
@@ -101,6 +103,18 @@ class AnimatableAttribute //440 byte struct replacing a 1224 byte struct, noice
 public:
     //lastRatio == 1 means animation is finished.
     AnimatableAttribute(): lastRatio(1) {}
+
+    void init(DisplayItem* thethecontext, const int key)
+    {
+        theContext = thethecontext;
+        myAttributeKey = key;
+    }
+
+    bool checkActive()
+    { return active; }
+
+    bool thisIsAhackButCheckIfThereIsDelay()
+    { return delay; }
 
     DisplayItem* revealContext()
     { return theContext; }
@@ -140,20 +154,22 @@ public:
     RuntimeAttribute& getCurrent()
     { return currentRTA; }
 
-    void merge(const ReferenceAttribute& ref)
-    {
-        if(currentRTA.checkClear() || !ref.active) return;
+    void beginAttributeRecompute();
+    void merge(const ReferenceAttribute& ref);
+    void commitAttributeRecompute();
 
-        if(ref.ease)   ease = &*ref.ease;
-        if(ref.delay) delay = &*ref.delay;
-
-        currentRTA.merge(ref);
-    }
-
-    void updateToReferenceAttribute(const ReferenceAttribute& ref);
 
     //data interface
+    void setValue(const double proposed)
+    { currentRTA.setValue(proposed, theContext); }
+
     std::optional<double> getValue() const;
+    bool checkExprIsConst() const
+    {
+        auto expr = currentRTA.expr;
+        return expr ? !expr->checkContainsWeak()
+                    : true;
+    }
     std::optional<int> getProperty() const;
     std::optional<ScopedValueKey> getSingleValueKey() const;
     std::vector<ScopedValueKey> getValueKeyList() const;

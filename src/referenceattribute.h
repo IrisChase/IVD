@@ -32,22 +32,7 @@ struct ReferenceAttribute
     std::optional<Animation::Transition> ease;
 
     void derive(const ReferenceAttribute& other);
-
-    void applyToEachScopedValueKey(std::function<void (ScopedValueKey &)> fun)
-    {
-        auto guard = [&](std::optional<Expression> optExpr)
-        {
-            if(optExpr) optExpr->applyToEachScopedValueKey(fun);
-        };
-
-        guard(starting);
-        guard(min);
-        guard(max);
-        guard(expr);
-
-        for(ScopedValueKey& key : keys) fun(key);
-        if(singleKey) fun(*singleKey);
-    }
+    void applyToEachScopedValueKey(std::function<void (ScopedValueKey &)> fun);
 };
 
 }//IVD

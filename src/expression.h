@@ -32,7 +32,6 @@ namespace IVD
 {
 
 class DisplayItem;
-class AttributeSet;
 
 struct ExpressionNode
 {
@@ -106,7 +105,7 @@ public:
     void setRootNode(const ExpressionNode& sourceRoot)
     { root = sourceRoot; }
 
-    bool checkContainsWeak()
+    bool checkContainsWeak() const
     { return root.weakTerm || root.weakBranch; }
 
     double solve(DisplayItem* theContext) const

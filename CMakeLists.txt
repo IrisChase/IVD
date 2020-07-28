@@ -24,11 +24,11 @@ project(IVD CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND ivd_core_sources
-src/attribute.cpp
-src/attribute.h
+src/runtimeattribute.cpp
+src/runtimeattribute.h
 src/attributepositionpair.h
-src/attributeset.cpp
-src/attributeset.h
+src/runtimeattributeset.cpp
+src/runtimeattributeset.h
 src/canvas.h
 src/color.cpp
 src/color.h
@@ -72,6 +72,8 @@ src/binaryexpressionprinter.h
 src/cbindings.cpp
 src/referenceattribute.h
 src/referenceattribute.cpp
+src/referenceattributeset.h
+src/referenceattributeset.cpp
 
 
 src/user_include/IVD_c.h

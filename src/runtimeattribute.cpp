@@ -12,11 +12,11 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "attribute.h"
+#include "runtimeattribute.h"
 
 #include "irisutils/routine.h"
 
-#include "attributeset.h"
+#include "runtimeattributeset.h"
 
 #include <reprodyne.h>
 
@@ -84,14 +84,11 @@ static void mergeHelper(T& mine, const std::vector<TO>& other)
 void RuntimeAttribute::merge(const ReferenceAttribute& other)
 {
     mergeHelper(property, other.property);
-
     mergeHelper(starting, other.starting);
     mergeHelper(min, other.min);
     mergeHelper(max, other.max);
     mergeHelper(expr, other.expr);
-
     mergeHelper(color, other.color);
-
     mergeHelper(literal, other.literal);
     mergeHelper(singleKey, other.singleKey);
 
@@ -99,7 +96,7 @@ void RuntimeAttribute::merge(const ReferenceAttribute& other)
     IrisUtils::Routine::appendContainer(literalList, other.literalList);
 }
 
-void RuntimeAttribute::updateToReferenceAttribute(const ReferenceAttribute& other)
+void RuntimeAttribute::reset()
 {
     clear = nullptr;
     starting = min = max = expr = nullptr;
@@ -108,17 +105,6 @@ void RuntimeAttribute::updateToReferenceAttribute(const ReferenceAttribute& othe
     literalList.clear();
     singleKey = nullptr;
     keys.clear();
-
-    mergeHelper(clear, other.clear);
-    mergeHelper(starting, other.starting);
-    mergeHelper(min, other.min);
-    mergeHelper(max, other.max);
-    mergeHelper(expr, other.expr);
-    mergeHelper(color, other.color);
-    mergeHelper(literal, other.literal);
-    mergeHelper(literalList, other.literalList);
-    mergeHelper(singleKey, other.singleKey);
-    mergeHelper(keys, other.keys);
 }
 
 void AnimatableAttribute::animationTick()
@@ -155,6 +141,7 @@ void AnimatableAttribute::animationTick()
         }
     }
 
+    //This block is for Reprodyne stuff
     {
         //Scope to displayitem itself because our pointer should be able to change.
         std::string key;
@@ -163,11 +150,6 @@ void AnimatableAttribute::animationTick()
 
         changeRatio = reprodyne_intercept_double(revealContext(), key.c_str(), changeRatio);
     }
-
-
-    //TODO: Busy atm but I just realized that there is absolutely no reason for non-ease type
-    // attributes to call transition every damn time. Only on changes, people. FIX IT
-
 
     if(lastRatio < changeRatio)
     {
@@ -180,24 +162,43 @@ void AnimatableAttribute::animationTick()
     if(lastRatio == 1) cancelAnimationTicker(this);
 }
 
-void AnimatableAttribute::updateToReferenceAttribute(const ReferenceAttribute& ref)
+void AnimatableAttribute::beginAttributeRecompute()
 {
-    cancelAnimationTicker(this); //Why not call "quitAnimation"? TODO
-    ease  = ref.ease  ? &*ref.ease  : nullptr;
-    delay = ref.delay ? &*ref.delay : nullptr;
+    //We store this not only for animation, but for checking if anything
+    // changed in commitAttributeRecompute()
+    previousRTA = currentRTA;
 
-    if(ease || delay)
-    {
-        lastRatio = 0;
-        previousRTA = currentRTA;
-    }
-    else lastRatio = 1;
+    ease = nullptr;
+    delay = nullptr;
+    active = false;
 
-    currentRTA.updateToReferenceAttribute(ref);
-
-    //It's enough to signal change once, it won't be processed until all merging is done anyway
-    signalChange();
+    currentRTA.reset();
 }
+
+void AnimatableAttribute::merge(const ReferenceAttribute& ref)
+{
+    if(currentRTA.checkClear() || !ref.active) return;
+
+    active = true;
+
+    if(ref.ease  || ref.clear)   ease = &*ref.ease;
+    if(ref.delay || ref.clear)  delay = &*ref.delay;
+
+    currentRTA.merge(ref);
+}
+
+void AnimatableAttribute::commitAttributeRecompute()
+{
+    lastRatio = ease || delay ? 0
+                              : 1;
+
+    if(!lastRatio) cancelAnimationTicker(this); //Why not call "quitAnimation"? TODO
+
+    //TODO: Compare if they're different.
+    if(previousRTA != currentRTA)
+        signalChange();
+}
+
 
 std::optional<double> AnimatableAttribute::getValue() const
 {

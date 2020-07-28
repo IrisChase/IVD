@@ -18,6 +18,8 @@
 #include <fstream>
 #include <functional>
 
+#include "irisutils/routine.h"
+
 #include "keywords.h"
 #include "codeposition.h"
 
@@ -1014,7 +1016,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         return true;
     };
 
-    auto parseAttributeWithExpressionType = [&](const int key, Attribute* attr)
+    auto parseAttributeWithExpressionType = [&](const int key, ReferenceAttribute* attr)
     {
         if(!checkAttributeKeyForExpressionBodyType(key)) return false;
 
@@ -1061,7 +1063,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         return std::optional<int>(result);
     };
 
-    auto parseAttributeDelay = [&](Attribute* attr)
+    auto parseAttributeDelay = [&](ReferenceAttribute* attr)
     {
         if(!matchSymbolSomft(Keyword::Delay)) return false;
         nextHard();
@@ -1121,7 +1123,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         return std::optional<EasePair>(result);
     };
 
-    auto parseAttributeBodyForKey = [&](const int key, Attribute* attr)
+    auto parseAttributeBodyForKey = [&](const int key, ReferenceAttribute* attr)
     {
         const CodePosition startPos = getCurrentToken().codePosition;
         const bool stateKeyListType         = checkAttributeKeyForStateKeyListType(key);
@@ -1134,7 +1136,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         const bool propertyBodyType         = checkAttributeKeyForPropertyBodyType(key);
         const bool expressionType           = checkAttributeKeyForExpressionBodyType(key);
 
-        auto parseStateKeyListType = [&](const int key, Attribute* attr)
+        auto parseStateKeyListType = [&](const int key, ReferenceAttribute* attr)
         {
             if(!stateKeyListType) return false;
 
@@ -1144,7 +1146,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         };
 
-        auto parseAttributeWithSingleScopedValueKeyType = [&](const int key, Attribute* attr)
+        auto parseAttributeWithSingleScopedValueKeyType = [&](const int key, ReferenceAttribute* attr)
         {
             if(!singleValueKeyType) return false;
 
@@ -1153,7 +1155,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         };
 
-        auto parseAttributeWithUserTokenListType = [&](const int key, Attribute* attr)
+        auto parseAttributeWithUserTokenListType = [&](const int key, ReferenceAttribute* attr)
         {
             if(!userTokenListType) return false;
             if(!matchSymbolSomft(Keyword::UserToken)) return false;
@@ -1165,7 +1167,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         };
 
-        auto parseAttributeWithUserTokenType = [&](const int key, Attribute* attr)
+        auto parseAttributeWithUserTokenType = [&](const int key, ReferenceAttribute* attr)
         {
             if(!userTokenType) return false;
             if(!matchSymbolSomft(Keyword::UserToken)) return false;
@@ -1177,7 +1179,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         };
 
-        auto parsePositionWithinType = [&](const int key, Attribute* attr)
+        auto parsePositionWithinType = [&](const int key, ReferenceAttribute* attr)
         {
             if(!positionWithinType) return false;
 
@@ -1191,7 +1193,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         };
 
 
-        auto parseAttributeWithColorType = [&](const int key, Attribute* attr)
+        auto parseAttributeWithColorType = [&](const int key, ReferenceAttribute* attr)
         {
             if(!colorType) return false;
             if(!matchSymbolSomft(Keyword::ColorLiteral))
@@ -1222,7 +1224,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         };
 
-        auto parseAttributeWithStringLiteralType = [&](const int key, Attribute* attr)
+        auto parseAttributeWithStringLiteralType = [&](const int key, ReferenceAttribute* attr)
         {
             if(!stringLiteralType) return false;
             if(!matchSymbolSomft(Keyword::UserString)) return false;
@@ -1234,7 +1236,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         };
 
-        auto parseAttributeWithPropertyType = [&](const int key, Attribute* attr)
+        auto parseAttributeWithPropertyType = [&](const int key, ReferenceAttribute* attr)
         {
             if(!propertyBodyType) return false;
 
@@ -1294,7 +1296,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         }
     };
 
-    auto parseUnnaturalAttributeBody = [&](const int key, AttributeSet* attrs, ScopedVariables* scope)
+    auto parseUnnaturalAttributeBody = [&](const int key, ReferenceAttributeSet* attrs, ScopedVariables* scope)
     {
         //We just assume we're not merging in, here.
         //key: one;
@@ -1303,7 +1305,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         const CodePosition startPos = getCurrentToken().codePosition;
         const int baseKey = getNaturalKeysForUnnaturalKey(key)[0];
 
-        std::vector<std::optional<Attribute>> myAttributes;
+        std::vector<std::optional<ReferenceAttribute>> myAttributes;
 
         while(true)
         {
@@ -1314,7 +1316,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             }
             else if(matchSymbolSomft(Keyword::Clear))
             {
-                Attribute temp;
+                ReferenceAttribute temp;
                 temp.active = true;
                 temp.clear  = true;
                 myAttributes.emplace_back(temp);
@@ -1322,11 +1324,11 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             }
             else if(parseAttributeEase(key, scope))
                 throw SyntaxError(startPos, "Unnatural key cannot contain ease specifiers.");
-            else if(Attribute dummy; parseAttributeDelay(&dummy))
+            else if(ReferenceAttribute dummy; parseAttributeDelay(&dummy))
                 throw SyntaxError(startPos, "Unnatural key cannot contain delay specifiers.");
             else
             {
-                Attribute temp;
+                ReferenceAttribute temp;
                 temp.active = true;
                 parseAttributeBodyForKey(key, &temp);
                 myAttributes.emplace_back(temp);
@@ -1369,7 +1371,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         next();
     };
 
-    auto parseAttribute = [&](AttributeSet* attrs, ScopedVariables* scope)
+    auto parseAttribute = [&](ReferenceAttributeSet* attrs, ScopedVariables* scope)
     {
         const int key = getCurrentToken().symbol;
 
@@ -1391,7 +1393,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         }
 
-        Attribute myAttr = attrs->getAttribute(key);
+        ReferenceAttribute myAttr = attrs->getAttribute(key);
 
         while(true)
         {
@@ -1520,7 +1522,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             try
             {
                 const bool defaultState = !currentStateKey.key.has_value();
-                AttributeSet* currentState = &precursor->elem.getAttributeSetForStateKey(currentStateKey);
+                ReferenceAttributeSet* currentState = &precursor->elem.getAttributeSetForStateKey(currentStateKey);
 
                 if(defaultState)
                 {
