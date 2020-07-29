@@ -9,8 +9,8 @@ namespace IVD
 
 struct ReferenceAttribute
 {
-    bool active;
-    bool clear;
+    bool active = false;
+    bool clear = false;
 
     std::optional<int> property;
 

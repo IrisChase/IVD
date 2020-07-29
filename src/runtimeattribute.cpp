@@ -41,6 +41,8 @@ std::optional<double> RuntimeAttribute::getValue(DisplayItem* theContext) const
 
     if(!expr) return value;
 
+    value = expr->solve(theContext);
+
     if(min)
     {
         const double computedMin = min->solve(theContext);
@@ -99,12 +101,19 @@ void RuntimeAttribute::merge(const ReferenceAttribute& other)
 void RuntimeAttribute::reset()
 {
     clear = nullptr;
+    property = nullptr;
     starting = min = max = expr = nullptr;
     color = nullptr;
     literal = nullptr;
     literalList.clear();
     singleKey = nullptr;
     keys.clear();
+}
+
+const RuntimeAttribute& AnimatableAttribute::getCorrectRTA() const
+{
+    return lastRatio == 1 ? currentRTA
+                          : previousRTA;
 }
 
 void AnimatableAttribute::animationTick()
@@ -221,32 +230,35 @@ std::optional<double> AnimatableAttribute::getValue() const
 
 std::optional<int> AnimatableAttribute::getProperty() const
 {
-    return lastRatio == 1 ? *currentRTA.property
-                          : *previousRTA.property;
+    const int* i = getCorrectRTA().property;
+    return i ? *i
+             : std::optional<int>();
 }
 
 std::optional<ScopedValueKey> AnimatableAttribute::getSingleValueKey() const
 {
-    return lastRatio == 1 ? *currentRTA.singleKey
-                          : *previousRTA.singleKey;
+    const ScopedValueKey* i = getCorrectRTA().singleKey;
+    return i ? *i
+             : std::optional<ScopedValueKey>();
 }
 
 std::vector<ScopedValueKey> AnimatableAttribute::getValueKeyList() const
 {
-    return lastRatio == 1 ? currentRTA.keys
-                          : previousRTA.keys;
+    return getCorrectRTA().keys;
 }
 
 std::optional<std::string> AnimatableAttribute::getUserToken() const
 {
-    return lastRatio == 1 ? *currentRTA.literal
-                          : *previousRTA.literal;
+    const std::string* i = getCorrectRTA().literal;
+    return i ? *i
+             : std::optional<std::string>();
 }
 
 std::optional<Color> AnimatableAttribute::getColor() const
 {
-    return lastRatio == 1 ? *currentRTA.color
-                          : *previousRTA.color;
+    const Color* i = getCorrectRTA().color;
+    return i ? *i
+             : std::optional<Color>();
 }
 
 

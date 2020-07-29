@@ -97,7 +97,7 @@ double Expression::solveForUnknownNode(const ExpressionNode* theNode,
 {
     if(theNode->weakTerm)
     {
-        assert(myContext);
+        assert(theContext);
         theContext->getEnv()->setInteger(theContext, theNode->extVal, requiredResult);
         return requiredResult;
     }

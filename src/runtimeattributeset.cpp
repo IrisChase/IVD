@@ -118,7 +118,7 @@ void RuntimeAttributeSet::setInteger(const ValueKey key, const double proposed)
         return;
     }
 
-    assert(declareModifiers.count(key));
+    assert(declareModifiers->count(key));
 
     const Expression& expr = declareModifiers->at(key);
 

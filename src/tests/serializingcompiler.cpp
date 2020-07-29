@@ -33,7 +33,7 @@ void printOutAttributes(IVD::Element elem)
     //Now the fun part...
     std::cout << "------------------------------------------Body" << std::endl;
 
-    auto printAttrs = [&](const IVD::AttributeSet& attrSet, std::ostream& cout)
+    auto printAttrs = [&](const IVD::ReferenceAttributeSet& attrSet, std::ostream& cout)
     {
         if(attrSet.declareModifiers.size())
         {

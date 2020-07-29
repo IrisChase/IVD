@@ -37,25 +37,27 @@ class AnimatableAttribute;
 
 class RuntimeAttribute //1224 bytes before 632 after~ NOW 248... 96... 128 Fack
 {
+    //Doesn't really need to be a friend it can just be all public because AnimatableAttribute
+    // is all that uses it... Or just make it internal, rename to data, save "runtimeAttribute"
+    // as the public class name.....
     friend class AnimatableAttribute;
     int myAttributeKey; //TODO: make constant
 
     //No "active" because if this exists, it's active
 
-    const bool* clear;
-    const int* property;
-    const Expression* starting;
-    const Expression* min;
-    const Expression* max;
-    const Expression* expr;
-    const Color* color;
-    const std::string* literal;
+    const bool* clear = nullptr;
+    const int* property = nullptr;
+    const Expression* starting = nullptr;
+    const Expression* min = nullptr;
+    const Expression* max = nullptr;
+    const Expression* expr = nullptr;
+    const Color* color = nullptr;
+    const std::string* literal = nullptr;
     std::vector<std::string> literalList; //Don't be such a literalist GODDDDDDDD
-    const ScopedValueKey* singleKey;
+    const ScopedValueKey* singleKey = nullptr;
     std::vector<ScopedValueKey> keys;
 
 public:
-    RuntimeAttribute(): clear(nullptr) {}
 
     void initializeTransitionSystem(const int key)
     { myAttributeKey = key; }
@@ -73,9 +75,18 @@ public:
     auto getScopedValueKeys()
     { return keys; }
 
-
     bool checkClear()
     { return clear; }
+
+    IRISUTILS_DEFINE_COMP(RuntimeAttribute,
+                          clear,
+                          property,
+                          starting, min, max,
+                          color,
+                          literal,
+                          literalList,
+                          singleKey,
+                          keys)
 };
 
 class AnimatableAttribute //440 byte struct replacing a 1224 byte struct, noice
@@ -99,6 +110,8 @@ class AnimatableAttribute //440 byte struct replacing a 1224 byte struct, noice
     std::function<void(AnimatableAttribute*)> changeAcceptor;
     std::function<void(AnimatableAttribute*)> requestAnimationTicker;
     std::function<void(AnimatableAttribute*)> cancelAnimationTicker;
+
+    const RuntimeAttribute& getCorrectRTA() const;
 
 public:
     //lastRatio == 1 means animation is finished.

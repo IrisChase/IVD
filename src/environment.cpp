@@ -761,7 +761,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(AnimatableAttribute
     case WindowState:
         attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
-            assert(false); //I dunno
+            //assert(false); //I dunno
         });
         break;
 
