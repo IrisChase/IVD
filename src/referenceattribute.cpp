@@ -41,7 +41,7 @@ void ReferenceAttribute::derive(const ReferenceAttribute& other)
 
 void ReferenceAttribute::applyToEachScopedValueKey(std::function<void (ScopedValueKey&)> fun)
 {
-    auto guard = [&](std::optional<Expression> optExpr)
+    auto guard = [&](std::optional<Expression>& optExpr)
     {
         if(optExpr) optExpr->applyToEachScopedValueKey(fun);
     };
