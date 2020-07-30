@@ -118,6 +118,24 @@ public:
 
             keyedAttributes.at(myPos).deriveFrom(parentClass.keyedAttributes.at(otherPos));
         }
+
+        //ALRIGHT SO
+        //This is broken TODO
+        //I don't remember when I broke it, but it's been broken since I broke IVD off
+        // from the original repo.
+        //I know it used to work because there is still a validation test that some ancient
+        // build produced correctly.
+        //I spent a while trying to track this down, thinking I recently broke something and
+        // there was some sort of missing ampersand or something, but nope. Been like this since
+        // the initial commit.
+        //I'm not going to do anything about it right now because obviously things were (mostly)
+        // working before I started the refactor I'm at the tail-end of now, and I just wanna get
+        // back to that state first. I'm leaving this comment so that I don't waste time in the future.
+        //Basically, the below line doesn't work because we want to merge states that have equivalent
+        // virtual keys. This is non-trivial, obviously.
+        //I vaguely remember deleting the code thinking it was kludgy? I don't remember why. Or if I didn't
+        // realize what I was doing. But yeaaaah it doesn't work.
+        //for(auto& vk : parentClass.virtualKeys) virtualKeys.push_back(vk);
     }
 };
 
