@@ -49,6 +49,7 @@ class Element
 
     std::map<ValueKey, Expression> variableInitialExpressions;
     
+    //I have no idea what this is doing anymore
     int obtainPosForKey(const ScopedValueKey key)
     {
         auto it = keyedAttributeMap.find(key);
