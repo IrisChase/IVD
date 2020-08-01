@@ -81,7 +81,7 @@ public:
     IRISUTILS_DEFINE_COMP(RuntimeAttribute,
                           clear,
                           property,
-                          starting, min, max,
+                          starting, min, max, expr,
                           color,
                           literal,
                           literalList,

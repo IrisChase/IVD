@@ -203,7 +203,6 @@ void AnimatableAttribute::commitAttributeRecompute()
 
     if(!lastRatio) cancelAnimationTicker(this); //Why not call "quitAnimation"? TODO
 
-    //TODO: Compare if they're different.
     if(previousRTA != currentRTA)
         signalChange();
 }
