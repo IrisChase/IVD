@@ -160,15 +160,14 @@ void AnimatableAttribute::animationTick()
         changeRatio = reprodyne_intercept_double(revealContext(), key.c_str(), changeRatio);
     }
 
-    if(lastRatio < changeRatio)
+    if(lastRatio != changeRatio)
     {
         lastRatio = changeRatio;
-
-        if(checkAttributeKeyForExpressionBodyType(myAttributeKey))
-            signalChangedAttribute(this);
+        signalChangedAttribute(this);
     }
 
     if(lastRatio == 1) cancelAnimationTicker(this);
+
 }
 
 void AnimatableAttribute::beginAttributeRecompute()
