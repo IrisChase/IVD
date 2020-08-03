@@ -252,63 +252,142 @@ std::vector<Material*> DisplayItem::getChildMaterials()
 
 std::vector<Material*> DisplayItem::getChildMaterialsInModelOrder()
 {
-    if(!Default::Filter::checkModelOrder(this) || children.empty()) return getChildMaterials();
+    //Precedence is Named Cells > Declaration Order (stamp) > Model Order
+    std::vector<DisplayItem*> sorted(children.begin(), children.end());
 
-    std::vector<Material*> sorted;
-
-    ModelContainer* container = myModel ? myModel->getChildContainer()
-                                        : nullptr;
-
-    if(!container)
+    if(Default::Filter::checkModelOrder(this))
     {
-        //I am ashame.
-        ModelItemBase* oneChildModel = nullptr;
-        for(auto it = children.begin(); !oneChildModel && it != children.end(); ++it)
-            oneChildModel = (*it)->myModel;
-
-        if(!oneChildModel) return getChildMaterials(); //(╯°□°)╯︵ ┻━┻
-
-        container = oneChildModel->getParentContainer();
-        assert(container); //THIS CANNOT BE NULL MOTHERFUCKERRRR
-    }
-
-
-    std::vector<Material*> nonModelChildren;
-    std::unordered_set<Material*> modelMaterials;
-
-    for(ModelItemBase* mitem : *container)
-    {
-        //M'Item~
-        for(DisplayItem* childItem : mitem->internalDisplayItems)
+        auto compareModelContainer = [&](DisplayItem* left, DisplayItem* right)
         {
-            if(childItem->getParent() != this) continue;
+            return (left->getModel() ? left->getModel()->getParentContainer()
+                                     : nullptr)
+                    <
+                    (right->getModel() ? right->getModel()->getParentContainer()
+                                       : nullptr);
+        };
+        std::sort(sorted.begin(), sorted.end(), compareModelContainer);
 
-            sorted.push_back(childItem->getMaterial());
-            modelMaterials.insert(childItem->getMaterial());
+
+        auto sortModelRange = [&](auto begin, auto end)
+        {
+            //Alright so the predicate is the position in the parent
+            // container itself. Soooo... Just overwrite the range.
+            //I hate this.
+
+            //So... We have a range of unsorted items, and the only way to get the sorting
+            // data is to read from the parent container. So... Might as well just overwrite
+            // the range.
+
+            if(begin == end) return;
+
+            assert((*begin)->getModel());
+
+            //Keeping in mind, of course, that that not all internalDisplayItems
+            // are children of this item... Because an item may become a child of
+            // it's sibling, but not all siblings are automatically children in that case
+            // so you can't just remove the this pointer.
+
+            //This all looks bad/inefficient, but it doesn't currently show up on any profiling
+            // passes so fuck it.
+
+            //Sorry if this code is shit, I'm having a bad day and I just want this done.
+
+            std::vector<DisplayItem*> modelsDisplayItems;
+
+            //Iterating through the parent container is in model order (Thank god at least something
+            // here is intuitive). Items bound to the model are going to end up resorted in stamp order
+            // in the next pass, preserving the relative model order.
+
+            for(ModelItemBase* modelItem : *(*begin)->getModel()->getParentContainer())
+                for(auto* replacement : modelItem->internalDisplayItems)
+                    modelsDisplayItems.push_back(replacement);
+
+            const auto childModelItemsEnd =
+                    std::remove_if(modelsDisplayItems.begin(), modelsDisplayItems.end(), [&](DisplayItem* item)
+            {
+                return !children.count(item);
+            });
+
+            auto destIt = begin;
+            for(auto it = modelsDisplayItems.begin(); it != childModelItemsEnd; ++it)
+            {
+                assert(destIt != end);
+                (*destIt++) = *it;
+            }
+        };
+
+        for(auto it = sorted.begin(); it != sorted.end();)
+        {
+            //Find the ranges. Wasn't happy with any algorithms I found in the
+            // standard library...
+
+            if(!(*it)->getModel())
+            {
+                ++it;
+                continue;
+            }
+
+            const ModelContainer* startModel = (*it)->getModel()->getParentContainer();
+
+            auto begin = it;
+
+            for(; it != sorted.end() &&
+                (*it)->getModel() &&
+                startModel == (*it)->getModel()->getParentContainer()
+                ; ++it);
+
+            sortModelRange(begin, it);
         }
     }
 
-
-    //This, as far as I know, can only happen in the sibling model positioning within
-    // a model with children (not necessarily children positioned within it).
-    for(DisplayItem* child : children)
+    auto compareStamp = [&](DisplayItem* left, DisplayItem* right)
     {
-        if(modelMaterials.count(child->getMaterial())) continue;
-        sorted.push_back(child->getMaterial());
+        return left->getElementStamp() < right->getElementStamp();
+    };
+    std::stable_sort(sorted.begin(), sorted.end(), compareStamp);
+
+
+    if(getAttr().checkActive(AttributeKey::CellNames))
+    {
+        auto cells = getAttr().getLiteralList(AttributeKey::CellNames);
+
+        cells.insert(cells.begin(), "front");
+        cells.insert(cells.end(), "back");
+
+        auto pred = [&](DisplayItem* left, DisplayItem* right)
+        {
+            //Missing piece of the pie
+
+            auto calc = [&](DisplayItem* item) -> int
+            {
+                assert(item->getAttr().checkActive(AttributeKey::PositionWithin));
+                auto optionalKey = item->getAttr().getSingleValueKey(AttributeKey::PositionWithin)->key;
+                assert(optionalKey);
+                const auto key = *optionalKey;
+
+                for(int val = 0; val != cells.size(); ++val)
+                    if(cells[val] == key) return val;
+
+                std::cerr << "IVD Runtime Warning: Unrecognized cell name: " << key
+                          << ", in: " << elementPath << ", "
+                          << (getModel() ? "[model]"
+                                         : "[static]") << std::endl;
+
+                return cells.size() + 1;
+            };
+
+            return calc(left) < calc(right);
+        };
+        std::stable_sort(sorted.begin(), sorted.end(), pred);
     }
 
-    //TODO
-    //I would like to issue a warning whenever someone positions an element within a sibling element
-    // that has child elements poisitioned within it already. (The warning is because the positioning
-    // is undefined... Unless it's named cells?)
+    assert(children.size() == sorted.size());
 
-    //But it's supposed to be standard to position enumerated elements alongside "regular" ones, right?
-    //Consider a static window. Should we be enforcing enumeration here? Either way, it might be legal
-    // but the actual layout order is undefined (Unless it's named-cells???)
-
-
-    return sorted;
-}
+    //Ehhhhhhhhhhhhhhhck there's GOT to be an easier way!
+    // But alas, I'm lazy today!
+    std::vector<Material*> sortedMaterials;
+    for(auto* dip : sorted) sortedMaterials.push_back(dip->getMaterial());
+    return sortedMaterials;}
 
 
 }//IVD

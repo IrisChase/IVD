@@ -234,6 +234,11 @@ std::optional<int> AnimatableAttribute::getProperty() const
              : std::optional<int>();
 }
 
+std::vector<std::string> AnimatableAttribute::getLiteralList() const
+{
+    return getCorrectRTA().literalList;
+}
+
 std::optional<ScopedValueKey> AnimatableAttribute::getSingleValueKey() const
 {
     const ScopedValueKey* i = getCorrectRTA().singleKey;

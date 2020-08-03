@@ -35,6 +35,7 @@ class Canvas;
 
 class DisplayItem
 {
+    const int elementStamp;
     Environment* myEnv;
     DisplayItem* parent;
     ModelItemBase* myModel; //These are forever bound to eachother
@@ -70,16 +71,20 @@ public:
     DisplayItem(Environment* theEnv,
                 ModelItemBase* theModel,
                 const ReferenceAttributeSet& theDefaultState,
-                const ValueKeyPath &elemPath):
+                const ValueKeyPath &elemPath,
+                const int elementStamp):
         myEnv(theEnv),
         parent(nullptr),
         myModel(theModel),
         elementPath(elemPath),
+        elementStamp(elementStamp),
         defaultState(theDefaultState),
         myAttrs(this)
     {
         reprodyne_open_scope(this);
     }
+
+    int getElementStamp() { return elementStamp; }
 
     //TODO: warn if the variable isn't found. Don't take that shit from noone.
     void setVariable(const ValueKey key, const double val)

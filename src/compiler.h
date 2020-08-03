@@ -152,6 +152,7 @@ class Compiler
             codePosition(codePosition),
             stamp(stamp),
             lastVirtualStateStamp(0),
+            elem(stamp),
             currentState(),
             myModel()
         {}

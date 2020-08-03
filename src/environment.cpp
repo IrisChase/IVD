@@ -100,7 +100,8 @@ DisplayItem* Environment::setupNewDisplayItem(Element* elem, ModelItemBase *mode
             std::make_unique<DisplayItem>(this,
                                           model,
                                           elem->getDefaultAttr(),
-                                          elem->getPath());
+                                          elem->getPath(),
+                                          elem->getElementStamp());
 
         item = itemUniquePtr.get();
 

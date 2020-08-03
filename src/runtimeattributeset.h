@@ -81,6 +81,9 @@ public:
     std::optional<int> getProperty(const int key)
     { return attr[key].getProperty(); }
 
+    std::vector<std::string> getLiteralList(const int key)
+    { return attr[key].getLiteralList(); }
+
     std::optional<ScopedValueKey> getSingleValueKey(const int key)
     { return attr[key].getSingleValueKey(); }
 

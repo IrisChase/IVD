@@ -41,7 +41,7 @@ class RuntimeAttribute //1224 bytes before 632 after~ NOW 248... 96... 128 Fack
     // is all that uses it... Or just make it internal, rename to data, save "runtimeAttribute"
     // as the public class name.....
     friend class AnimatableAttribute;
-    int myAttributeKey; //TODO: make constant
+    int myAttributeKey = -1; //TODO: make constant
 
     //No "active" because if this exists, it's active
 
@@ -91,20 +91,21 @@ public:
 
 class AnimatableAttribute //440 byte struct replacing a 1224 byte struct, noice
 {
-    int myAttributeKey;
-    DisplayItem* theContext;
+    int myAttributeKey = -1;
+    DisplayItem* theContext = nullptr;
 
-    bool active;
+    bool active = false;
 
     RuntimeAttribute previousRTA; //Lol RTA
     RuntimeAttribute currentRTA;
 
     //These point to the (current) reference attribute
-    const int* delay; //Yeah it's silly indirection for an integer but it's consistent.
-    const Animation::Transition* ease;
+    const int* delay = nullptr; //Yeah it's silly indirection for an integer but it's consistent.
+    const Animation::Transition* ease = nullptr;
 
     std::optional<std::chrono::time_point<std::chrono::steady_clock>> animationStart;
-    double lastRatio;
+    //lastRatio == 1 means animation is finished.
+    double lastRatio = 1;
 
     std::function<void(AnimatableAttribute*)> signalChangedAttribute;
     std::function<void(AnimatableAttribute*)> changeAcceptor;
@@ -114,8 +115,6 @@ class AnimatableAttribute //440 byte struct replacing a 1224 byte struct, noice
     const RuntimeAttribute& getCorrectRTA() const;
 
 public:
-    //lastRatio == 1 means animation is finished.
-    AnimatableAttribute(): lastRatio(1) {}
 
     void init(DisplayItem* thethecontext, const int key)
     {
@@ -184,6 +183,7 @@ public:
                     : true;
     }
     std::optional<int> getProperty() const;
+    std::vector<std::string> getLiteralList() const;
     std::optional<ScopedValueKey> getSingleValueKey() const;
     std::vector<ScopedValueKey> getValueKeyList() const;
     std::optional<std::string> getUserToken() const;

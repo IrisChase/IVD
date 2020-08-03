@@ -37,6 +37,7 @@ class DisplayItem;
 // DisplayItems.
 class Element
 {
+    int elementStamp = -42;
     ValueKeyPath path;
     ValueKeyPath modelPath;
 
@@ -67,6 +68,10 @@ class Element
     }
     
 public:
+    Element(const int stamp): elementStamp(stamp) {}
+
+    int getElementStamp() { return elementStamp; }
+
     const ValueKeyPath& getPath() const
     { return path; }
 
