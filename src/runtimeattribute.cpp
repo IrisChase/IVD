@@ -157,6 +157,8 @@ void AnimatableAttribute::animationTick()
         key = getLiteralForSymbol(myAttributeKey);
         key += "-:-animation-ratio";
 
+        //Needs to intercept time or we can't validate the correct calculation of the
+        // change ratio....... TODO
         changeRatio = reprodyne_intercept_double(revealContext(), key.c_str(), changeRatio);
     }
 
@@ -166,7 +168,7 @@ void AnimatableAttribute::animationTick()
         signalChangedAttribute(this);
     }
 
-    if(lastRatio == 1) cancelAnimationTicker(this);
+    if(lastRatio == 1) quitAnimation();
 
 }
 
@@ -174,7 +176,8 @@ void AnimatableAttribute::beginAttributeRecompute()
 {
     //We store this not only for animation, but for checking if anything
     // changed in commitAttributeRecompute()
-    previousRTA = currentRTA;
+    checkpointRTA = currentRTA;
+    checkpointRatio = lastRatio;
 
     ease = nullptr;
     delay = nullptr;
@@ -189,6 +192,7 @@ void AnimatableAttribute::merge(const ReferenceAttribute& ref)
 
     active = true;
 
+    //wtf does ref.clear do here again??
     if(ref.ease  || ref.clear)   ease = &*ref.ease;
     if(ref.delay || ref.clear)  delay = &*ref.delay;
 
@@ -197,13 +201,27 @@ void AnimatableAttribute::merge(const ReferenceAttribute& ref)
 
 void AnimatableAttribute::commitAttributeRecompute()
 {
-    lastRatio = ease || delay ? 0
-                              : 1;
+    if(checkpointRTA == currentRTA)
+    {
+        //Restore
+        lastRatio = checkpointRatio;
+        return;
+    }
 
-    if(!lastRatio) cancelAnimationTicker(this); //Why not call "quitAnimation"? TODO
+    previousRTA = checkpointRTA;
 
-    if(previousRTA != currentRTA)
-        signalChange();
+    if(ease || delay)
+    {
+        lastRatio = 0;
+        requestAnimationTicker(this);
+    }
+    else
+    {
+        lastRatio = 1;
+        cancelAnimationTicker(this); //Why not call "quitAnimation"? TODO
+    }
+
+    signalChange();
 }
 
 
