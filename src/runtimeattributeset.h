@@ -66,7 +66,7 @@ public:
     bool checkActive(const int key)
     { return attr[key].checkActive(); }
 
-    std::optional<double> getInt(const int key)
+    std::optional<double> getInt(const int key) const
     { return attr[key].getValue(); }
 
     void setInteger(const int key, const double proposed)
@@ -90,7 +90,7 @@ public:
     std::vector<ScopedValueKey> getValueKeyList(const int key) //Optional would be more consistent...
     { return attr[key].getValueKeyList(); }
 
-    std::optional<std::string> getUserToken(const int key)
+    std::optional<std::string> getUserToken(const int key) const
     { return attr[key].getUserToken(); }
 
     std::optional<Color> getColor(const int key)

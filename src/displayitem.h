@@ -100,7 +100,7 @@ public:
     void removeAttributeSet(const AttributePositionPair pair);
     void recomputeAttributeSet();
 
-    RuntimeAttributeSet getAttr()
+    RuntimeAttributeSet& getAttr()
     { return myAttrs; }
 
     void setParent(DisplayItem* item);
