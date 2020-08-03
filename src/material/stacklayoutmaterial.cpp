@@ -79,7 +79,7 @@ void StackLayoutMaterial::drawConcrete(Canvas* theCanvas)
 
 bool StackLayoutMaterial::applyToColliding(const Rect box, std::function<bool (DisplayItem*)> fun)
 {
-    auto children = myItem->getChildMaterials();
+    auto children = myItem->getChildMaterialsInModelOrder(); //basically insertion order?
     for(auto rit = children.rbegin(); rit != children.rend(); ++rit)
     {
         auto* mat = *rit;
