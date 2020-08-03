@@ -177,7 +177,6 @@ void AnimatableAttribute::beginAttributeRecompute()
     //We store this not only for animation, but for checking if anything
     // changed in commitAttributeRecompute()
     checkpointRTA = currentRTA;
-    checkpointRatio = lastRatio;
 
     ease = nullptr;
     delay = nullptr;
@@ -192,21 +191,16 @@ void AnimatableAttribute::merge(const ReferenceAttribute& ref)
 
     active = true;
 
-    //wtf does ref.clear do here again??
-    if(ref.ease  || ref.clear)   ease = &*ref.ease;
-    if(ref.delay || ref.clear)  delay = &*ref.delay;
+    if(ref.ease)    ease = &*ref.ease;
+    if(ref.delay)  delay = &*ref.delay;
 
     currentRTA.merge(ref);
 }
 
 void AnimatableAttribute::commitAttributeRecompute()
 {
-    if(checkpointRTA == currentRTA)
-    {
-        //Restore
-        lastRatio = checkpointRatio;
-        return;
-    }
+    //This doesn't check our full configuration (clear........)
+    if(checkpointRTA == currentRTA) return;
 
     previousRTA = checkpointRTA;
 

@@ -100,10 +100,9 @@ class AnimatableAttribute //440 byte struct replacing a 1224 byte struct, noice
     RuntimeAttribute currentRTA;
 
 
-    //These store the current values to preserve them in case
+    //We need a third copy in case the values are the same as the current and as such
     // the recompute is redundant. (TODO: Should recomputes just not do this, period?)
     RuntimeAttribute checkpointRTA;
-    double checkpointRatio;
 
     //These point to the (current) reference attribute
     const int* delay = nullptr; //Yeah it's silly indirection for an integer but it's consistent.
