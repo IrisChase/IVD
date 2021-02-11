@@ -92,17 +92,13 @@ void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_callback_trig
 //----------------------------------------------------------------------------------------------Dust Bindings
 IVD_Space* IVD_space_alloc();
 void IVD_space_free(IVD_Space* space);
-int IVD_space_get_w(IVD_Space* space);
-int IVD_space_get_h(IVD_Space* space);
-void IVD_space_set_w(IVD_Space* space, int w);
-void IVD_space_set_h(IVD_Space* space, int h);
+int* IVD_space_w(IVD_Space* space);
+int* IVD_space_h(IVD_Space* space);
 
 IVD_Point* IVD_coords_alloc();
 void   IVD_point_free(IVD_Point* point);
-int   IVD_point_get_x(IVD_Point* point);
-int   IVD_point_get_y(IVD_Point* point);
-void  IVD_point_set_x(IVD_Point* point, int x);
-void  IVD_point_set_y(IVD_Point* point, int y);
+int*   IVD_point__x(IVD_Point* point);
+int*   IVD_point__y(IVD_Point* point);
 
 IVD_Rect* IVD_rect_alloc();
 void IVD_rect_free(IVD_Rect* rect);
@@ -114,13 +110,12 @@ void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point);
 //-------------------------------------------------------------------------------------------GeometryProposal
 IVD_GeometryProposal* IVD_geoprop_alloc();
 void IVD_geoprop_free(IVD_GeometryProposal* prop);
-int IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop);
-int IVD_geoprop_expand_vertical(IVD_GeometryProposal* prop);
-int IVD_geoprop_shrink_horizontal(IVD_GeometryProposal* prop);
-int IVD_geoprop_shrink_vertical(IVD_GeometryProposal* prop);
+int* IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop);
+int* IVD_geoprop_expand_vertical(IVD_GeometryProposal* prop);
+int* IVD_geoprop_shrink_horizontal(IVD_GeometryProposal* prop);
+int* IVD_geoprop_shrink_vertical(IVD_GeometryProposal* prop);
 int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space);
-//Returns space passed in for some raisen
-IVD_Space* IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space);
+void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space);
 
 
 
