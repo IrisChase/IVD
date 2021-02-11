@@ -214,6 +214,8 @@ IVD_GeometryProposal* IVD_geoprop_alloc()
 void IVD_geoprop_free(IVD_GeometryProposal* prop)
 { delete castGeoprop(prop); }
 
+IVD_Space* IVD_geoprop_proposed_space(IVD_GeometryProposal* prop)
+{ return castSpace(&castGeoprop(prop)->proposedDimensions); }
 
 int* IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop)
 { return castBoolRef(castGeoprop(prop)->expandForAngle(IVD::Angle::Horizontal)); }
@@ -231,9 +233,7 @@ int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space)
 { return castGeoprop(prop)->verifyCompliance(*castSpace(space)); }
 
 void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space)
-{
-    *castSpace(space) = castGeoprop(prop)->roundConflicts(*castSpace(space));
-}
+{ *castSpace(space) = castGeoprop(prop)->roundConflicts(*castSpace(space)); }
 
 
 //--------------------Accessors

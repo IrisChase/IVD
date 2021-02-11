@@ -21,6 +21,9 @@
 
 #include "IVD_status.h"
 
+#define IVD_FILL_PRECEDENCE_GREEDY	0
+#define IVD_FILL_PRECEDENCE_SHRINKY	1
+
 struct IVD_Runtime;
 struct IVD_Model;
 struct IVD_Instance;
@@ -86,9 +89,6 @@ void IVD_instance_set_string_setter(IVD_Instance* instance, IVD_callback_set_str
 
 void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_callback_trigger fun);
 
-
-//---------------------------------------------------------------------------------------------------Material
-
 //----------------------------------------------------------------------------------------------Dust Bindings
 IVD_Space* IVD_space_alloc();
 void IVD_space_free(IVD_Space* space);
@@ -97,19 +97,20 @@ int* IVD_space_h(IVD_Space* space);
 
 IVD_Point* IVD_coords_alloc();
 void   IVD_point_free(IVD_Point* point);
-int*   IVD_point__x(IVD_Point* point);
-int*   IVD_point__y(IVD_Point* point);
+int*   IVD_point_x(IVD_Point* point);
+int*   IVD_point_y(IVD_Point* point);
 
 IVD_Rect* IVD_rect_alloc();
 void IVD_rect_free(IVD_Rect* rect);
 IVD_Space* IVD_rect_get_space(IVD_Rect* rect); //Still owned by *rect
 IVD_Point* IVD_rect_get_point(IVD_Rect* rect);
-void IVD_rect_set_space(IVD_Rect* rect, IVD_Space* space);
+void IVD_rect_set_space(IVD_Rect* rect, IVD_Space* space); //Copies values
 void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point);
 
 //-------------------------------------------------------------------------------------------GeometryProposal
 IVD_GeometryProposal* IVD_geoprop_alloc();
 void IVD_geoprop_free(IVD_GeometryProposal* prop);
+IVD_Space* IVD_geoprop_proposed_space(IVD_GeometryProposal* prop);
 int* IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop);
 int* IVD_geoprop_expand_vertical(IVD_GeometryProposal* prop);
 int* IVD_geoprop_shrink_horizontal(IVD_GeometryProposal* prop);
@@ -118,6 +119,16 @@ int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space);
 void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space);
 
 
+//---------------------------------------------------------------------------------------------------Material
+void IVD_material_get_viewport(IVD_Material* mat, IVD_Rect* rslt);
+void IVD_material_get_drawing_Area(IVD_Material* mat, IVD_Rect* rslt);
+void IVD_material_get_drawing_area_offset(IVD_Material* mat, IVD_Point* rslt);
+void IVD_material_get_drawing_area_offset_relative(IVD_Material* mat, IVD_Point* rslt);
+void IVD_material_draw(IVD_Material* mat);
+int IVD_material_get_fill_precedence_horizontal(IVD_Material* mat);
+int IVD_material_get_fill_precedence_vertical(IVD_Material* mat);
+void IVD_material_shape(IVD_Material* mat, IVD_GeometryProposal* prop);
+void IVD_material_set_absolute_offset(IVD_Material* mat, IVD_Point* offset);
 
 
 

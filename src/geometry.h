@@ -50,8 +50,8 @@ enum class Alignment
 //But either setting will still ask for more space if not given enough.
 enum class FillPrecedence
 {
-    Greedy,
-    Shrinky,
+    Greedy = 0,
+    Shrinky = 1,
 };
 
 struct Dimens;
