@@ -24,20 +24,22 @@
 struct IVD_Runtime;
 struct IVD_Model;
 struct IVD_Instance;
+struct IVD_Material;
+struct IVD_GeomtryProposal;
 
 //----------------------------------------------------------------------------------Function pointer typedefs
-typedef void(*IVD_instance_User_Data_Destructor)(void*);
+typedef void(*IVD_user_data_destructor)(void*);
 
-typedef double(*IVD_instance_Get_Number_Callback)(const char*, void*);
-typedef const char*(*IVD_instance_Get_String_Callback)(const char*, void*);
+typedef double(*IVD_callback_get_number)(const char*, void*);
+typedef const char*(*IVD_callback_get_string)(const char*, void*);
 
 //0 false 1 true
-typedef int(*IVD_Instance_Check_Const_Callback)(const char* key, void*);
+typedef int(*IVD_callback_check_const)(const char* key, void*);
 
-typedef void(*IVD_instance_Set_Number_Callback)(const char* key, double, void*);
-typedef void(*IVD_instance_Set_String_Callback)(const char* key, const char* val, void*);
+typedef void(*IVD_callback_set_number)(const char* key, double, void*);
+typedef void(*IVD_callback_set_string)(const char* key, const char* val, void*);
 
-typedef void(*IVD_instance_Trigger_Callback)(const char*, void*);
+typedef void(*IVD_callback_trigger)(const char*, void*);
 
 //------------------------------------------------------------------------------------------------Environment
 IVD_Runtime* IVD_create_environment();
@@ -58,7 +60,7 @@ IVD_Instance* IVD_model_first(IVD_Model*);
 //---------------------------------------------------------------------------------------------------Instance
 IVD_Model* IVD_instance_actualize_child_model(IVD_Instance*, const char* name);
 IVD_Model* IVD_instance_get_child_model(IVD_Instance*);
-void IVD_instance_set_user_data(IVD_Instance*, void*, IVD_instance_User_Data_Destructor);
+void IVD_instance_set_user_data(IVD_Instance*, void*, IVD_user_data_destructor);
 void* IVD_instance_get_user_data(IVD_Instance*);
 
 IVD_Instance* IVD_instance_next(IVD_Instance*);
@@ -70,16 +72,33 @@ void IVD_instance_set_number(IVD_Instance*, const char* key, double val);
 void IVD_instance_set_string(IVD_Instance*instance, const char* key, const char* val);
 
 //Instance callback setters
-void IVD_instance_set_number_getter(IVD_Instance* instance, IVD_instance_Get_Number_Callback fun);
-void IVD_instance_set_string_getter(IVD_Instance* instance, IVD_instance_Get_String_Callback fun);
+void IVD_instance_set_number_getter(IVD_Instance* instance, IVD_callback_get_number fun);
+void IVD_instance_set_string_getter(IVD_Instance* instance, IVD_callback_get_string fun);
 
-void IVD_instance_set_check_number_const(IVD_Instance* instance, IVD_Instance_Check_Const_Callback);
-void IVD_instance_set_check_string_const(IVD_Instance* instance, IVD_Instance_Check_Const_Callback);
+void IVD_instance_set_check_number_const(IVD_Instance* instance, IVD_callback_check_const);
+void IVD_instance_set_check_string_const(IVD_Instance* instance, IVD_callback_check_const);
 
-void IVD_instance_set_number_setter(IVD_Instance* instance, IVD_instance_Set_Number_Callback fun);
-void IVD_instance_set_string_setter(IVD_Instance* instance, IVD_instance_Set_String_Callback fun);
+void IVD_instance_set_number_setter(IVD_Instance* instance, IVD_callback_set_number fun);
+void IVD_instance_set_string_setter(IVD_Instance* instance, IVD_callback_set_string fun);
 
-void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_instance_Trigger_Callback fun);
+void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_callback_trigger fun);
+
+
+//---------------------------------------------------------------------------------------------------Material
+//-------------------------------------------------------------------------------------------GeometryProposal
+IVD_GeomtryProposal* IVD_geoprop_alloc();
+void IVD_geoprop_free(IVD_GeomtryProposal* prop);
+int IVD_geoprop_expand_horizontal(IVD_GeomtryProposal* prop);
+int IVD_geoprop_expand_vertical(IVD_GeomtryProposal* prop);
+int IVD_geoprop_shrink_horizontal(IVD_GeomtryProposal* prop);
+int IVD_geoprop_shrink_vertical(IVD_GeomtryProposal* prop);
+int IVD_geoprop_verify_compliance(IVD_GeomtryProposal* prop, int w, int h);
+int IVD_geoprop_round_conflicts_w(IVD_GeomtryProposal* prop, int w);
+int IVD_geoprop_round_conflicts_h(IVD_GeomtryProposal* prop, int h);
+
+
+
+
 
 //That's all, folks! >:3c
 #endif //IVD_ALPHA_C_BINDINGS_H

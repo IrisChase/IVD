@@ -98,7 +98,7 @@ IVD_Model* IVD_instance_get_child_model(IVD_Instance* instance)
             (reinterpret_cast<IVD::ModelItemBase*>(instance)->getChildContainer());
 }
 
-void IVD_instance_set_user_data(IVD_Instance* instance, void* data, IVD_instance_User_Data_Destructor dtor)
+void IVD_instance_set_user_data(IVD_Instance* instance, void* data, IVD_user_data_destructor dtor)
 {
     reinterpret_cast<IVD::ModelItemBase*>(instance)->setUserData(data, dtor); //D A T A    D E T O U R
 }
@@ -126,23 +126,62 @@ void IVD_instance_set_string(IVD_Instance* instance, const char* key, const char
 { reinterpret_cast<IVD::ModelItemBase*>(instance)->setString(key, val); }
 
 
-void IVD_instance_set_number_getter(IVD_Instance* instance, IVD_instance_Get_Number_Callback fun)
+void IVD_instance_set_number_getter(IVD_Instance* instance, IVD_callback_get_number fun)
 { setupCallback(instance, fun); }
-void IVD_instance_set_string_getter(IVD_Instance* instance, IVD_instance_Get_String_Callback fun)
+void IVD_instance_set_string_getter(IVD_Instance* instance, IVD_callback_get_string fun)
 { setupCallback(instance, fun); }
 //Well aren't these two fucking special...
-void IVD_instance_set_check_number_const(IVD_Instance* instance, IVD_Instance_Check_Const_Callback fun)
+void IVD_instance_set_check_number_const(IVD_Instance* instance, IVD_callback_check_const fun)
 {  reinterpret_cast<IVD::ModelItemBase*>(instance)->setCallbackCheckNumber(fun); }
-void IVD_instance_set_check_string_const(IVD_Instance* instance, IVD_Instance_Check_Const_Callback fun)
+void IVD_instance_set_check_string_const(IVD_Instance* instance, IVD_callback_check_const fun)
 { reinterpret_cast<IVD::ModelItemBase*>(instance)->setCallbackCheckString(fun); }
-void IVD_instance_set_number_setter(IVD_Instance* instance, IVD_instance_Set_Number_Callback fun)
+void IVD_instance_set_number_setter(IVD_Instance* instance, IVD_callback_set_number fun)
 { setupCallback(instance, fun); }
-void IVD_instance_set_string_setter(IVD_Instance* instance, IVD_instance_Set_String_Callback fun)
+void IVD_instance_set_string_setter(IVD_Instance* instance, IVD_callback_set_string fun)
 { setupCallback(instance, fun); }
-void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_instance_Trigger_Callback fun)
+void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_callback_trigger fun)
 { setupCallback(instance, fun); }
 
 
+//-------------------------------------------------------------------------------------------GeometryProposal
+static IVD::GeometryProposal* castGeoprop(IVD_GeomtryProposal* prop)
+{ return reinterpret_cast<IVD::GeometryProposal*>(prop); }
+
+IVD_GeomtryProposal* IVD_geoprop_alloc()
+{ return reinterpret_cast<IVD_GeomtryProposal*>(new IVD::GeometryProposal()); }
+
+void IVD_geoprop_free(IVD_GeomtryProposal* prop)
+{ delete castGeoprop(prop); }
+
+int IVD_geoprop_expand_horizontal(IVD_GeomtryProposal* prop)
+{ return castGeoprop(prop)->expandForAngle(IVD::Angle::Horizontal); }
+
+int IVD_geoprop_expand_vertical(IVD_GeomtryProposal* prop)
+{ return castGeoprop(prop)->expandForAngle(IVD::Angle::Vertical); }
+
+int IVD_geoprop_shrink_horizontal(IVD_GeomtryProposal* prop)
+{ return castGeoprop(prop)->shrinkForAngle(IVD::Angle::Horizontal); }
+
+int IVD_geoprop_shrink_vertical(IVD_GeomtryProposal* prop)
+{ return castGeoprop(prop)->shrinkForAngle(IVD::Angle::Vertical); }
+
+int IVD_geoprop_verify_compliance(IVD_GeomtryProposal* prop, int w, int h)
+{
+    IVD::Dimens dimens(w, h);
+    return castGeoprop(prop)->verifyCompliance(dimens);
+}
+
+int IVD_geoprop_round_conflicts_w(IVD_GeomtryProposal* prop, int w)
+{
+    //So inefficient... *sheds a single tear*
+    IVD::Dimens usedSpace(w, 0);
+    return castGeoprop(prop)->roundConflicts(usedSpace).w;
+}
+int IVD_geoprop_round_conflicts_h(IVD_GeomtryProposal* prop, int h)
+{
+    IVD::Dimens usedSpace(0, h);
+    return castGeoprop(prop)->roundConflicts(usedSpace).h;
+}
 
 //--------------------Accessors
 

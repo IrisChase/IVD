@@ -69,6 +69,7 @@ src/codeposition.h
 src/virtualstatekey.h
 src/virtualstatekey.cpp
 src/binaryexpressionprinter.h
+src/widget.h
 src/cbindings.cpp
 src/referenceattribute.h
 src/referenceattribute.cpp
@@ -128,22 +129,27 @@ contrib/irisutils/routine.h
 contrib/irisutils/easyuniquepointer.h
 )
 
+find_package(OpenImageIO REQUIRED)
 find_package(reprodyne 1.0.0 REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(Catch2 REQUIRED)
+find_package(SDL2 REQUIRED)
 
 SET(IVD_COMMON_LIBS
   SDL2
   cairo
   harfbuzz
   freetype
-  OpenImageIO)
+  ${OPENIMAGEIO_LIBRARIES})
+
+message(${REPRODYNE_INCLUDE_DIRS})
 
 SET(IVD_INTERNAL_INCLUDES
   src
   contrib
   ${REPRODYNE_INCLUDE_DIRS}
-  ${FREETYPE_INCLUDE_DIRS})
+  ${FREETYPE_INCLUDE_DIRS}
+  ${OPENIMAGEIO_INCLUDES})
 
 add_library(ivd SHARED ${ivd_core_sources})
 target_include_directories(ivd PRIVATE PRIVATE ${IVD_INTERNAL_INCLUDES})

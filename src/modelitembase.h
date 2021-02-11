@@ -31,6 +31,7 @@ namespace IVD
 
 class ModelContainer;
 class DisplayItem;
+class Material;
 
 class MisconfiguredModelException : public std::exception {};
 
@@ -55,16 +56,16 @@ class ModelItemBase
 
     //This is for C interop
     void* userData;
-    IVD_instance_User_Data_Destructor userDataDtor;
+    IVD_user_data_destructor userDataDtor;
 
-    IVD_instance_Get_Number_Callback getNumberCallback;
-    IVD_instance_Get_String_Callback getStringCallback;
-    IVD_Instance_Check_Const_Callback checkNumberConstCallback;
-    IVD_Instance_Check_Const_Callback checkStringConstCallback;
-    IVD_instance_Set_Number_Callback setNumberCallback;
-    IVD_instance_Set_String_Callback setStringCallback;
+    IVD_callback_get_number getNumberCallback;
+    IVD_callback_get_string getStringCallback;
+    IVD_callback_check_const checkNumberConstCallback;
+    IVD_callback_check_const checkStringConstCallback;
+    IVD_callback_set_number setNumberCallback;
+    IVD_callback_set_string setStringCallback;
 
-    IVD_instance_Trigger_Callback modelTriggerCallback;
+    IVD_callback_trigger modelTriggerCallback;
 
 
     ModelContainer* getParentContainer()
@@ -103,7 +104,7 @@ public:
     ModelItemBase(ModelContainer* parent, EventQueue* queue);
     ~ModelItemBase();
 
-    void setUserData(void* suppliedUserData, IVD_instance_User_Data_Destructor dtor)
+    void setUserData(void* suppliedUserData, IVD_user_data_destructor dtor)
     {
         userData = suppliedUserData;
         userDataDtor = dtor;
@@ -130,20 +131,22 @@ public:
         getEventQueue()->pushEvent(e);
     }
 
-    void setCallback(IVD_instance_Get_Number_Callback fun)
+    Material* overrideMaterial();
+
+    void setCallback(IVD_callback_get_number fun)
     {  getNumberCallback = fun; /*There is nothing = fun about writing all these*/ }
-    void setCallback(IVD_instance_Get_String_Callback fun)
+    void setCallback(IVD_callback_get_string fun)
     { getStringCallback = fun; }
-    void setCallback(IVD_instance_Set_Number_Callback fun)
+    void setCallback(IVD_callback_set_number fun)
     { setNumberCallback = fun; }
-    void setCallback(IVD_instance_Set_String_Callback fun)
+    void setCallback(IVD_callback_set_string fun)
     { setStringCallback = fun; }
-    void setCallback(IVD_instance_Trigger_Callback fun)
+    void setCallback(IVD_callback_trigger fun)
     { modelTriggerCallback = fun; }
 
-    void setCallbackCheckNumber(IVD_Instance_Check_Const_Callback fun)
+    void setCallbackCheckNumber(IVD_callback_check_const fun)
     { checkNumberConstCallback = fun; }
-    void setCallbackCheckString(IVD_Instance_Check_Const_Callback fun)
+    void setCallbackCheckString(IVD_callback_check_const fun)
     { checkStringConstCallback = fun; }
 
     //Maybe... Return a status code if the function pointer is null? Probably. TODO
