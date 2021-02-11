@@ -26,6 +26,9 @@ struct IVD_Model;
 struct IVD_Instance;
 struct IVD_Material;
 struct IVD_GeomtryProposal;
+struct IVD_Dimens;
+struct IVD_Point;
+struct IVD_Rect;
 
 //----------------------------------------------------------------------------------Function pointer typedefs
 typedef void(*IVD_user_data_destructor)(void*);
@@ -95,6 +98,28 @@ int IVD_geoprop_shrink_vertical(IVD_GeomtryProposal* prop);
 int IVD_geoprop_verify_compliance(IVD_GeomtryProposal* prop, int w, int h);
 int IVD_geoprop_round_conflicts_w(IVD_GeomtryProposal* prop, int w);
 int IVD_geoprop_round_conflicts_h(IVD_GeomtryProposal* prop, int h);
+
+//----------------------------------------------------------------------------------------------Dust Bindings
+IVD_Dimens* IVD_dimens_alloc();
+void IVD_dimens_free(IVD_Dimens* dimens);
+int IVD_dimens_get_w(IVD_Dimens* dimens);
+int IVD_dimens_get_h(IVD_Dimens* dimens);
+void IVD_dimens_set_w(IVD_Dimens* dimens, int w);
+void IVD_dimens_set_h(IVD_Dimens* dimens, int h);
+
+IVD_Point* IVD_coords_alloc();
+void   IVD_point_free(IVD_Point* point);
+int   IVD_point_get_x(IVD_Point* point);
+int   IVD_point_get_y(IVD_Point* point);
+void  IVD_point_set_x(IVD_Point* point, int x);
+void  IVD_point_set_y(IVD_Point* point, int y);
+
+IVD_Rect* IVD_rect_alloc();
+void IVD_rect_free(IVD_Rect* rect);
+IVD_Dimens* IVD_rect_get_dimens(IVD_Rect* rect); //Still owned by *rect
+IVD_Point* IVD_rect_get_point(IVD_Rect* rect);
+void IVD_rect_set_dimens(IVD_Rect* rect, IVD_Dimens* dimens);
+void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point);
 
 
 

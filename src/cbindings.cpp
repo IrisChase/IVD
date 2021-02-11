@@ -183,6 +183,67 @@ int IVD_geoprop_round_conflicts_h(IVD_GeomtryProposal* prop, int h)
     return castGeoprop(prop)->roundConflicts(usedSpace).h;
 }
 
+//----------------------------------------------------------------------------------------------Dust Bindings
+static IVD::Dimens* castDimens(IVD_Dimens* dimens)
+{ return reinterpret_cast<IVD::Dimens*>(dimens); }
+
+static IVD_Dimens* castDimens(IVD::Dimens* dimens)
+{ return reinterpret_cast<IVD_Dimens*>(dimens); }
+
+IVD_Dimens* IVD_dimens_alloc()
+{ return castDimens(new IVD::Dimens()); }
+
+void IVD_dimens_free(IVD_Dimens* dimens)
+{ delete castDimens(dimens); }
+int IVD_dimens_get_w(IVD_Dimens* dimens)
+{ return castDimens(dimens)->w; }
+int IVD_dimens_get_h(IVD_Dimens* dimens)
+{ return castDimens(dimens)->h; }
+void IVD_dimens_set_w(IVD_Dimens* dimens, int w)
+{ castDimens(dimens)->w = w; }
+void IVD_dimens_set_h(IVD_Dimens* dimens, int h)
+{ castDimens(dimens)->h = h; }
+
+
+static IVD::Coords* castPoint(IVD_Point* point)
+{ return reinterpret_cast<IVD::Coords*>(point); }
+
+static IVD_Point* castPoint(IVD::Coords* point)
+{ return reinterpret_cast<IVD_Point*>(point); }
+
+IVD_Point* IVD_coords_alloc()
+{ return castPoint(new IVD::Coords()); }
+
+void IVD_point_free(IVD_Point* point)
+{ delete castPoint(point); }
+
+int   IVD_point_get_x(IVD_Point* point)
+{ return castPoint(point)->x; }
+int   IVD_point_get_y(IVD_Point* point)
+{ return castPoint(point)->y; }
+void  IVD_point_set_x(IVD_Point* point, int x)
+{ castPoint(point)->x = x; }
+void  IVD_point_set_y(IVD_Point* point, int y)
+{ castPoint(point)->y = y; }
+
+static IVD::Rect* castRect(IVD_Rect* rect)
+{ return reinterpret_cast<IVD::Rect*>(rect); }
+
+IVD_Rect* IVD_rect_alloc()
+{ return reinterpret_cast<IVD_Rect*>(new IVD::Rect()); }
+
+void IVD_rect_free(IVD_Rect* rect)
+{ delete castRect(rect); }
+
+IVD_Dimens* IVD_rect_get_dimens(IVD_Rect* rect)
+{ return castDimens(&castRect(rect)->d); }
+IVD_Point* IVD_rect_get_point(IVD_Rect* rect)
+{ return castPoint(&castRect(rect)->c); }
+void IVD_rect_set_dimens(IVD_Rect* rect, IVD_Dimens* dimens)
+{ castRect(rect)->d = *castDimens(dimens); }
+void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point)
+{ castRect(rect)->c = *castPoint(point); }
+
 //--------------------Accessors
 
 }//extern "C"
