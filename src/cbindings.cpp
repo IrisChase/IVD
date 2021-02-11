@@ -143,66 +143,27 @@ void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_callback_trig
 { setupCallback(instance, fun); }
 
 
-//-------------------------------------------------------------------------------------------GeometryProposal
-static IVD::GeometryProposal* castGeoprop(IVD_GeomtryProposal* prop)
-{ return reinterpret_cast<IVD::GeometryProposal*>(prop); }
-
-IVD_GeomtryProposal* IVD_geoprop_alloc()
-{ return reinterpret_cast<IVD_GeomtryProposal*>(new IVD::GeometryProposal()); }
-
-void IVD_geoprop_free(IVD_GeomtryProposal* prop)
-{ delete castGeoprop(prop); }
-
-int IVD_geoprop_expand_horizontal(IVD_GeomtryProposal* prop)
-{ return castGeoprop(prop)->expandForAngle(IVD::Angle::Horizontal); }
-
-int IVD_geoprop_expand_vertical(IVD_GeomtryProposal* prop)
-{ return castGeoprop(prop)->expandForAngle(IVD::Angle::Vertical); }
-
-int IVD_geoprop_shrink_horizontal(IVD_GeomtryProposal* prop)
-{ return castGeoprop(prop)->shrinkForAngle(IVD::Angle::Horizontal); }
-
-int IVD_geoprop_shrink_vertical(IVD_GeomtryProposal* prop)
-{ return castGeoprop(prop)->shrinkForAngle(IVD::Angle::Vertical); }
-
-int IVD_geoprop_verify_compliance(IVD_GeomtryProposal* prop, int w, int h)
-{
-    IVD::Dimens dimens(w, h);
-    return castGeoprop(prop)->verifyCompliance(dimens);
-}
-
-int IVD_geoprop_round_conflicts_w(IVD_GeomtryProposal* prop, int w)
-{
-    //So inefficient... *sheds a single tear*
-    IVD::Dimens usedSpace(w, 0);
-    return castGeoprop(prop)->roundConflicts(usedSpace).w;
-}
-int IVD_geoprop_round_conflicts_h(IVD_GeomtryProposal* prop, int h)
-{
-    IVD::Dimens usedSpace(0, h);
-    return castGeoprop(prop)->roundConflicts(usedSpace).h;
-}
 
 //----------------------------------------------------------------------------------------------Dust Bindings
-static IVD::Dimens* castDimens(IVD_Dimens* dimens)
-{ return reinterpret_cast<IVD::Dimens*>(dimens); }
+static IVD::Dimens* castSpace(IVD_Space* space)
+{ return reinterpret_cast<IVD::Dimens*>(space); }
 
-static IVD_Dimens* castDimens(IVD::Dimens* dimens)
-{ return reinterpret_cast<IVD_Dimens*>(dimens); }
+static IVD_Space* castSpace(IVD::Dimens* space)
+{ return reinterpret_cast<IVD_Space*>(space); }
 
-IVD_Dimens* IVD_dimens_alloc()
-{ return castDimens(new IVD::Dimens()); }
+IVD_Space* IVD_space_alloc()
+{ return castSpace(new IVD::Dimens()); }
 
-void IVD_dimens_free(IVD_Dimens* dimens)
-{ delete castDimens(dimens); }
-int IVD_dimens_get_w(IVD_Dimens* dimens)
-{ return castDimens(dimens)->w; }
-int IVD_dimens_get_h(IVD_Dimens* dimens)
-{ return castDimens(dimens)->h; }
-void IVD_dimens_set_w(IVD_Dimens* dimens, int w)
-{ castDimens(dimens)->w = w; }
-void IVD_dimens_set_h(IVD_Dimens* dimens, int h)
-{ castDimens(dimens)->h = h; }
+void IVD_space_free(IVD_Space* space)
+{ delete castSpace(space); }
+int IVD_space_get_w(IVD_Space* space)
+{ return castSpace(space)->w; }
+int IVD_space_get_h(IVD_Space* space)
+{ return castSpace(space)->h; }
+void IVD_space_set_w(IVD_Space* space, int w)
+{ castSpace(space)->w = w; }
+void IVD_space_set_h(IVD_Space* space, int h)
+{ castSpace(space)->h = h; }
 
 
 static IVD::Coords* castPoint(IVD_Point* point)
@@ -235,14 +196,47 @@ IVD_Rect* IVD_rect_alloc()
 void IVD_rect_free(IVD_Rect* rect)
 { delete castRect(rect); }
 
-IVD_Dimens* IVD_rect_get_dimens(IVD_Rect* rect)
-{ return castDimens(&castRect(rect)->d); }
+IVD_Space* IVD_rect_get_space(IVD_Rect* rect)
+{ return castSpace(&castRect(rect)->d); }
 IVD_Point* IVD_rect_get_point(IVD_Rect* rect)
 { return castPoint(&castRect(rect)->c); }
-void IVD_rect_set_dimens(IVD_Rect* rect, IVD_Dimens* dimens)
-{ castRect(rect)->d = *castDimens(dimens); }
+void IVD_rect_set_space(IVD_Rect* rect, IVD_Space* space)
+{ castRect(rect)->d = *castSpace(space); }
 void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point)
 { castRect(rect)->c = *castPoint(point); }
+
+
+//-------------------------------------------------------------------------------------------GeometryProposal
+static IVD::GeometryProposal* castGeoprop(IVD_GeometryProposal* prop)
+{ return reinterpret_cast<IVD::GeometryProposal*>(prop); }
+
+IVD_GeometryProposal* IVD_geoprop_alloc()
+{ return reinterpret_cast<IVD_GeometryProposal*>(new IVD::GeometryProposal()); }
+
+void IVD_geoprop_free(IVD_GeometryProposal* prop)
+{ delete castGeoprop(prop); }
+
+int IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop)
+{ return castGeoprop(prop)->expandForAngle(IVD::Angle::Horizontal); }
+
+int IVD_geoprop_expand_vertical(IVD_GeometryProposal* prop)
+{ return castGeoprop(prop)->expandForAngle(IVD::Angle::Vertical); }
+
+int IVD_geoprop_shrink_horizontal(IVD_GeometryProposal* prop)
+{ return castGeoprop(prop)->shrinkForAngle(IVD::Angle::Horizontal); }
+
+int IVD_geoprop_shrink_vertical(IVD_GeometryProposal* prop)
+{ return castGeoprop(prop)->shrinkForAngle(IVD::Angle::Vertical); }
+
+int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space)
+{ return castGeoprop(prop)->verifyCompliance(*castSpace(space)); }
+
+IVD_Space* IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space)
+{
+    *castSpace(space) = castGeoprop(prop)->roundConflicts(*castSpace(space));
+    return space;
+}
+
 
 //--------------------Accessors
 

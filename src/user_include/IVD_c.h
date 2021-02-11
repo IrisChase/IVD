@@ -25,8 +25,8 @@ struct IVD_Runtime;
 struct IVD_Model;
 struct IVD_Instance;
 struct IVD_Material;
-struct IVD_GeomtryProposal;
-struct IVD_Dimens;
+struct IVD_GeometryProposal;
+struct IVD_Space;
 struct IVD_Point;
 struct IVD_Rect;
 
@@ -88,24 +88,14 @@ void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_callback_trig
 
 
 //---------------------------------------------------------------------------------------------------Material
-//-------------------------------------------------------------------------------------------GeometryProposal
-IVD_GeomtryProposal* IVD_geoprop_alloc();
-void IVD_geoprop_free(IVD_GeomtryProposal* prop);
-int IVD_geoprop_expand_horizontal(IVD_GeomtryProposal* prop);
-int IVD_geoprop_expand_vertical(IVD_GeomtryProposal* prop);
-int IVD_geoprop_shrink_horizontal(IVD_GeomtryProposal* prop);
-int IVD_geoprop_shrink_vertical(IVD_GeomtryProposal* prop);
-int IVD_geoprop_verify_compliance(IVD_GeomtryProposal* prop, int w, int h);
-int IVD_geoprop_round_conflicts_w(IVD_GeomtryProposal* prop, int w);
-int IVD_geoprop_round_conflicts_h(IVD_GeomtryProposal* prop, int h);
 
 //----------------------------------------------------------------------------------------------Dust Bindings
-IVD_Dimens* IVD_dimens_alloc();
-void IVD_dimens_free(IVD_Dimens* dimens);
-int IVD_dimens_get_w(IVD_Dimens* dimens);
-int IVD_dimens_get_h(IVD_Dimens* dimens);
-void IVD_dimens_set_w(IVD_Dimens* dimens, int w);
-void IVD_dimens_set_h(IVD_Dimens* dimens, int h);
+IVD_Space* IVD_space_alloc();
+void IVD_space_free(IVD_Space* space);
+int IVD_space_get_w(IVD_Space* space);
+int IVD_space_get_h(IVD_Space* space);
+void IVD_space_set_w(IVD_Space* space, int w);
+void IVD_space_set_h(IVD_Space* space, int h);
 
 IVD_Point* IVD_coords_alloc();
 void   IVD_point_free(IVD_Point* point);
@@ -116,10 +106,21 @@ void  IVD_point_set_y(IVD_Point* point, int y);
 
 IVD_Rect* IVD_rect_alloc();
 void IVD_rect_free(IVD_Rect* rect);
-IVD_Dimens* IVD_rect_get_dimens(IVD_Rect* rect); //Still owned by *rect
+IVD_Space* IVD_rect_get_space(IVD_Rect* rect); //Still owned by *rect
 IVD_Point* IVD_rect_get_point(IVD_Rect* rect);
-void IVD_rect_set_dimens(IVD_Rect* rect, IVD_Dimens* dimens);
+void IVD_rect_set_space(IVD_Rect* rect, IVD_Space* space);
 void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point);
+
+//-------------------------------------------------------------------------------------------GeometryProposal
+IVD_GeometryProposal* IVD_geoprop_alloc();
+void IVD_geoprop_free(IVD_GeometryProposal* prop);
+int IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop);
+int IVD_geoprop_expand_vertical(IVD_GeometryProposal* prop);
+int IVD_geoprop_shrink_horizontal(IVD_GeometryProposal* prop);
+int IVD_geoprop_shrink_vertical(IVD_GeometryProposal* prop);
+int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space);
+//Returns space passed in for some raisen
+IVD_Space* IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space);
 
 
 
