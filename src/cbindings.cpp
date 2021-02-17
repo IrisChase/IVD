@@ -30,28 +30,28 @@ extern "C"
 
 
 //--------------------------------------------------------------------------------------Environment
-IVD_Runtime* IVD_create_environment()
-{ return reinterpret_cast<IVD_Runtime*>(new IVD::Environment()); }
-void IVD_destroy_environment(IVD_Runtime* environment)
+IVD_Environment* IVD_create_environment()
+{ return reinterpret_cast<IVD_Environment*>(new IVD::Environment()); }
+void IVD_destroy_environment(IVD_Environment* environment)
 { delete reinterpret_cast<IVD::Environment*>(environment); }
 
 //--------------------Accessors
-IVD_Model* IVD_environment_add_model(IVD_Runtime* environment, const char* name)
+IVD_Model* IVD_environment_add_model(IVD_Environment* environment, const char* name)
 {
     auto* properEnv       = reinterpret_cast<IVD::Environment*>(environment);
     return reinterpret_cast<IVD_Model*>(properEnv->instantiateModel(name));
 }
-int IVD_environment_load_file(IVD_Runtime* environment, const char* path)
+int IVD_environment_load_file(IVD_Environment* environment, const char* path)
 {
     auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);
     return properEnv->loadFromIVDFile(path);
 }
-const char* IVD_environment_get_compiler_errors(IVD_Runtime* environment)
+const char* IVD_environment_get_compiler_errors(const IVD_Environment *environment)
 {
    auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);
    return properEnv->getCompilerErrors();
 }
-void IVD_environment_run(IVD_Runtime* environment)
+void IVD_environment_run(IVD_Environment* environment)
 {
     auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);
     

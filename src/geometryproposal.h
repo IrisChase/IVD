@@ -23,28 +23,22 @@ namespace IVD
 struct GeometryProposal
 {
 private:
-    bool allowedExpandHorizontal;
-    bool allowedExpandVertical;
-
-    bool allowedShrinkHorizontal;
-    bool allowedShrinkVertical;
-
-    bool allowPartial;
-    bool freshPass;
+    int allowedExpandHorizontal;
+    int allowedExpandVertical;
+    int allowedShrinkHorizontal;
+    int allowedShrinkVertical;
 
 public:
     GeometryProposal():
         allowedExpandHorizontal(false),
         allowedExpandVertical(false),
         allowedShrinkHorizontal(false),
-        allowedShrinkVertical(false),
-        allowPartial(false),
-        freshPass(true)
+        allowedShrinkVertical(false)
     {}
 
     Dimens proposedDimensions;
 
-    bool& expandForAngle(Angle angel)
+    int& expandForAngle(Angle angel)
     {
         return angel == Angle::Horizontal ? allowedExpandHorizontal
                                           : allowedExpandVertical;
@@ -56,7 +50,7 @@ public:
                                           : allowedExpandVertical;
     }
 
-    bool& shrinkForAngle(Angle angel)
+    int& shrinkForAngle(Angle angel)
     {
         return angel == Angle::Horizontal ? allowedShrinkHorizontal
                                           : allowedShrinkVertical;
@@ -67,12 +61,6 @@ public:
         return angel == Angle::Horizontal ? allowedShrinkHorizontal
                                           : allowedShrinkVertical;
     }
-
-    bool& getAllowPartial()
-    { return allowPartial; }
-
-    bool& getFreshPass()
-    { return freshPass; }
 
     bool verifyCompliance(const Dimens& region) const
     {

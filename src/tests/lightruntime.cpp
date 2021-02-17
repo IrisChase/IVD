@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
     const std::string path = argv[1];
 
-    IVD::Runtime rt;
+    IVD::Environment rt;
     const int stat = rt.load_IVD_from_file(path.c_str());
 
     if(stat == IVD_STATUS_SUCCESS)

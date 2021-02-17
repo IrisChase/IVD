@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     }
 
     //Run
-    IVD::Runtime rt;
+    IVD::Environment rt;
     rt.load_IVD_from_file(ivdFile);
     rt.run();
 

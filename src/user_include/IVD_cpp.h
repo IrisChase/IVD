@@ -307,12 +307,12 @@ inline Model Instance::get_child_model() const
 { return Model(IVD_instance_get_child_model(internal)); }
 
 
-class Runtime
+class Environment
 {
-    std::unique_ptr<IVD_Runtime, void(*)(IVD_Runtime*)> internal;
+    std::unique_ptr<IVD_Environment, void(*)(IVD_Environment*)> internal;
 
 public:
-    Runtime(): internal(IVD_create_environment(), &IVD_destroy_environment) {}
+    Environment(): internal(IVD_create_environment(), &IVD_destroy_environment) {}
 
     Model add_model(const std::string& name)
     {  return Model(IVD_environment_add_model(internal.get(), name.c_str())); }

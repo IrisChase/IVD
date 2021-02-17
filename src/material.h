@@ -15,8 +15,14 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include <map>
 #include <functional>
 #include "geometryproposal.h" //includes ivd/geometry.h
+
+extern "C"
+{
+#include "user_include/IVD_c.h"
+}
 
 
 namespace IVD
@@ -24,7 +30,6 @@ namespace IVD
 
 class Canvas;
 class DisplayItem;
-
 
 class Material
 {

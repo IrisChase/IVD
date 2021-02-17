@@ -24,14 +24,18 @@
 #define IVD_FILL_PRECEDENCE_GREEDY	0
 #define IVD_FILL_PRECEDENCE_SHRINKY	1
 
-struct IVD_Runtime;
-struct IVD_Model;
-struct IVD_Instance;
-struct IVD_Material;
-struct IVD_GeometryProposal;
+struct IVD_Environment;
+
+struct IVD_Widget;
+//register IVD_Widget as layout to be used with layout attribute
+
 struct IVD_Space;
 struct IVD_Point;
 struct IVD_Rect;
+struct IVD_GeometryProposal;
+struct IVD_Style;
+//struct IVD_Element; // superceded by Widget
+struct IVD_Canvas;
 
 //----------------------------------------------------------------------------------Function pointer typedefs
 typedef void(*IVD_user_data_destructor)(void*);
@@ -48,46 +52,43 @@ typedef void(*IVD_callback_set_string)(const char* key, const char* val, void*);
 typedef void(*IVD_callback_trigger)(const char*, void*);
 
 //------------------------------------------------------------------------------------------------Environment
-IVD_Runtime* IVD_create_environment();
-void IVD_destroy_environment(IVD_Runtime*);
+IVD_Environment* IVD_create_environment();
+void IVD_destroy_environment(IVD_Environment*);
 
-IVD_Model* IVD_environment_add_model(IVD_Runtime*, const char* name);
-int IVD_environment_load_file(IVD_Runtime*, const char* path);
-const char* IVD_environment_get_compiler_errors(IVD_Runtime*);
-void IVD_environment_run(IVD_Runtime*);
+int IVD_environment_load_file(IVD_Environment*, const char* path);
+const char* IVD_environment_get_compiler_errors(const IVD_Environment*);
+void IVD_environment_run(IVD_Environment*);
 
-//-------------------------------------------------------------------------------------------------------Model
-IVD_Instance* IVD_model_add_instance(IVD_Model*);
-int  IVD_model_instance_count(IVD_Model*);
-void IVD_model_erase_later(IVD_Model*, IVD_Instance*);
-void IVD_container_swap(IVD_Model*, IVD_Instance*, IVD_Instance*);
-IVD_Instance* IVD_model_first(IVD_Model*);
+void IVD_environment_register_widget(const char* name,
+                                     IVD_Widget* (*ctor)(),
+                                     void (*dtor)(IVD_Widget*),
+                                     int (*getFillPrecedence)(IVD_Widget*, const int),
+                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
+                                     void (*draw)(IVD_Widget*, IVD_Canvas*),//canbe null
+                                     int (*detectCollisionPoint)(IVD_Widget*, const IVD_Point*), //canbe null
+                                     void (*triggerHandler)(IVD_Widget*, const char*));
 
-//---------------------------------------------------------------------------------------------------Instance
-IVD_Model* IVD_instance_actualize_child_model(IVD_Instance*, const char* name);
-IVD_Model* IVD_instance_get_child_model(IVD_Instance*);
-void IVD_instance_set_user_data(IVD_Instance*, void*, IVD_user_data_destructor);
-void* IVD_instance_get_user_data(IVD_Instance*);
+//IVD manages widget lifetimes so they can be "deleted later"
+IVD_Widget* IVD_environment_widget_create(const char* name, IVD_Widget* parent);
+void IVD_environment_widget_destroy(IVD_Widget*);
 
-IVD_Instance* IVD_instance_next(IVD_Instance*);
 
-void IVD_instance_set_state(IVD_Instance*, const char*);
-void IVD_instance_unset_state(IVD_Instance*, const char*);
+void IVD_environment_register_layout(const char* name,
+                                     IVD_Widget* (*ctor)(),
+                                     void (*dtor)(IVD_Widget*),
+                                     int (*getFillPrecedence)(IVD_Widget*, const int),
+                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*));
 
-void IVD_instance_set_number(IVD_Instance*, const char* key, double val);
-void IVD_instance_set_string(IVD_Instance*instance, const char* key, const char* val);
 
-//Instance callback setters
-void IVD_instance_set_number_getter(IVD_Instance* instance, IVD_callback_get_number fun);
-void IVD_instance_set_string_getter(IVD_Instance* instance, IVD_callback_get_string fun);
+//Register multiple types?
+void IVD_environment_register_layout_attribute(const char* layoutName,
+                                               const char* attributeKey,
+                                               int attributeType);
 
-void IVD_instance_set_check_number_const(IVD_Instance* instance, IVD_callback_check_const);
-void IVD_instance_set_check_string_const(IVD_Instance* instance, IVD_callback_check_const);
+void IVD_environment_register_widget_attribute(const char* widgetName,
+                                               const char* attributeKey,
+                                               int attributeType);
 
-void IVD_instance_set_number_setter(IVD_Instance* instance, IVD_callback_set_number fun);
-void IVD_instance_set_string_setter(IVD_Instance* instance, IVD_callback_set_string fun);
-
-void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_callback_trigger fun);
 
 //----------------------------------------------------------------------------------------------Dust Bindings
 IVD_Space* IVD_space_alloc();
@@ -109,6 +110,7 @@ void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point);
 
 //-------------------------------------------------------------------------------------------GeometryProposal
 IVD_GeometryProposal* IVD_geoprop_alloc();
+IVD_GeometryProposal* IVD_geoprop_alloc_copy(IVD_GeometryProposal*);
 void IVD_geoprop_free(IVD_GeometryProposal* prop);
 IVD_Space* IVD_geoprop_proposed_space(IVD_GeometryProposal* prop);
 int* IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop);
@@ -119,18 +121,24 @@ int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space);
 void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space);
 
 
-//---------------------------------------------------------------------------------------------------Material
-void IVD_material_get_viewport(IVD_Material* mat, IVD_Rect* rslt);
-void IVD_material_get_drawing_Area(IVD_Material* mat, IVD_Rect* rslt);
-void IVD_material_get_drawing_area_offset(IVD_Material* mat, IVD_Point* rslt);
-void IVD_material_get_drawing_area_offset_relative(IVD_Material* mat, IVD_Point* rslt);
-void IVD_material_draw(IVD_Material* mat);
-int IVD_material_get_fill_precedence_horizontal(IVD_Material* mat);
-int IVD_material_get_fill_precedence_vertical(IVD_Material* mat);
-void IVD_material_shape(IVD_Material* mat, IVD_GeometryProposal* prop);
-void IVD_material_set_absolute_offset(IVD_Material* mat, IVD_Point* offset);
+//-----------------------------------------------------------------------------------------------------Widget
+void IVD_widget_set_content_area(IVD_Widget*, const IVD_Space*);
+void IVD_widget_set_offset(IVD_Widget*, const IVD_Point*);
+
+IVD_Space* IVD_widget_get_space(const IVD_Widget*);
+
+int IVD_get_fill_precedence(const IVD_Widget*, int); //Angle -> FillPrecedence
+void IVD_widget_shape(IVD_Widget*, const IVD_GeometryProposal*);
 
 
+//void IVD_draw_X(IVD_Canvas*, ...); //canvas cursor is already set to the correct offset.
+
+//------------------------------------------------------------------------------------------------------Style
+IVD_Style* IVD_create_style(const IVD_Environment* theEnv, const char* className);
+void IVD_destroy_style(const IVD_Environment* theEnv, IVD_Style* style);
+
+void IVD_style_set_state(IVD_Style* style, const char* stateKey, const int state);
+//Should we even be able to readback the state?
 
 //That's all, folks! >:3c
 #endif //IVD_ALPHA_C_BINDINGS_H

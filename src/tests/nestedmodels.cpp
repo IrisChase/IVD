@@ -18,7 +18,7 @@
 
 TEST_CASE("Nested models", "[manual][nested-models]") //May god have mercy on our souls
 {
-    IVD::Runtime rt;
+    IVD::Environment rt;
 
     IVD::Model windowModel = rt.add_model("windows");
     IVD::Instance window = windowModel.add_instance();

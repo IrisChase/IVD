@@ -18,7 +18,7 @@
 
 TEST_CASE("model-environment-tests")
 {
-    IVD::Runtime myEnv;
+    IVD::Environment myEnv;
     IVD::Model model = myEnv.add_model("test-model");
     IVD::Instance inst = model.add_instance();
 

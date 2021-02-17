@@ -111,7 +111,7 @@ DisplayItem* Environment::setupNewDisplayItem(Element* elem, ModelItemBase *mode
     {
         DisplayItemKey key(elem, model);
         keyToItemMap[key] = item;
-        itemToKeyMap[item] = key;
+        itemToKeyMap[item] = key; //???
     }
 
     if(model) model->internalDisplayItems.push_back(item);

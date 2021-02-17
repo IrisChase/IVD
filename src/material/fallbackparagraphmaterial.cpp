@@ -28,6 +28,8 @@ void FallbackParagraphMaterial::shape(const GeometryProposal officialProposal)
     //Revise proposal according to DisplayItem, but do not engage.
     // I mean, do not muck with margins. Each textrun has it's own margins,
     // and our drawing area is their viewport.
+
+    //XXX HAX
     auto prop = myItem->reviseProposalForDrawingArea(officialProposal);
     shapeDrawingArea(prop);
     setViewportArea(officialProposal.roundConflicts(getDrawingArea().d));

@@ -20,7 +20,10 @@ extern "C"
 #include "user_include/IVD_c.h"
 }
 
+#include <assert.h>
 #include <vector>
+#include <map>
+#include <set>
 
 #include "event.h"
 #include "statekey.h"
@@ -32,6 +35,60 @@ namespace IVD
 class ModelContainer;
 class DisplayItem;
 class Material;
+
+struct ModelBlueprints
+{
+    IVD_Model* (*ctor)();
+    void (*dtor)(IVD_Model*);
+
+    const char* (*overrideMaterial)(IVD_Model*);
+
+    std::map<std::string, void (*)(IVD_Model*)> triggers;
+};
+
+
+class Material
+{
+
+};
+
+class Model
+{
+    const ModelBlueprints& myBlueprints;
+    std::unique_ptr<IVD_Model, void (*)(IVD_Model*)> underlyingModel;
+
+    Model* parent = nullptr;
+    std::set<Model*> childModels;
+    std::set<DisplayItem*> childDisplayItems;
+
+public:
+    Model(const ModelBlueprints& prints):
+        myBlueprints(prints),
+        underlyingModel(prints.ctor(), prints.dtor)
+    {}
+
+    void executeTrigger(const std::string trig)
+    { myBlueprints.triggers.at(trig)(underlyingModel.get()); }
+
+    void setChildModel(Model* model)
+    {
+        model->parent = this;
+        childModels.insert(model);
+    }
+
+    void removeChild(Model* model)
+    {
+        assert(model->parent == this);
+        model->parent = nullptr;
+        childModels.erase(model);
+    }
+
+    Material* overrideMaterial()
+    {
+
+    }
+};
+
 
 class MisconfiguredModelException : public std::exception {};
 

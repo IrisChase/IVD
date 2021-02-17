@@ -69,7 +69,6 @@ src/codeposition.h
 src/virtualstatekey.h
 src/virtualstatekey.cpp
 src/binaryexpressionprinter.h
-src/widget.h
 src/cbindings.cpp
 src/referenceattribute.h
 src/referenceattribute.cpp
@@ -80,6 +79,9 @@ src/referenceattributeset.cpp
 src/user_include/IVD_c.h
 src/user_include/IVD_cpp.h
 src/user_include/IVD_status.h
+
+src/widget.h
+src/widget.cpp
 
 src/shaping/line.h
 
