@@ -15,8 +15,6 @@
 #include "environment.h"
 #include "allmaterials.h"
 #include "displayitem.h"
-#include "modelitembase.h"
-#include "modelcontainer.h"
 #include "states.h"
 #include "defaults.h"
 #include "driver.h"
@@ -32,11 +30,6 @@
 namespace IVD
 {
 
-Environment::DisplayItemKey::DisplayItemKey(Element* elem,
-                                            ModelItemBase *model):
-    element(elem),
-    model(model)
-{}
 
 Driver* createDefaultDriver();
 
@@ -65,9 +58,7 @@ StateKey Environment::generateStateKeyFromPrecursor(ScopedValueKey precursor, Di
         myStateKey.scope = baseContext;
     else if(precursor.myScope == ScopedValueKey::Scope::Model)
     {
-        assert(!precursor.path);
-        assert(baseContext->getModel());
-        myStateKey.scope = baseContext->getModel();
+        assert(false);
     }
     //Global is default, scope is nullptr already.
 
@@ -92,13 +83,12 @@ void Environment::processDeferredVirtualStates()
     deferredVirtualStateKeys.clear();
 }
 
-DisplayItem* Environment::setupNewDisplayItem(Element* elem, ModelItemBase *model)
+DisplayItem* Environment::setupNewDisplayItem(Element* elem)
 {
     DisplayItem* item = nullptr;
     {
         std::unique_ptr<DisplayItem> itemUniquePtr =
             std::make_unique<DisplayItem>(this,
-                                          model,
                                           elem->getDefaultAttr(),
                                           elem->getPath(),
                                           elem->getElementStamp());
@@ -107,14 +97,6 @@ DisplayItem* Environment::setupNewDisplayItem(Element* elem, ModelItemBase *mode
 
         instances[item] = std::move(itemUniquePtr);
     }
-
-    {
-        DisplayItemKey key(elem, model);
-        keyToItemMap[key] = item;
-        itemToKeyMap[item] = key; //???
-    }
-
-    if(model) model->internalDisplayItems.push_back(item);
 
     for(auto val : elem->getKeyedAttributeMap())
     {
@@ -135,12 +117,11 @@ DisplayItem* Environment::setupNewDisplayItem(Element* elem, ModelItemBase *mode
         // in batches in lots of cases, the batches having the necessary states.
         //We can't even create the virtualstatekey, because it may reference states
         // that we haven't *inserted* yet.
+        //Is this still true after the model rewrite? ~~ feb 2021
     }
 
     for(auto pair : elem->getVariableInitialExpressions())
         item->setVariable(pair.first, pair.second.solve(item));
-
-    setLayout(item); //This is for the default, because it's not always set as an attribute.
 
     itemsWithChangedAttributeSets.insert(item);
     return item;
@@ -156,45 +137,19 @@ void Environment::destroyDisplayItem(DisplayItem* item)
     youKillMyFather->prepareToDie();
 
 
-
     assert(!triggerMap.count(item));
 
-    {
-        const auto key = itemToKeyMap[item];
-        keyToItemMap.erase(key);
-        itemToKeyMap.erase(item);
-    }
 
-    //A word on models.
-    //Any model item that references this item is about to be destroyed anyway,
-    // if there is a model, it's removal is what triggered this. So don't worry
+    //A word on widgets.
+    //Any widget item that references this item is about to be destroyed anyway,
+    // if there is a widget, it's removal is what triggered this. So don't worry
     // about it's references.
+
 
     itemsWithChangedAttributeSets.erase(item);
     myStateManager.removeReferencesToDisplayItem(item);
 
     instances.erase(item); //Don't you just love unique_ptr?
-}
-
-void Environment::destroyModelItem(ModelItemBase* modelItem)
-{
-    assert(modelItem->internalDisplayItems.size()); //double delete
-
-    for(DisplayItem* item : modelItem->internalDisplayItems)
-    {
-            markAsBadGeometry(item); //Uh... WHAT IF THIS IS A WINDOW???? TODO FIXME XXX
-            destroyDisplayItem(item);
-    }
-    modelItem->internalDisplayItems.clear();
-
-    myStateManager.removeReferencesToModel(modelItem);
-
-    if(auto* child = modelItem->getChildContainer())
-        for(auto* IgotInOneLittleFightAndMyMomGotScared : *child)
-            destroyModelItem(IgotInOneLittleFightAndMyMomGotScared);
-    //Child container is automatically deleted as it's in a unique ptr
-
-    modelItem->getParentContainer()->safeToDelete(modelItem);
 }
 
 void Environment::positionDisplayItemInDrawTree(DisplayItem* item)
@@ -225,8 +180,8 @@ void Environment::positionDisplayItemInDrawTree(DisplayItem* item)
         {
             std::cerr << "IVD Runtime: Could not position [" << item->getElementPath() << "] ";
 
-            if(item->getModel())
-                std::cerr << "-> [Model] ";
+            //if(item->getModel())
+            //    std::cerr << "-> [Model] ";
 
             std::cerr << "within [" << path << "] "
                       << "-> [Model/Static], could not deduce parent."
@@ -247,36 +202,31 @@ void Environment::positionDisplayItemInDrawTree(DisplayItem* item)
     }
 }
 
-void Environment::setLayout(DisplayItem *item)
+void Environment::setWidget(DisplayItem *item)
 {
-    if(Default::Filter::getText(item).size())
-    {
-        item->setMaterial(new FallbackParagraphMaterial(item));
+    { //moderately unsafe
+        WidgetWrapper currentWidget = item->getWidgetWrapper();
+        item->setWidgetWrapper(WidgetWrapper()); //take ownership
+
+        if(currentWidget.get())
+            widgetInstaces.erase(currentWidget.get());
     }
-    else if(item->getAttr().getUserToken(AttributeKey::ImagePath))
+
+    WidgetBlueprints blueprints;
+
+    if(auto optionalLayoutName = item->getAttr().getUserToken(AttributeKey::Layout))
     {
-        item->setMaterial(new ImageMaterial(item, myImageCache.get()));
+        blueprints = layoutBlueprints.at(*optionalLayoutName);
     }
-    else if(auto theType = item->getAttr().getProperty(AttributeKey::Layout))
+    else if(auto optionalWidgetName = item->getAttr().getUserToken(AttributeKey::Widget))
     {
-        if(theType == Property::Vbox)
-            item->setMaterial(new VerticalRowLayoutMaterial(item));
-        if(theType == Property::Hbox)
-            item->setMaterial(new HorizontalRowLayoutMaterial(item));
-        if(theType == Property::Inline)
-            item->setMaterial(new InlineLayoutMaterial(item));
-        if(theType == Property::FreeLayout)
-            item->setMaterial(new FreeLayoutMaterial(item));
-        if(theType == Property::StackLayout)
-            item->setMaterial(new StackLayoutMaterial(item));
-        if(theType == Property::Custom)
-        {
-            assert(false);
-            //TODO: Require forward declarations in the compiler to stop
-            // this from happening.
-        }
+        blueprints = widgetBlueprints.at(*optionalWidgetName);
     }
-    else item->setMaterial(new SimpleMaterial(item));
+    else return; //Otherwise, we leave it blank, because it's not actually needed ^^
+
+
+    //reeeeeeeee
+    // okay displayitems should really own these things :/
 }
 
 std::optional<DisplayItem*> Environment::deduceTarget(DisplayItem *context, const ValueKeyPath key)
@@ -324,17 +274,8 @@ double Environment::commonExternalAccessor(DisplayItem* context,
 {
     if(key.myScope == ScopedValueKey::Scope::Model)
     {
-        assert(!key.path);
-        assert(key.key); //LET's have a key key
-
-        if(value)
-        {
-            if(context->getModel()->isNumberConst(*key.key))
-                 std::cerr << "IVD Runtime warning: Model is const for key: " << *key.key << std::endl;
-            else context->getModel()->setNumber(*key.key, *value);
-            return 0;
-        }
-        else return context->getModel()->getNumber(*key.key);
+        std::cerr << "Warning dead code path XXX" << std::endl;
+        return 42;
     }
 
 
@@ -436,88 +377,6 @@ void Environment::run()
         myStateManager.resetTriggerStates();
 
         //------------------------------------------------------------Draw tree frozen beyond this point
-        while(mainEventQueue.hasEvent())
-        {
-            ModelEvent e = mainEventQueue.popEvent();
-    
-            if(e.type == ModelEvent::Type::ModelItemAdded)
-            {
-                for(Element* elem : elementModelLookup[e.container->getModelPath()])
-                    setupNewDisplayItem(elem, e.modelItem);
-
-                processDeferredVirtualStates();
-            }
-            else if(e.type == ModelEvent::Type::ModelOrderInvalidated ||
-                    e.type == ModelEvent::Type::ModelItemsSwapped)
-            {
-                //BUT if we're not using model order... Then it should not be invalidated. Shet.
-
-                //TODO
-                //ALMOST guaranteed to be the same root, but it's not a rule.
-
-                //OKAY OKAY I just realized. We can track, somehow, whether
-                // this the set is uniform or not. Or a little less optimal,
-                // whether it CAN be broken by static analysis, and place a
-                // flag on the model or model item denoting it as such.
-
-
-                //Note from the future: Okay so I read the above a few days ago and wasn't really sure of it's
-                // significance. It's referring to the fact marking *all* of the internalDisplayItems as
-                // invalid geometry is mostly likely redundant, but not absolutely. And that a neat
-                // optimization would be to have a static analysis in the compiler that can guarantee that
-                // we only need to invalidate just one's parent and it'll be fine.
-                for(DisplayItem* item : e.modelItem->internalDisplayItems)
-                {
-                    markAsBadGeometry(item);
-                    break;
-                }
-
-                //I mean, this might be a useful event someday for some optimization, but
-                // today is not that day.
-                if(e.type == ModelEvent::Type::ModelItemsSwapped)
-                {
-                    for(DisplayItem* item : e.modelItem2->internalDisplayItems)
-                    {
-                        markAsBadGeometry(item);
-                        break;
-                    }
-                }
-            }
-            else if(e.type == ModelEvent::Type::ModelItemRemoved)
-            {
-                //XXX If you post a "ModelItemRemoved" event for a child and a parent item,
-                // you unleash dragons. Events need to be compacted before processing to prevent
-                // this.
-                destroyModelItem(e.modelItem);
-            }
-            else if(e.type == ModelEvent::Type::ModelItemSet)
-            {
-                for(DisplayItem* item : e.modelItem->internalDisplayItems)
-                {
-                    myStateManager.setTriggerIfObserved(StateKey(States::Item::ModelChanged, item));
-                    markAsBadGeometry(item);
-                    //e.modelKey should be the field
-                    //e.modelItem should be the item.
-
-                    //But... Do we just invalidate the attributeset? How do force re-read?
-
-                    //re: Doesn't setting this trigger state force a recompute of the attribute set,
-                    // forcing it to compare changes?
-
-                    //No... That only gets it to see *attribute* changes, we don't have a system
-                    // for model changes... That shit ain't even tracked.
-                }
-            }
-            else if(e.type == ModelEvent::Type::ModelStateSet)
-            {
-                myStateManager.mutateIfObserved(e.stateKey, true);
-            }
-            else if(e.type == ModelEvent::Type::ModelStateUnset)
-            {
-                myStateManager.mutateIfObserved(e.stateKey, false);
-            }
-            else continue;
-        }
 
         //These take precedence because the others will reference windows that otherwise
         // don't exist...
@@ -546,8 +405,9 @@ void Environment::run()
                 DisplayItem* item = it.first;
                 for(auto triggerKey : it.second) //Usually only one, but w/e
                 {
-                    if(triggerKey.myScope == ScopedValueKey::Scope::Model && item->getModel())
-                        item->getModel()->reactToTrigger(*triggerKey.key); //T R I G G E R E D
+                    if(triggerKey.myScope == ScopedValueKey::Scope::Model)
+                        item->reactToTrigger(*triggerKey.key);
+
                     //Elemental scope means nothing... But it's the default if nothing else is specified.
                     //Soo... We just assume anything that's not model is global. It's hacky, but eh.
                     //It works for now without reworking part of the compiler...
@@ -590,18 +450,46 @@ int Environment::loadFromIVDFile(const char* path)
 
         if(elem.getModelPath().size())
         {
-            elementModelLookup[elem.getModelPath()].push_back(&elem);
+            //DIRTY HAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            //FIX THE COMPILER
+            elementModelLookup[elem.getModelPath()[0]] = &elem;
 
             //Defer actual instantiation until the main loop, as it's a continuous process.
             continue;
         }
 
         //Spin-up static elements
-        setupNewDisplayItem(&elem, nullptr);
+        setupNewDisplayItem(&elem);
     }
 
     processDeferredVirtualStates();
     return IVD_STATUS_SUCCESS;
+}
+
+IVD_Widget* Environment::createWidget(const std::string name, IVD_Widget* parent)
+{
+    const WidgetBlueprints& blueprints = widgetBlueprints.at(name);
+    std::unique_ptr<IVD_Widget, void(*)(IVD_Widget*)> widgetSmartPtr(blueprints.ctor(), blueprints.dtor);
+
+    IVD_Widget* widget = widgetSmartPtr.get();
+    widgetInstaces[widgetSmartPtr.get()] = std::move(widgetSmartPtr);
+
+    DisplayItem* item = setupNewDisplayItem(elementModelLookup[name]);
+    widgetToDisplayItemMap[widget] = item;
+
+    item->setParent(widgetToDisplayItemMap.at(parent));
+    item->setWidgetWrapper(WidgetWrapper(blueprints, widget));
+
+    processDeferredVirtualStates();
+}
+
+void Environment::destroyWidget(IVD_Widget* widget)
+{
+    DisplayItem* item = widgetToDisplayItemMap[widget];
+    markAsBadGeometry(item); //okayyyy is this safe AT ALL?? With models there was a comment about root windows XXX
+    destroyDisplayItem(item);
+    widgetToDisplayItemMap.erase(widget);
+    widgetInstaces.erase(widget);
 }
 
 double Environment::getInteger(DisplayItem* context, const ScopedValueKey key)
@@ -628,14 +516,7 @@ double Environment::getInteger(DisplayItem* context, const ScopedValueKey key)
 
 std::string Environment::getString(DisplayItem* context, const ScopedValueKey key)
 {
-    //TODO god change some of these asserts to fucking warnings will ya jesus way to bring this from
-    // a 0 to an 11.
-    assert(!key.path);
-    assert(key.key);
-    assert(key.myScope == ScopedValueKey::Scope::Model); //All we're supportin' today, f r i e n d.
-    assert(context->getModel());
-
-    return context->getModel()->getString(*key.key);
+    return "Dead code path";
 }
 
 void Environment::setupEnvironmentCallbacksOnAttributeForKey(AnimatableAttribute* attr, const int key)
@@ -695,7 +576,6 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(AnimatableAttribute
     case ImagePath:
         attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
-            setLayout(attr->revealContext());
             markAsBadGeometry(attr->revealContext());
         });
         break;
@@ -755,7 +635,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(AnimatableAttribute
     case Layout:
         attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
-            setLayout(attr->revealContext());
+            setWidget(attr->revealContext());
         });
         break;
 

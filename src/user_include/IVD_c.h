@@ -56,24 +56,25 @@ IVD_Environment* IVD_create_environment();
 void IVD_destroy_environment(IVD_Environment*);
 
 int IVD_environment_load_file(IVD_Environment*, const char* path);
-const char* IVD_environment_get_compiler_errors(const IVD_Environment*);
+const char* IVD_environment_get_compiler_errors(IVD_Environment*);
 void IVD_environment_run(IVD_Environment*);
 
-void IVD_environment_register_widget(const char* name,
+void IVD_environment_register_widget(IVD_Environment *environment, const char* name,
                                      IVD_Widget* (*ctor)(),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
-                                     void (*draw)(IVD_Widget*, IVD_Canvas*),//canbe null
+                                     void (*draw)(IVD_Widget*, IVD_Canvas*), //canbe null
                                      int (*detectCollisionPoint)(IVD_Widget*, const IVD_Point*), //canbe null
                                      void (*triggerHandler)(IVD_Widget*, const char*));
 
 //IVD manages widget lifetimes so they can be "deleted later"
-IVD_Widget* IVD_environment_widget_create(const char* name, IVD_Widget* parent);
-void IVD_environment_widget_destroy(IVD_Widget*);
+IVD_Widget* IVD_environment_widget_create(IVD_Environment*, const char* name, IVD_Widget* parent);
+void IVD_environment_widget_destroy(IVD_Environment*, IVD_Widget*);
 
 
-void IVD_environment_register_layout(const char* name,
+void IVD_environment_register_layout(IVD_Environment*,
+                                     const char* name,
                                      IVD_Widget* (*ctor)(),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
@@ -81,11 +82,13 @@ void IVD_environment_register_layout(const char* name,
 
 
 //Register multiple types?
-void IVD_environment_register_layout_attribute(const char* layoutName,
+void IVD_environment_register_layout_attribute(IVD_Environment*,
+                                               const char* layoutName,
                                                const char* attributeKey,
                                                int attributeType);
 
-void IVD_environment_register_widget_attribute(const char* widgetName,
+void IVD_environment_register_widget_attribute(IVD_Environment*,
+                                               const char* widgetName,
                                                const char* attributeKey,
                                                int attributeType);
 

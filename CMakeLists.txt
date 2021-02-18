@@ -42,7 +42,6 @@ src/driver.h
 src/element.h
 src/environment.cpp
 src/environment.h
-src/event.h
 src/expression.cpp
 src/expression.h
 src/geometry.h
@@ -59,9 +58,6 @@ src/text.cpp
 src/text.h
 src/valuekey.cpp
 src/valuekey.h
-src/modelcontainer.h
-src/modelitembase.h
-src/modelitem.cpp
 src/corefonts.h
 src/graph.cpp
 src/graph.h
@@ -81,7 +77,6 @@ src/user_include/IVD_cpp.h
 src/user_include/IVD_status.h
 
 src/widget.h
-src/widget.cpp
 
 src/shaping/line.h
 

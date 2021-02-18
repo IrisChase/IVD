@@ -20,9 +20,6 @@
 //I'm sorry uncle.
 //I'm so sorry.
 
-template<typename F>
-void setupCallback(IVD_Instance* instance, F callback)
-{ reinterpret_cast<IVD::ModelItemBase*>(instance)->setCallback(callback); }
 
 extern "C"
 {
@@ -30,23 +27,24 @@ extern "C"
 
 
 //--------------------------------------------------------------------------------------Environment
+static IVD::Environment* castEnv(IVD_Environment* environment)
+{ return reinterpret_cast<IVD::Environment*>(environment); }
+static IVD::WidgetWrapper* castWidget(IVD_Widget* widget)
+{ return reinterpret_cast<IVD::WidgetWrapper*>(widget); }
+static IVD_Widget* castWidget(IVD::WidgetWrapper* widget)
+{ return reinterpret_cast<IVD_Widget*>(widget); }
+
 IVD_Environment* IVD_create_environment()
 { return reinterpret_cast<IVD_Environment*>(new IVD::Environment()); }
 void IVD_destroy_environment(IVD_Environment* environment)
-{ delete reinterpret_cast<IVD::Environment*>(environment); }
+{ delete castEnv(environment); }
 
-//--------------------Accessors
-IVD_Model* IVD_environment_add_model(IVD_Environment* environment, const char* name)
-{
-    auto* properEnv       = reinterpret_cast<IVD::Environment*>(environment);
-    return reinterpret_cast<IVD_Model*>(properEnv->instantiateModel(name));
-}
 int IVD_environment_load_file(IVD_Environment* environment, const char* path)
 {
     auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);
     return properEnv->loadFromIVDFile(path);
 }
-const char* IVD_environment_get_compiler_errors(const IVD_Environment *environment)
+const char* IVD_environment_get_compiler_errors(IVD_Environment* environment)
 {
    auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);
    return properEnv->getCompilerErrors();
@@ -54,99 +52,49 @@ const char* IVD_environment_get_compiler_errors(const IVD_Environment *environme
 void IVD_environment_run(IVD_Environment* environment)
 {
     auto* properEnv = reinterpret_cast<IVD::Environment*>(environment);
-    
+
     //And this is where we take control! 🎊
     properEnv->run();
 }
 
-//--------------------------------------------------------------------------------------Model
-IVD_Instance* IVD_model_add_instance(IVD_Model* model)
-{
-    return reinterpret_cast<IVD_Instance*>
-            (reinterpret_cast<IVD::ModelContainer*>(model)->push_back_new());
-}
+void IVD_environment_register_widget(IVD_Environment* environment,
+                                     const char* name,
+                                     IVD_Widget* (*ctor)(),
+                                     void (*dtor)(IVD_Widget*),
+                                     int (*getFillPrecedence)(IVD_Widget*, const int),
+                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
+                                     void (*draw)(IVD_Widget*, IVD_Canvas*),//canbe null
+                                     int (*detectCollisionPoint)(IVD_Widget*, const IVD_Point*), //canbe null
+                                     void (*triggerHandler)(IVD_Widget*, const char*))
+{ castEnv(environment)->registerWidgetBlueprints(name, {name, true, ctor, dtor, getFillPrecedence, shape, draw, detectCollisionPoint, triggerHandler}); }
 
-int IVD_model_instance_count(IVD_Model* container)
-{ return reinterpret_cast<IVD::ModelContainer*>(container)->size(); }
-
-void IVD_model_erase_later(IVD_Model* container, IVD_Instance* item)
-{ reinterpret_cast<IVD::ModelContainer*>(container)->erase_later(reinterpret_cast<IVD::ModelItemBase*>(item)); }
-
-void IVD_container_swap(IVD_Model* container, IVD_Instance* item1, IVD_Instance* item2)
-{
-    reinterpret_cast<IVD::ModelContainer*>(container)->swap(reinterpret_cast<IVD::ModelItemBase*>(item1),
-                                                            reinterpret_cast<IVD::ModelItemBase*>(item2));
-}
-
-IVD_Instance* IVD_model_first(IVD_Model* model)
-{
-    auto it = reinterpret_cast<IVD::ModelContainer*>(model)->begin();
-    //Can dereference the end iterator because it just points to a nullptr,
-    // which it then evaluates to.
-    return reinterpret_cast<IVD_Instance*>(*it);
-}
-//--------------------------------------------------------------------------------------Instance
-IVD_Model* IVD_instance_actualize_child_model(IVD_Instance* instance, const char* name)
-{
-    return reinterpret_cast<IVD_Model*>
-            (reinterpret_cast<IVD::ModelItemBase*>(instance)->instantiateChildModel(name));
-}
-
-IVD_Model* IVD_instance_get_child_model(IVD_Instance* instance)
-{
-    return reinterpret_cast<IVD_Model*>
-            (reinterpret_cast<IVD::ModelItemBase*>(instance)->getChildContainer());
-}
-
-void IVD_instance_set_user_data(IVD_Instance* instance, void* data, IVD_user_data_destructor dtor)
-{
-    reinterpret_cast<IVD::ModelItemBase*>(instance)->setUserData(data, dtor); //D A T A    D E T O U R
-}
-
-void* IVD_instance_get_user_data(IVD_Instance* instance)
-{ return reinterpret_cast<IVD::ModelItemBase*>(instance)->getUserData(); }
-
-IVD_Instance* IVD_instance_next(IVD_Instance* item)
-{
-    auto* properItem = reinterpret_cast<IVD::ModelItemBase*>(item);
-    auto it = IVD::ModelContainer::iterator(properItem);
-    return reinterpret_cast<IVD_Instance*>(*(++it));
-}
-
-void IVD_instance_set_state(IVD_Instance* instance, const char* state_key)
-{ reinterpret_cast<IVD::ModelItemBase*>(instance)->setState(state_key); }
-
-void IVD_instance_unset_state(IVD_Instance* instance, const char* state_key)
-{ reinterpret_cast<IVD::ModelItemBase*>(instance)->unsetState(state_key); }
-
-void IVD_instance_set_number(IVD_Instance* instance, const char* key, double val)
-{ reinterpret_cast<IVD::ModelItemBase*>(instance)->setNumber(key, val); }
-
-void IVD_instance_set_string(IVD_Instance* instance, const char* key, const char* val)
-{ reinterpret_cast<IVD::ModelItemBase*>(instance)->setString(key, val); }
+//IVD manages widget lifetimes so they can be "deleted later"
+IVD_Widget* IVD_environment_widget_create(IVD_Environment* environment, const char* name, IVD_Widget* parent)
+{ return castEnv(environment)->createWidget(name, parent); }
+void IVD_environment_widget_destroy(IVD_Environment* environment, IVD_Widget* widget)
+{ castEnv(environment)->destroyWidget(widget); }
 
 
-void IVD_instance_set_number_getter(IVD_Instance* instance, IVD_callback_get_number fun)
-{ setupCallback(instance, fun); }
-void IVD_instance_set_string_getter(IVD_Instance* instance, IVD_callback_get_string fun)
-{ setupCallback(instance, fun); }
-//Well aren't these two fucking special...
-void IVD_instance_set_check_number_const(IVD_Instance* instance, IVD_callback_check_const fun)
-{  reinterpret_cast<IVD::ModelItemBase*>(instance)->setCallbackCheckNumber(fun); }
-void IVD_instance_set_check_string_const(IVD_Instance* instance, IVD_callback_check_const fun)
-{ reinterpret_cast<IVD::ModelItemBase*>(instance)->setCallbackCheckString(fun); }
-void IVD_instance_set_number_setter(IVD_Instance* instance, IVD_callback_set_number fun)
-{ setupCallback(instance, fun); }
-void IVD_instance_set_string_setter(IVD_Instance* instance, IVD_callback_set_string fun)
-{ setupCallback(instance, fun); }
-void IVD_instance_set_trigger_callback(IVD_Instance* instance, IVD_callback_trigger fun)
-{ setupCallback(instance, fun); }
+void IVD_environment_register_layout(IVD_Environment* environment,
+                                     const char* name,
+                                     IVD_Widget* (*ctor)(),
+                                     void (*dtor)(IVD_Widget*),
+                                     int (*getFillPrecedence)(IVD_Widget*, const int),
+                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*))
+{ castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, nullptr, nullptr, nullptr}); }
 
 
+//Register multiple types?
+void IVD_environment_register_layout_attribute(IVD_Environment*,
+                                               const char* layoutName,
+                                               const char* attributeKey,
+                                               int attributeType);
 
+void IVD_environment_register_widget_attribute(IVD_Environment*,
+                                               const char* widgetName,
+                                               const char* attributeKey,
+                                               int attributeType);
 //----------------------------------------------------------------------------------------------Dust Bindings
-static int* castBoolRef(bool& ref)
-{ return reinterpret_cast<int*>(ref); }
 
 
 static IVD::Dimens* castSpace(IVD_Space* space)
@@ -218,16 +166,16 @@ IVD_Space* IVD_geoprop_proposed_space(IVD_GeometryProposal* prop)
 { return castSpace(&castGeoprop(prop)->proposedDimensions); }
 
 int* IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop)
-{ return castBoolRef(castGeoprop(prop)->expandForAngle(IVD::Angle::Horizontal)); }
+{ return &castGeoprop(prop)->expandForAngle(IVD::Angle::Horizontal); }
 
 int* IVD_geoprop_expand_vertical(IVD_GeometryProposal* prop)
-{ return castBoolRef(castGeoprop(prop)->expandForAngle(IVD::Angle::Vertical)); }
+{ return &castGeoprop(prop)->shrinkForAngle(IVD::Angle::Vertical); }
 
 int* IVD_geoprop_shrink_horizontal(IVD_GeometryProposal* prop)
-{ return castBoolRef(castGeoprop(prop)->shrinkForAngle(IVD::Angle::Horizontal)); }
+{ return &castGeoprop(prop)->shrinkForAngle(IVD::Angle::Horizontal); }
 
 int* IVD_geoprop_shrink_vertical(IVD_GeometryProposal* prop)
-{ return castBoolRef(castGeoprop(prop)->shrinkForAngle(IVD::Angle::Vertical)); }
+{ return &castGeoprop(prop)->shrinkForAngle(IVD::Angle::Vertical); }
 
 int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space)
 { return castGeoprop(prop)->verifyCompliance(*castSpace(space)); }

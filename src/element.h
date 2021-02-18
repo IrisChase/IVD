@@ -22,7 +22,6 @@
 
 #include "statekey.h"
 #include "referenceattributeset.h"
-#include "modelcontainer.h"
 #include "attributepositionpair.h"
 #include "virtualstatekey.h"
 

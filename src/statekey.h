@@ -22,7 +22,6 @@ namespace IVD
 {
 
 class DisplayItem;
-class ModelItemBase;
 
 struct StateKey
 {

@@ -25,7 +25,7 @@
 #include "element.h"
 #include "statekey.h"
 #include "virtualstatekey.h"
-#include "event.h"
+#include "widget.h"
 
 #include "OpenImageIO/imagecache.h"
 
@@ -38,27 +38,12 @@ class Driver;
 
 class Environment
 {
-    friend EventQueue& getEventQueue(const Environment&);
-    //Oh
     std::unique_ptr<Driver> managedDriver;
+    //Oh
     Driver* myDriver;
-    
-    struct DisplayItemKey
-    {
-        Element* element;
-        ModelItemBase* model;
-
-        DisplayItemKey(): element(nullptr), model(nullptr) {}
-        DisplayItemKey(Element* elem, ModelItemBase* model);
-
-        friend bool operator<(const DisplayItemKey& left, const DisplayItemKey& right)
-        { return std::tie(left.element, left.model) < std::tie(right.element, right.model); }
-    };
 
     Compiler myComp;
 
-
-    EventQueue mainEventQueue;
     StateManager myStateManager;
     std::unique_ptr<OIIO::ImageCache, std::function<void(OIIO::ImageCache*)>> myImageCache;
 
@@ -67,11 +52,9 @@ class Environment
     std::vector<VirtualStateKeyPrecursor> deferredVirtualStateKeys;
 
     std::map<DisplayItem*, std::unique_ptr<DisplayItem>> instances;
+    std::map<IVD_Widget*, std::unique_ptr<IVD_Widget, void(*)(IVD_Widget*)>> widgetInstaces;
 
-    std::vector<std::unique_ptr<ModelContainer>> rootContainers;
-
-    std::map<DisplayItemKey, DisplayItem*> keyToItemMap;
-    std::map<DisplayItem*, DisplayItemKey> itemToKeyMap;
+    std::map<IVD_Widget*, DisplayItem*> widgetToDisplayItemMap;
 
     //This is for tracking items that need recomputing.
     std::set<DisplayItem*> itemsWithChangedAttributeSets;
@@ -84,16 +67,19 @@ class Environment
 
     std::map<DisplayItem*, std::vector<ScopedValueKey>> triggerMap;
     std::map<ValueKeyPath, Element*> elementLookupByPath;
-    std::map<ValueKeyPath, std::vector<Element*>> elementModelLookup;
+    std::map<std::string, Element*> elementModelLookup;
+
+    std::map<std::string, WidgetBlueprints> widgetBlueprints;
+    std::map<std::string, WidgetBlueprints> layoutBlueprints;
+
 
     void initOthers();
     void processDeferredVirtualStates();
 
-    DisplayItem* setupNewDisplayItem(Element* elem, ModelItemBase* model);
+    DisplayItem* setupNewDisplayItem(Element* elem);
     void destroyDisplayItem(DisplayItem* item);
-    void destroyModelItem(ModelItemBase* item);
     void positionDisplayItemInDrawTree(DisplayItem* item);
-    void setLayout(DisplayItem* item);
+    void setWidget(DisplayItem* item);
 
     std::optional<DisplayItem *> deduceTarget(DisplayItem* context, const ValueKeyPath key);
 
@@ -111,13 +97,17 @@ public:
     //The big one
     void run();
 
-    ModelContainer* instantiateModel(const std::string& name)
-    {
-        rootContainers.emplace_back(std::make_unique<ModelContainer>(&mainEventQueue, name));
-        return rootContainers.back().get();
-    }
-
     int loadFromIVDFile(const char* path);
+
+    void registerWidgetBlueprints(const std::string name, const WidgetBlueprints blueprints)
+    { widgetBlueprints[name] = blueprints; }
+
+    void registerLayoutBlueprints(const std::string name, const WidgetBlueprints blueprints)
+    { layoutBlueprints[name] = blueprints; }
+
+    IVD_Widget* createWidget(const std::string name, IVD_Widget* parent);
+
+    void destroyWidget(IVD_Widget* widget);
 
     const char* getCompilerErrors()
     { return myComp.getErrorMessageDigest().c_str(); }

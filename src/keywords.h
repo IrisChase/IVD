@@ -113,6 +113,7 @@ enum
 
 
     Layout,
+    Widget,
     CellNames,
 
     AttributeCount,
@@ -207,15 +208,7 @@ namespace Property
 enum
 {
     PropertiesStart = Keyword::PropertiesStart,
-    Vbox = PropertiesStart,
-    Hbox,
-    Inline,
-    FreeLayout,
-    StackLayout,
-    Standard,
-    ImageMaterial,
-
-    AdjacentIsHorizontal,
+    AdjacentIsHorizontal = PropertiesStart,
     AdjacentIsVertical,
 
     Greedy,
@@ -299,7 +292,6 @@ inline bool checkAttributeKeyForPropertyBodyType(const int key)
     switch(key)
     {
     case Font:
-    case Layout:
         return true;
     default: return false;
     }
@@ -325,6 +317,7 @@ inline bool checkAttributeKeyForUserTokenType(const int key)
     switch(key)
     {
     case Layout:
+    case Widget:
         return true;
     default: return false;
     }
@@ -403,9 +396,6 @@ inline std::vector<int> getValidPropertyValuesForType(const int type)
                 Property::FontMonoBold,
                 Property::FontMonoItalic,
                 Property::FontMonoBoldItalic};
-
-    case AttributeKey::Layout:
-        return {Property::Vbox, Property::Hbox, Property::Inline, Property::Standard, Property::ImageMaterial};
 
     case AttributeKey::Orientation:
         return {Property::AdjacentIsHorizontal, Property::AdjacentIsVertical};
@@ -601,6 +591,7 @@ inline std::vector<KeywordSymbolValuePair> getSymbolValuePairs()
                 {"trigger", AttributeKey::Triggers},
 
                 {"layout", AttributeKey::Layout},
+                {"widget", AttributeKey::Widget},
                 {"cell-names", AttributeKey::CellNames},
 
                 //Unnaturals

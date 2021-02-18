@@ -107,8 +107,8 @@ public:
     StateManager(): lastStamp(0) {}
 
     void removeReferencesToDisplayItem(DisplayItem* item);
-    void removeReferencesToModel(ModelItemBase* scope)
-    { deallocateScope(scope); }
+    //void removeReferencesToModel(ModelItemBase* scope)
+    //{ deallocateScope(scope); }
 
     void registerStateObserver(const StateKey key,
                                DisplayItem* observer,

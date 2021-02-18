@@ -21,6 +21,7 @@
 #include "attributepositionpair.h"
 #include "runtimeattributeset.h"
 #include "material.h"
+#include "widget.h"
 
 #include <reprodyne.h>
 
@@ -29,7 +30,6 @@ namespace IVD
 
 class Environment;
 class ModelContainer;
-class ModelItemBase;
 class Canvas;
 
 
@@ -38,7 +38,6 @@ class DisplayItem
     const int elementStamp;
     Environment* myEnv;
     DisplayItem* parent;
-    ModelItemBase* myModel; //These are forever bound to eachother
 
     const ValueKeyPath elementPath;
 
@@ -50,6 +49,7 @@ class DisplayItem
     Dimens totalCellDimens;
     
     std::unique_ptr<Material> myMaterial;
+    WidgetWrapper myWidget;
 
     std::set<DisplayItem*> children;
 
@@ -69,13 +69,11 @@ class DisplayItem
 
 public:
     DisplayItem(Environment* theEnv,
-                ModelItemBase* theModel,
                 const ReferenceAttributeSet& theDefaultState,
                 const ValueKeyPath &elemPath,
                 const int elementStamp):
         myEnv(theEnv),
         parent(nullptr),
-        myModel(theModel),
         elementPath(elemPath),
         elementStamp(elementStamp),
         defaultState(theDefaultState),
@@ -83,6 +81,18 @@ public:
     {
         reprodyne_open_scope(this);
     }
+
+    void setWidgetWrapper(const WidgetWrapper widgetWrapper)
+    { myWidget = widgetWrapper; }
+
+    WidgetWrapper getWidgetWrapper()
+    { return myWidget; }
+
+    bool checkEnumeratedItem()
+    { ; }
+
+    void reactToTrigger(const std::string trigg)
+    { myWidget.handleTrigger(trigg); }
 
     int getElementStamp() { return elementStamp; }
 
