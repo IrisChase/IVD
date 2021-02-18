@@ -36,6 +36,7 @@ class Canvas;
 class DisplayItem
 {
     const int elementStamp;
+    Element* myElem;
     Environment* myEnv;
     DisplayItem* parent;
 
@@ -68,10 +69,12 @@ class DisplayItem
 
 
 public:
-    DisplayItem(Environment* theEnv,
+    DisplayItem(Element* elem,
+                Environment* theEnv,
                 const ReferenceAttributeSet& theDefaultState,
                 const ValueKeyPath &elemPath,
                 const int elementStamp):
+        myElem(elem),
         myEnv(theEnv),
         parent(nullptr),
         elementPath(elemPath),
@@ -82,14 +85,20 @@ public:
         reprodyne_open_scope(this);
     }
 
-    void setWidgetWrapper(const WidgetWrapper widgetWrapper)
-    { myWidget = widgetWrapper; }
+    Element* getElement()
+    { return myElem; }
 
-    WidgetWrapper getWidgetWrapper()
-    { return myWidget; }
+    void destroyWidget()
+    { myWidget.destroy(); }
 
-    bool checkEnumeratedItem()
-    { ; }
+    IVD_Widget* setupNewWidget(const WidgetBlueprints blueprints)
+    {
+        myWidget.reset(blueprints);
+        return myWidget.get();
+    }
+
+    IVD_Widget* getWidget()
+    { return myWidget.get(); }
 
     void reactToTrigger(const std::string trigg)
     { myWidget.handleTrigger(trigg); }

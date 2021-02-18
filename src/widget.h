@@ -36,22 +36,32 @@ struct WidgetBlueprints
 
 class WidgetWrapper
 {
+    typedef std::unique_ptr<IVD_Widget, void(*)(IVD_Widget*)> SmartWidgetPointer;
     WidgetBlueprints blueprints;
-    IVD_Widget* underlyingWidget = nullptr;
+    SmartWidgetPointer underlyingWidget;
 
 public:
-    WidgetWrapper() {}
-    WidgetWrapper(const WidgetBlueprints& blueprints, IVD_Widget* underlyingData):
+    WidgetWrapper(): underlyingWidget(nullptr, nullptr) {}
+    WidgetWrapper(const WidgetBlueprints blueprints):
         blueprints(blueprints),
-        underlyingWidget(underlyingData)
+        underlyingWidget(blueprints.ctor(), blueprints.dtor)
     {}
 
+    void reset(const WidgetBlueprints blueprints)
+    {
+        underlyingWidget.reset();
+        underlyingWidget = SmartWidgetPointer(blueprints.ctor(), blueprints.dtor);
+    }
+
+    void destroy()
+    { underlyingWidget.reset(); }
+
     IVD_Widget* get()
-    { return underlyingWidget; }
+    { return underlyingWidget.get(); }
 
     FillPrecedence getFillPrecedence(Angle theAngel)
     {
-        const auto prec = blueprints.getFillPrecedence(underlyingWidget,
+        const auto prec = blueprints.getFillPrecedence(get(),
                                                        getForAngle(0, 1, theAngel));
         return prec == 0 ? FillPrecedence::Greedy
                          : FillPrecedence::Shrinky;
@@ -59,25 +69,25 @@ public:
 
     void shape(const GeometryProposal prop)
     {
-        blueprints.shape(underlyingWidget,
+        blueprints.shape(get(),
                          reinterpret_cast<const IVD_GeometryProposal*>(&prop));
     }
 
     void draw(Canvas* canvas)
     {
-        blueprints.draw(underlyingWidget,
+        blueprints.draw(get(),
                         reinterpret_cast<IVD_Canvas*>(canvas));
     }
 
     bool detectCollisionPoint(const Coords point)
     {
-        return blueprints.detectCollisionPoint(underlyingWidget,
+        return blueprints.detectCollisionPoint(get(),
                                                reinterpret_cast<const IVD_Point*>(&point));
     }
 
     void handleTrigger(const std::string triggerName)
     {
-        blueprints.triggerHandler(underlyingWidget,
+        blueprints.triggerHandler(get(),
                                   triggerName.c_str());
     }
 };

@@ -88,7 +88,8 @@ DisplayItem* Environment::setupNewDisplayItem(Element* elem)
     DisplayItem* item = nullptr;
     {
         std::unique_ptr<DisplayItem> itemUniquePtr =
-            std::make_unique<DisplayItem>(this,
+            std::make_unique<DisplayItem>(elem,
+                                          this,
                                           elem->getDefaultAttr(),
                                           elem->getPath(),
                                           elem->getElementStamp());
@@ -97,6 +98,8 @@ DisplayItem* Environment::setupNewDisplayItem(Element* elem)
 
         instances[item] = std::move(itemUniquePtr);
     }
+
+    elementToDisplayItems[elem].insert(item);
 
     for(auto val : elem->getKeyedAttributeMap())
     {
@@ -149,11 +152,15 @@ void Environment::destroyDisplayItem(DisplayItem* item)
     itemsWithChangedAttributeSets.erase(item);
     myStateManager.removeReferencesToDisplayItem(item);
 
+    elementToDisplayItems.at(item->getElement()).erase(item);
     instances.erase(item); //Don't you just love unique_ptr?
 }
 
-void Environment::positionDisplayItemInDrawTree(DisplayItem* item)
+void Environment::positionDisplayItemInDrawTree(DisplayItem* item, IVD_Widget* parentWidget = nullptr)
 {
+    if(!parentWidget && userOwnedWidgets.count(item->getWidget()))
+        return; //permanent custody
+
     const auto posPath = Default::Filter::getPositionWithin(item);
     
     if(posPath && posPath->size() && posPath->at(0) == "Environment")
@@ -171,7 +178,13 @@ void Environment::positionDisplayItemInDrawTree(DisplayItem* item)
     
     myDriver->removeDisplayItem(item);
     
-    if(posPath)
+    if(parentWidget)
+    {
+        DisplayItem* parentItem = userOwnedWidgets.at(parentWidget);
+        item->setParent(parentItem);
+        markAsBadGeometry(parentItem);
+    }
+    else if(posPath)
     {
         ValueKeyPath path = *posPath;
         auto target = deduceTarget(item, path);
@@ -180,11 +193,11 @@ void Environment::positionDisplayItemInDrawTree(DisplayItem* item)
         {
             std::cerr << "IVD Runtime: Could not position [" << item->getElementPath() << "] ";
 
-            //if(item->getModel())
-            //    std::cerr << "-> [Model] ";
+            if(userOwnedWidgets.count(item->getWidget()))
+                std::cerr << "-> [Widget] ";
 
             std::cerr << "within [" << path << "] "
-                      << "-> [Model/Static], could not deduce parent."
+                      << "-> [Widget/Static], could not deduce parent."
                       << std::endl;
             return;
         }
@@ -204,13 +217,10 @@ void Environment::positionDisplayItemInDrawTree(DisplayItem* item)
 
 void Environment::setWidget(DisplayItem *item)
 {
-    { //moderately unsafe
-        WidgetWrapper currentWidget = item->getWidgetWrapper();
-        item->setWidgetWrapper(WidgetWrapper()); //take ownership
+    if(userOwnedWidgets.count(item->getWidget()))
+        return; //it be bound by BLOOD
 
-        if(currentWidget.get())
-            widgetInstaces.erase(currentWidget.get());
-    }
+    item->destroyWidget();
 
     WidgetBlueprints blueprints;
 
@@ -224,48 +234,27 @@ void Environment::setWidget(DisplayItem *item)
     }
     else return; //Otherwise, we leave it blank, because it's not actually needed ^^
 
-
-    //reeeeeeeee
-    // okay displayitems should really own these things :/
+    item->setupNewWidget(blueprints);
 }
 
 std::optional<DisplayItem*> Environment::deduceTarget(DisplayItem *context, const ValueKeyPath key)
 {
-    DisplayItemKey superKey;
-    superKey.model = context->getModel();
+    //This used to be a lot more sophisticated which is why it's kinda weird looking now
+    // but leaving it here because I'm still unsure of the future direction.
 
-    {
-        auto it = elementLookupByPath.find(key);
+    std::optional<DisplayItem*> result;
 
-        if(it == elementLookupByPath.end())
-            return std::optional<DisplayItem*>(); //WAit why are we using optional pointers?
+    Element* targetElem = elementLookupByPath[key];
+    const auto count = elementToDisplayItems.at(targetElem).size();
 
-        superKey.element = it->second;
-    }
+    if(count > 1)
+        std::cout << "IVD Runtime Warning: Target Ambiguous: " << key << std::endl;
 
+    //Grab the first
+    for(DisplayItem* target : elementToDisplayItems.at(targetElem))
+        return target;
 
-    //std::vector<std::string> elementChain; TODO, track the whole chain of parents
-    // for debug information on steroids
-    findParent:
-    auto parentIterator = keyToItemMap.find(superKey);
-    if(parentIterator == keyToItemMap.end())
-    {
-        if(superKey.model)
-        {
-            //Then search higher up the model tree, and for a static item if
-            // that doesn't work out.
-            //parentItem is Null in the case of no parent. Static and root items have
-            // a DisplayItemKey with a null model member. So it all works out.
-            //DON'T USE ModelContainer::getParentItem() !! It throws an exception on
-            // null, it's a guarded accessor.
-            superKey.model = superKey.model->getParentContainer()->parentItem;
-            goto findParent;
-        }
-
-        return std::optional<DisplayItem*>();
-    }
-
-    return parentIterator->second;
+    return result;
 }
 
 double Environment::commonExternalAccessor(DisplayItem* context,
@@ -468,28 +457,21 @@ int Environment::loadFromIVDFile(const char* path)
 
 IVD_Widget* Environment::createWidget(const std::string name, IVD_Widget* parent)
 {
-    const WidgetBlueprints& blueprints = widgetBlueprints.at(name);
-    std::unique_ptr<IVD_Widget, void(*)(IVD_Widget*)> widgetSmartPtr(blueprints.ctor(), blueprints.dtor);
-
-    IVD_Widget* widget = widgetSmartPtr.get();
-    widgetInstaces[widgetSmartPtr.get()] = std::move(widgetSmartPtr);
-
     DisplayItem* item = setupNewDisplayItem(elementModelLookup[name]);
-    widgetToDisplayItemMap[widget] = item;
+    IVD_Widget* widget = item->setupNewWidget(widgetBlueprints.at(name));
 
-    item->setParent(widgetToDisplayItemMap.at(parent));
-    item->setWidgetWrapper(WidgetWrapper(blueprints, widget));
+    userOwnedWidgets[widget] = item;
 
+    positionDisplayItemInDrawTree(item, parent);
     processDeferredVirtualStates();
 }
 
 void Environment::destroyWidget(IVD_Widget* widget)
 {
-    DisplayItem* item = widgetToDisplayItemMap[widget];
+    DisplayItem* item = userOwnedWidgets.at(widget);
+    userOwnedWidgets.erase(widget);
     markAsBadGeometry(item); //okayyyy is this safe AT ALL?? With models there was a comment about root windows XXX
     destroyDisplayItem(item);
-    widgetToDisplayItemMap.erase(widget);
-    widgetInstaces.erase(widget);
 }
 
 double Environment::getInteger(DisplayItem* context, const ScopedValueKey key)
@@ -633,6 +615,7 @@ void Environment::setupEnvironmentCallbacksOnAttributeForKey(AnimatableAttribute
         break;
 
     case Layout:
+    case Widget:
         attr->setChangeAcceptor([&](AnimatableAttribute* attr)
         {
             setWidget(attr->revealContext());

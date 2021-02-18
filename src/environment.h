@@ -52,9 +52,8 @@ class Environment
     std::vector<VirtualStateKeyPrecursor> deferredVirtualStateKeys;
 
     std::map<DisplayItem*, std::unique_ptr<DisplayItem>> instances;
-    std::map<IVD_Widget*, std::unique_ptr<IVD_Widget, void(*)(IVD_Widget*)>> widgetInstaces;
 
-    std::map<IVD_Widget*, DisplayItem*> widgetToDisplayItemMap;
+    std::map<IVD_Widget*, DisplayItem*> userOwnedWidgets;
 
     //This is for tracking items that need recomputing.
     std::set<DisplayItem*> itemsWithChangedAttributeSets;
@@ -69,6 +68,8 @@ class Environment
     std::map<ValueKeyPath, Element*> elementLookupByPath;
     std::map<std::string, Element*> elementModelLookup;
 
+    std::map<Element*, std::set<DisplayItem*>> elementToDisplayItems;
+
     std::map<std::string, WidgetBlueprints> widgetBlueprints;
     std::map<std::string, WidgetBlueprints> layoutBlueprints;
 
@@ -78,7 +79,7 @@ class Environment
 
     DisplayItem* setupNewDisplayItem(Element* elem);
     void destroyDisplayItem(DisplayItem* item);
-    void positionDisplayItemInDrawTree(DisplayItem* item);
+    void positionDisplayItemInDrawTree(DisplayItem* item, IVD_Widget *parentWidget);
     void setWidget(DisplayItem* item);
 
     std::optional<DisplayItem *> deduceTarget(DisplayItem* context, const ValueKeyPath key);
