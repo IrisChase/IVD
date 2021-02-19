@@ -31,7 +31,7 @@ namespace IVD
 class Canvas;
 class DisplayItem;
 
-class Material
+class Materialdeadmanwalkin
 {
     Rect myViewport;
     Rect drawingArea; //Drawing area less padding/border
@@ -81,17 +81,6 @@ public:
     Coords getRelativeDrawingAreaOffset()
     { return drawingArea.c; }
 
-    void draw(Canvas* theCanvas);
-
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle);
-
-    virtual FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle) = 0;
-    virtual void shape(const GeometryProposal officialProposal);
-    virtual void shapeDrawingArea(const GeometryProposal officalProposal) = 0;
-
-    virtual void setAbsoluteOffset(const Coords offset) = 0;
-
-    virtual void drawConcrete(Canvas* theCanvas) = 0;
 
     //Return value of "fun" is the loop invariant, i.e. true == continue
     //e.g: for(auto it = children.begin(); it != children.end() && fun(*it); ++it);

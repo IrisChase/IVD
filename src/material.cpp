@@ -74,34 +74,10 @@ void Material::draw(Canvas* theCanvas)
     theCanvas->popClip();
 }
 
-FillPrecedence Material::getFillPrecedenceForAngle(const Angle theAngle)
-{
-    const auto optionalOverride = myItem->filterFillPrecedenceForAngle(theAngle);
-
-    if(optionalOverride) return *optionalOverride;
-
-    return computerFillPrecedenceForAngle(theAngle);
-}
-
 void Material::shape(const GeometryProposal officialProposal)
 {
     assert(myItem);
 
-    GeometryProposal revisedProposal = myItem->reviseProposalForDrawingArea(officialProposal);
-
-    revisedProposal.proposedDimensions -= myItem->getReservedDimens();
-
-    if(revisedProposal.proposedDimensions.w < 0)
-        revisedProposal.proposedDimensions.w = 0;
-
-    if(revisedProposal.proposedDimensions.h < 0)
-        revisedProposal.proposedDimensions.h = 0;
-
-    shapeDrawingArea(revisedProposal);
-
-    auto proposedViewport = drawingArea.d + myItem->getReservedDimens();
-
-    myViewport.d = officialProposal.roundConflicts(drawingArea.d + myItem->getReservedDimens());
 }
 
 void Material::updateDrawingAreaOffset()
@@ -125,20 +101,6 @@ void Material::simpleShape(const GeometryProposal officialProposal)
 
 void Material::drawBasic(Canvas* theCanvas, Rect renderingArea)
 {
-    volatile auto x = myItem->getReservedPaddingDimens();
-    renderingArea = getDrawingArea();
-    renderingArea.c -= Coords(myItem->getReservedInnerPaddingDimens());
-    renderingArea.d += myItem->getReservedPaddingDimens();
-
-
-    assert(myItem);
-
-    Color::AlphaType alpha = Default::Filter::getAlpha(myItem);
-    const auto elementColor = Default::Filter::getElementColor(myItem);
-
-
-    if(elementColor)
-        theCanvas->fillRect(renderingArea, *elementColor, alpha);
 }
 
 

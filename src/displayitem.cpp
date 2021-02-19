@@ -12,10 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include <unordered_set>
-
 #include "displayitem.h"
-#include "modelitembase.h"
 
 #include "environment.h"
 #include "defaults.h"
@@ -128,6 +125,7 @@ GeometryProposal DisplayItem::reviseProposalForDrawingArea(GeometryProposal prop
         //Goooooooood the interface to Attribute is so fucked up.
         if(!getAttr().checkActive(attrKey)) return;
 
+        //TODO wanna remove the binding stuff I think
         auto attr = getAttr().getInt(attrKey);
 
         if(attr && getAttr().isConst(attrKey))
@@ -223,7 +221,6 @@ int DisplayItem::getSizeForAngle(const Angle theAngle)
 
 std::optional<FillPrecedence> DisplayItem::filterFillPrecedenceForAngle(const Angle theAngle)
 {
-
     const auto attrKey = correctAngle(theAngle) == Angle::Adjacent ? AttributeKey::OverrideFillPrecedenceAdjacent
                                                                    : AttributeKey::OverrideFillPrecedenceOpposite;
     const auto optionalAttr = myAttrs.getProperty(attrKey);
@@ -241,153 +238,92 @@ std::optional<FillPrecedence> DisplayItem::filterFillPrecedenceForAngle(const An
     return std::optional<FillPrecedence>();
 }
 
-std::vector<Material*> DisplayItem::getChildMaterials()
+FillPrecedence DisplayItem::computerFillPrecedenceForAngle(const Angle theAngle)
 {
-    std::vector<Material*> childMaterials;
-    for(DisplayItem* child : children)
-        childMaterials.push_back(child->getMaterial());
+    const auto optionalOverride = filterFillPrecedenceForAngle(theAngle);
 
-    return childMaterials;
+    if(optionalOverride) return *optionalOverride;
+
+    if(myWidget.isSet())
+        return myWidget.getFillPrecedence(theAngle);
+
+    return FillPrecedence::Shrinky; //DEFAULT
 }
 
-std::vector<Material*> DisplayItem::getChildMaterialsInModelOrder()
+void DisplayItem::shape(const GeometryProposal officialProposal)
 {
-    //Precedence is Named Cells > Declaration Order (stamp) > Model Order
-    std::vector<DisplayItem*> sorted(children.begin(), children.end());
+    GeometryProposal revisedProposal = reviseProposalForDrawingArea(officialProposal);
 
-    if(Default::Filter::checkModelOrder(this))
+    revisedProposal.proposedDimensions -= getReservedDimens();
+
+    if(revisedProposal.proposedDimensions.w < 0)
+        revisedProposal.proposedDimensions.w = 0;
+
+    if(revisedProposal.proposedDimensions.h < 0)
+        revisedProposal.proposedDimensions.h = 0;
+
+    shapeDrawingArea(revisedProposal);
+
+    auto proposedViewport = drawingArea.d + getReservedDimens();
+
+    myViewport.d = officialProposal.roundConflicts(drawingArea.d + getReservedDimens());
+}
+
+void DisplayItem::shapeDrawingArea(const GeometryProposal officalProposal)
+{
+    if(myWidget.isSet())
+        myWidget.shape(officalProposal);
+    else
+        drawingArea.d = officalProposal.proposedDimensions;
+}
+
+void DisplayItem::drawConcrete(Canvas *theCanvas)
+{
+    theCanvas->pushCursor(myViewport.c);
+    theCanvas->pushClip(myViewport.d);
+
+    //Draw basic stuffs;
     {
-        auto compareModelContainer = [&](DisplayItem* left, DisplayItem* right)
+        Color::AlphaType alpha = Default::Filter::getAlpha(this);
+        const auto elementColor = Default::Filter::getElementColor(this);
+
+        theCanvas->pushCursor(getReservedInnerMarginDimens());
+        //-->>draw borders<<--
+        //rounded corner clips
+
+        theCanvas->pushCursor(getReservedInnerBorderDimens());
+        //Draw background color (which ignores padding)
+
+        if(elementColor)
         {
-            return (left->getModel() ? left->getModel()->getParentContainer()
-                                     : nullptr)
-                    <
-                    (right->getModel() ? right->getModel()->getParentContainer()
-                                       : nullptr);
-        };
-        std::sort(sorted.begin(), sorted.end(), compareModelContainer);
-
-
-        auto sortModelRange = [&](auto begin, auto end)
-        {
-            //Alright so the predicate is the position in the parent
-            // container itself. Soooo... Just overwrite the range.
-            //I hate this.
-
-            //So... We have a range of unsorted items, and the only way to get the sorting
-            // data is to read from the parent container. So... Might as well just overwrite
-            // the range.
-
-            if(begin == end) return;
-
-            assert((*begin)->getModel());
-
-            //Keeping in mind, of course, that that not all internalDisplayItems
-            // are children of this item... Because an item may become a child of
-            // it's sibling, but not all siblings are automatically children in that case
-            // so you can't just remove the this pointer.
-
-            //This all looks bad/inefficient, but it doesn't currently show up on any profiling
-            // passes so fuck it.
-
-            //Sorry if this code is shit, I'm having a bad day and I just want this done.
-
-            std::vector<DisplayItem*> modelsDisplayItems;
-
-            //Iterating through the parent container is in model order (Thank god at least something
-            // here is intuitive). Items bound to the model are going to end up resorted in stamp order
-            // in the next pass, preserving the relative model order.
-
-            for(ModelItemBase* modelItem : *(*begin)->getModel()->getParentContainer())
-                for(auto* replacement : modelItem->internalDisplayItems)
-                    modelsDisplayItems.push_back(replacement);
-
-            const auto childModelItemsEnd =
-                    std::remove_if(modelsDisplayItems.begin(), modelsDisplayItems.end(), [&](DisplayItem* item)
-            {
-                return !children.count(item);
-            });
-
-            auto destIt = begin;
-            for(auto it = modelsDisplayItems.begin(); it != childModelItemsEnd; ++it)
-            {
-                assert(destIt != end);
-                (*destIt++) = *it;
-            }
-        };
-
-        for(auto it = sorted.begin(); it != sorted.end();)
-        {
-            //Find the ranges. Wasn't happy with any algorithms I found in the
-            // standard library...
-
-            if(!(*it)->getModel())
-            {
-                ++it;
-                continue;
-            }
-
-            const ModelContainer* startModel = (*it)->getModel()->getParentContainer();
-
-            auto begin = it;
-
-            for(; it != sorted.end() &&
-                (*it)->getModel() &&
-                startModel == (*it)->getModel()->getParentContainer()
-                ; ++it);
-
-            sortModelRange(begin, it);
+            Rect renderingArea = myViewport.d;
+            myViewport.d -= getReservedBorderDimens();
+            myViewport.d -= getReservedMarginDimens();
+            //Rounded corners ughhhhh
+            theCanvas->fillRect(renderingArea, *elementColor, alpha);
         }
-    }
 
-    auto compareStamp = [&](DisplayItem* left, DisplayItem* right)
-    {
-        return left->getElementStamp() < right->getElementStamp();
-    };
-    std::stable_sort(sorted.begin(), sorted.end(), compareStamp);
-
-
-    if(getAttr().checkActive(AttributeKey::CellNames))
-    {
-        auto cells = getAttr().getLiteralList(AttributeKey::CellNames);
-
-        cells.insert(cells.begin(), "front");
-        cells.insert(cells.end(), "back");
-
-        auto pred = [&](DisplayItem* left, DisplayItem* right)
+        //Widget stuffs!
+        if(myWidget.isSet())
         {
-            //Missing piece of the pie
+            theCanvas->pushCursor(getReservedInnerPaddingDimens());
+            theCanvas->pushClip(drawingArea.d);
 
-            auto calc = [&](DisplayItem* item) -> int
-            {
-                assert(item->getAttr().checkActive(AttributeKey::PositionWithin));
-                auto optionalKey = item->getAttr().getSingleValueKey(AttributeKey::PositionWithin)->key;
-                assert(optionalKey);
-                const auto key = *optionalKey;
+            myWidget.draw(theCanvas);
 
-                for(int val = 0; val != cells.size(); ++val)
-                    if(cells[val] == key) return val;
+            theCanvas->popClip();
+            theCanvas->popCursor(); //Pad
+        }
 
-                std::cerr << "IVD Runtime Warning: Unrecognized cell name: " << key
-                          << ", in: " << elementPath << ", "
-                          << (getModel() ? "[model]"
-                                         : "[static]") << std::endl;
 
-                return cells.size() + 1;
-            };
-
-            return calc(left) < calc(right);
-        };
-        std::stable_sort(sorted.begin(), sorted.end(), pred);
+        theCanvas->popCursor(); //Border
+        theCanvas->popCursor(); //Margins
     }
 
-    assert(children.size() == sorted.size());
+    theCanvas->popClip();
+    theCanvas->popCursor(); //Viewport
+}
 
-    //Ehhhhhhhhhhhhhhhck there's GOT to be an easier way!
-    // But alas, I'm lazy today!
-    std::vector<Material*> sortedMaterials;
-    for(auto* dip : sorted) sortedMaterials.push_back(dip->getMaterial());
-    return sortedMaterials;}
 
 
 }//IVD

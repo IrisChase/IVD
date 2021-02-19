@@ -564,12 +564,12 @@ void SDLdriver::refresh()
                 }
             }
 
-            item->getMaterial()->shape(prop);
-            item->getMaterial()->setAbsoluteOffset(Coords());
+            item->shape(prop);
+            item->setViewportOffset(Coords());
 
             invalidateHoverDesperately();
 
-            const Dimens drawableDimens = item->getMaterial()->getViewport().d;
+            const Dimens drawableDimens = item->getViewport().d;
 
             if(!pairData.previousSizeSet || pairData.previousDimens != drawableDimens)
             {
@@ -629,7 +629,7 @@ void SDLdriver::refresh()
                 auto canvas = window->getCanvas();
                 canvas->clear();
 
-                item->getMaterial()->drawConcrete(canvas);
+                item->drawConcrete(canvas);
                 window->present();
             }
 

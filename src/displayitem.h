@@ -20,7 +20,6 @@
 
 #include "attributepositionpair.h"
 #include "runtimeattributeset.h"
-#include "material.h"
 #include "widget.h"
 
 #include <reprodyne.h>
@@ -46,10 +45,9 @@ class DisplayItem
     std::map<int, const ReferenceAttributeSet*> contributingAttrs;
     RuntimeAttributeSet myAttrs;
 
-    Coords shapePos;
-    Dimens totalCellDimens;
-    
-    std::unique_ptr<Material> myMaterial;
+    Rect myCell; //We need the cell for the clip
+    Rect myViewport;
+
     WidgetWrapper myWidget;
 
     std::set<DisplayItem*> children;
@@ -186,6 +184,9 @@ public:
     Dimens getReservedPaddingDimens()
     { return getReservedInnerPaddingDimens() + getReservedOuterPaddingDimens(); }
 
+    Dimens getReservedMarginDimens()
+    { return getReservedInnerMarginDimens() + getReservedOuterMarginDimens(); }
+
     Dimens getReservedInnerDimens()
     { return Dimens(getReservedInner(getRelativeAdjacent()),
                     getReservedInner(getRelativeOpposite())); }
@@ -259,14 +260,21 @@ public:
 
     std::optional<FillPrecedence> filterFillPrecedenceForAngle(const Angle theAngle);
 
+    void draw(Canvas* theCanvas);
 
-    //Materials
-    Material* getMaterial()
-    { return myMaterial.get(); }
+    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle);
 
-    ModelItemBase* getModel() const
-    { return myModel; }
+    Rect getViewport()
+    { return myRect; }
 
+    FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle);
+    void shape(const GeometryProposal officialProposal);
+    void shapeDrawingArea(const GeometryProposal officalProposal);
+
+    void setViewportOffset(const Coords offset)
+    { myViewport.c = offset; }
+
+    void drawConcrete(Canvas* theCanvas);
 
     //I wish the reference for the container could be const,
     // without that propogating to the pointers...
@@ -275,13 +283,6 @@ public:
 
     const int childCount()
     { return children.size(); }
-
-    std::vector<Material*> getChildMaterials();
-
-    std::vector<Material*> getChildMaterialsInModelOrder();
-
-    void setMaterial(Material* theMaterial)
-    { myMaterial.reset(theMaterial); }
 };
 
 

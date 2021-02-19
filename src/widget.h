@@ -53,6 +53,9 @@ public:
         underlyingWidget = SmartWidgetPointer(blueprints.ctor(), blueprints.dtor);
     }
 
+    bool isSet()
+    { return underlyingWidget.get(); }
+
     void destroy()
     { underlyingWidget.reset(); }
 

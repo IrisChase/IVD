@@ -35,6 +35,14 @@ class DisplayItem;
 
 class Canvas
 {
+    Coords crunchCursor()
+    {
+        Coords result;
+        for(Coords c : cursorMoves)
+            result += c;
+        return result;
+    }
+
 protected:
     //Okay so I promise this is for a real reason and not because I'm too lazy
     // to add clips this to all the drawing functions, which theoretically
@@ -42,13 +50,30 @@ protected:
     //The reason is that clips are cumulative, and need to be unwound, and
     // children shouldn't know about parent clips.
     std::vector<Rect> clips;
+    std::vector<double> alphas;
+    std::vector<Coords> cursorMoves;
 
 public:
-    void pushClip(const Rect clip)
-    { clips.push_back(clip); }
+    void pushClip(const Dimens clipDimens)
+    {
+        Rect clip(crunchCursor(), clipDimens);
+        clips.push_back(clip);
+    }
 
     void popClip()
     { clips.pop_back(); }
+
+    void pushAlpha(const double alpha)
+    { alphas.push_back(alpha); }
+
+    void popAlpha()
+    { alphas.pop_back(); }
+
+    void pushCursor(const Coords dist)
+    { cursorMoves.push_back(dist); }
+
+    void popCursor()
+    { cursorMoves.pop_back(); }
 
     virtual void setSize(const Dimens size) = 0;
     virtual Dimens getSize() = 0;
