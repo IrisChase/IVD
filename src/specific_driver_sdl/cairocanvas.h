@@ -53,7 +53,7 @@ public:
 
     void clear();
 
-    void fillRect(Rect r, Color theColor, Color::AlphaType alpha) final;
+    void fillRect(Rect r, Color theColor) final;
     void fillAdvancedRect(AdvancedRect r, Color theColor, Color::AlphaType alpha) final;
     void strokeRect(Rect r, int size, Color theColor, Color::AlphaType alpha) final;
     void drawLine(Coords start, Coords end, int size, Color theColor, Color::AlphaType alpha) final;

@@ -50,30 +50,30 @@ protected:
     //The reason is that clips are cumulative, and need to be unwound, and
     // children shouldn't know about parent clips.
     std::vector<Rect> clips;
-    std::vector<double> alphas;
-    std::vector<Coords> cursorMoves;
+
+
+    double alpha = 1;
+    Coords offset;
 
 public:
-    void pushClip(const Dimens clipDimens)
-    {
-        Rect clip(crunchCursor(), clipDimens);
-        clips.push_back(clip);
-    }
+    void pushClip(const Rect clip)
+    { clips.push_back(clip); }
 
     void popClip()
     { clips.pop_back(); }
 
-    void pushAlpha(const double alpha)
-    { alphas.push_back(alpha); }
+    void setOffset(const Coords theOffset)
+    { offset = theOffset; }
 
-    void popAlpha()
-    { alphas.pop_back(); }
+    void resetOffset()
+    { offset = Coords(); }
 
-    void pushCursor(const Coords dist)
-    { cursorMoves.push_back(dist); }
+    void setAlpha(const double theAlpha)
+    { alpha = theAlpha; }
 
-    void popCursor()
-    { cursorMoves.pop_back(); }
+    double getAlpha()
+    { return alpha; }
+
 
     virtual void setSize(const Dimens size) = 0;
     virtual Dimens getSize() = 0;
@@ -81,7 +81,7 @@ public:
 
     virtual void clear() = 0;
     
-    virtual void fillRect(Rect r, Color theColor, Color::AlphaType alpha) = 0;
+    virtual void fillRect(Rect r, Color theColor) = 0;
     virtual void fillAdvancedRect(AdvancedRect r, Color theColor, Color::AlphaType alpha) = 0;
     virtual void strokeRect(Rect r, int size, Color theColor, Color::AlphaType alpha) = 0;
     virtual void drawLine(Coords start, Coords end, int size, Color theColor, Color::AlphaType alpha) = 0;

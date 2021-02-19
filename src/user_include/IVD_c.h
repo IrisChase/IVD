@@ -64,7 +64,8 @@ void IVD_environment_register_widget(IVD_Environment *environment, const char* n
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
-                                     void (*draw)(IVD_Widget*, IVD_Canvas*), //canbe null
+                                     void (*draw)(IVD_Widget*, IVD_Canvas*),
+                                     IVD_Space* (*getSpace)(IVD_Widget *), //canbe null
                                      int (*detectCollisionPoint)(IVD_Widget*, const IVD_Point*), //canbe null
                                      void (*triggerHandler)(IVD_Widget*, const char*));
 
@@ -78,7 +79,8 @@ void IVD_environment_register_layout(IVD_Environment*,
                                      IVD_Widget* (*ctor)(),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
-                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*));
+                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
+                                     IVD_Space* (*getSpace)(IVD_Widget *));
 
 
 //Register multiple types?
@@ -125,13 +127,11 @@ void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space);
 
 
 //-----------------------------------------------------------------------------------------------------Widget
-void IVD_widget_set_content_area(IVD_Widget*, const IVD_Space*);
-void IVD_widget_set_offset(IVD_Widget*, const IVD_Point*);
-
 IVD_Space* IVD_widget_get_space(const IVD_Widget*);
-
 int IVD_get_fill_precedence(const IVD_Widget*, int); //Angle -> FillPrecedence
+
 void IVD_widget_shape(IVD_Widget*, const IVD_GeometryProposal*);
+void IVD_widget_set_offset(IVD_Widget*, const IVD_Point*);
 
 
 //void IVD_draw_X(IVD_Canvas*, ...); //canvas cursor is already set to the correct offset.

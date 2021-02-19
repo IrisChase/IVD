@@ -76,7 +76,7 @@ void CairoCanvas::clear()
     });
 }
 
-void CairoCanvas::fillRect(Rect r, Color theColor, Color::AlphaType alpha)
+void CairoCanvas::fillRect(Rect r, Color theColor)
 {
     drawWith(theColor, alpha, [&](cairo_t* cai)
     {
@@ -87,7 +87,7 @@ void CairoCanvas::fillRect(Rect r, Color theColor, Color::AlphaType alpha)
 
 void CairoCanvas::fillAdvancedRect(AdvancedRect r, Color theColor, Color::AlphaType alpha)
 {
-    fillRect(r.r, theColor, alpha); //shhhhhhhhhhhhhhhhhhh
+    fillRect(r.r, theColor); //shhhhhhhhhhhhhhhhhhh
 }
 
 void CairoCanvas::strokeRect(Rect r, int size, Color theColor, Color::AlphaType alpha)

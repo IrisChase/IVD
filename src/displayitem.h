@@ -45,8 +45,11 @@ class DisplayItem
     std::map<int, const ReferenceAttributeSet*> contributingAttrs;
     RuntimeAttributeSet myAttrs;
 
-    Rect myCell; //We need the cell for the clip
-    Rect myViewport;
+    //Cell is the actual box we want, adjusted for margins?
+    //Viewport is the space we have to position in.
+    bool compliantGeometry = false;
+    Rect myCellRect;
+    Rect myViewportRect; //We need the viewport for the clip
 
     WidgetWrapper myWidget;
 
@@ -65,6 +68,11 @@ class DisplayItem
 
     std::optional<int> getAlignmentProperty(const Angle theAngle);
 
+
+    //putting this here cause I wanna save it but don't know where to put
+    // it yet. Probably gonna be placed beyond the C boundary as a helper
+    // eventually.
+    FillPrecedence returnGreedyIFEVENONECHILDBLINKS(const Angle theAngle);
 
 public:
     DisplayItem(Element* elem,
@@ -207,37 +215,37 @@ public:
     Dimens getReservedBorderDimens()
     { return getReservedInnerBorderDimens() + getReservedOuterBorderDimens(); }
 
-    GeometryProposal reviseProposalForDrawingArea(GeometryProposal prop);
+    GeometryProposal reviseProposalAsRequired(GeometryProposal prop);
 
     bool checkCellAlignmentOffset(const Angle theAngle)
     { return (bool)getAlignmentProperty(theAngle); }
 
     int getJustificationOffset(const int itemSize, const int cellSize);
     int getCellAlignmentOffset(const Angle theAngle,
-                               const int itemSize,
                                const int cellSize,
+                               const int viewportSize,
                                const int reservedInner,
                                const int reservedOuter);
 
-    int getCellAlignmentOffset(const Angle theAngle, const int itemSize, const int cellSize)
+    int getCellAlignmentOffset(const Angle theAngle, const int cellSize, const int viewportSize)
     {
         return getCellAlignmentOffset(theAngle,
-                                      itemSize,
                                       cellSize,
+                                      viewportSize,
                                       getReservedInner(theAngle),
                                       getReservedOuter(theAngle));
     }
 
-    Coords getCellAlignmentOffset(const Dimens itemSize,
-                                  const Dimens cellSize,
+    Coords getCellAlignmentOffset(const Dimens cellSize,
+                                  const Dimens viewportSize,
                                   const Dimens reservedInner,
                                   const Dimens reservedOuter)
     {
         auto get = [&](const Angle theAngle)
         {
             return getCellAlignmentOffset(theAngle,
-                                          itemSize.get(theAngle),
                                           cellSize.get(theAngle),
+                                          viewportSize.get(theAngle),
                                           reservedInner.get(theAngle),
                                           reservedOuter.get(theAngle));
         };
@@ -245,11 +253,11 @@ public:
         return Coords(get(Angle::Horizontal), get(Angle::Vertical));
     }
 
-    Coords getCellAlignmentOffsetMindingReserved(const Dimens itemSize,
-                                                 const Dimens cellSize)
+    Coords getCellAlignmentOffsetMindingReserved(const Dimens cellSize,
+                                                 const Dimens viewportSize)
     {
-        return getCellAlignmentOffset(itemSize,
-                                      cellSize,
+        return getCellAlignmentOffset(cellSize,
+                                      viewportSize,
                                       getReservedInnerDimens(),
                                       getReservedOuterDimens());
     }
@@ -260,21 +268,22 @@ public:
 
     std::optional<FillPrecedence> filterFillPrecedenceForAngle(const Angle theAngle);
 
-    void draw(Canvas* theCanvas);
-
     FillPrecedence getFillPrecedenceForAngle(const Angle theAngle);
 
     Rect getViewport()
-    { return myRect; }
+    { return myViewportRect; }
+
+    Rect getCell()
+    { return myCellRect; }
 
     FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle);
     void shape(const GeometryProposal officialProposal);
-    void shapeDrawingArea(const GeometryProposal officalProposal);
+    Dimens shapeDrawingArea(const GeometryProposal officalProposal);
 
-    void setViewportOffset(const Coords offset)
-    { myViewport.c = offset; }
+    void setOffset(const Coords offset)
+    { myViewportRect.c = offset; }
 
-    void drawConcrete(Canvas* theCanvas);
+    void render(Canvas* theCanvas, const Coords offset);
 
     //I wish the reference for the container could be const,
     // without that propogating to the pointers...

@@ -115,7 +115,7 @@ int DisplayItem::getDepth()
     return 0;
 }
 
-GeometryProposal DisplayItem::reviseProposalForDrawingArea(GeometryProposal prop)
+GeometryProposal DisplayItem::reviseProposalAsRequired(GeometryProposal prop)
 {
     auto internal = [&](const Angle theAngle)
     {
@@ -156,6 +156,26 @@ std::optional<int> DisplayItem::getAlignmentProperty(const Angle theAngle)
                                  : AttributeKey::AlignOpposite);
 }
 
+FillPrecedence DisplayItem::returnGreedyIFEVENONECHILDBLINKS(const Angle theAngle)
+{
+    const auto& children = getChildren();
+
+    auto pred = [theAngle](DisplayItem* child)
+    {
+        return child->getFillPrecedenceForAngle(theAngle) == FillPrecedence::Greedy;
+    };
+    return std::any_of(children.begin(), children.end(), pred) ? FillPrecedence::Greedy
+                                                               : FillPrecedence::Shrinky;
+
+    /// ;; IT'S STILL JUST NOT THE SAAAAAAAAME
+    ///
+    /// (if (some (lambda (x) (eql (elt something-something-something x) fill-precedence-greedy)) children)
+    ///     'fill-precedence-greedy
+    ///     'fill-precedence-shrinky)
+    ///
+    /// ;; I wanne use lithp :<
+}
+
 int DisplayItem::getJustificationOffset(const int itemSize, const int cellSize)
 {
     const auto optional = Default::Filter::getJustificationProperty(this);
@@ -174,20 +194,20 @@ int DisplayItem::getJustificationOffset(const int itemSize, const int cellSize)
 
 
 int DisplayItem::getCellAlignmentOffset(const Angle theAngle,
-                                        const int itemSize,
                                         const int cellSize,
+                                        const int viewportSize,
                                         const int reservedInner,
                                         const int reservedOuter)
 {
 
     const auto optionalProperty = getAlignmentProperty(theAngle);
-    const int theAlignmentProperty = optionalProperty && (itemSize < cellSize) ? *optionalProperty
+    const int theAlignmentProperty = optionalProperty && (cellSize < viewportSize) ? *optionalProperty
                                                                                : Default::alignmentProperty;
     switch (theAlignmentProperty)
     {
     case Property::Inner:  return reservedInner;
-    case Property::Center: return (cellSize ? (cellSize / 2) : 0) - (itemSize ? itemSize / 2 : 0);
-    case Property::Outer:  return cellSize - itemSize - reservedOuter;
+    case Property::Center: return (viewportSize ? (viewportSize / 2) : 0) - (cellSize ? cellSize / 2 : 0);
+    case Property::Outer:  return viewportSize - cellSize - reservedOuter;
     default: assert(false);
     }
 }
@@ -252,7 +272,7 @@ FillPrecedence DisplayItem::computerFillPrecedenceForAngle(const Angle theAngle)
 
 void DisplayItem::shape(const GeometryProposal officialProposal)
 {
-    GeometryProposal revisedProposal = reviseProposalForDrawingArea(officialProposal);
+    GeometryProposal revisedProposal = reviseProposalAsRequired(officialProposal);
 
     revisedProposal.proposedDimensions -= getReservedDimens();
 
@@ -262,66 +282,93 @@ void DisplayItem::shape(const GeometryProposal officialProposal)
     if(revisedProposal.proposedDimensions.h < 0)
         revisedProposal.proposedDimensions.h = 0;
 
-    shapeDrawingArea(revisedProposal);
+    const Dimens proposedCellSpace = shapeDrawingArea(revisedProposal) + getReservedDimens();
 
-    auto proposedViewport = drawingArea.d + getReservedDimens();
+    myCellRect = proposedCellSpace;
+    myViewportRect.d = officialProposal.roundConflicts(proposedCellSpace);
+    compliantGeometry = officialProposal.verifyCompliance(myCellRect.d);
 
-    myViewport.d = officialProposal.roundConflicts(drawingArea.d + getReservedDimens());
+    //Cell alignment
+    myCellRect.c = getCellAlignmentOffsetMindingReserved(myCellRect.d, myViewportRect.d);
 }
 
-void DisplayItem::shapeDrawingArea(const GeometryProposal officalProposal)
+Dimens DisplayItem::shapeDrawingArea(const GeometryProposal officalProposal)
 {
     if(myWidget.isSet())
+    {
         myWidget.shape(officalProposal);
-    else
-        drawingArea.d = officalProposal.proposedDimensions;
+        return myWidget.getSpace();
+    }
+    else return officalProposal.proposedDimensions;
 }
 
-void DisplayItem::drawConcrete(Canvas *theCanvas)
+void DisplayItem::render(Canvas *theCanvas, const Coords offset)
 {
-    theCanvas->pushCursor(myViewport.c);
-    theCanvas->pushClip(myViewport.d);
-
-    //Draw basic stuffs;
+    const Rect viewportClip = [&]()
     {
-        Color::AlphaType alpha = Default::Filter::getAlpha(this);
+        Rect clip = myViewportRect;
+        clip.c += offset;
+        return clip;
+    }();
+
+    //Cell offset already takes margins into account
+    const Rect cellClip = [&]()
+    {
+        Rect clip = myCellRect;
+        clip.c += offset;
+        return clip;
+    }();
+
+    const Rect borderLessCell = [&]() -> Rect
+    {
+        Rect clip = cellClip;
+        clip.d -= getReservedBorderDimens();
+        clip.c += getReservedInnerBorderDimens();
+        return clip;
+    }();
+
+    const Rect contentClip = [&]() -> Rect
+    {
+        Rect clip = borderLessCell;
+        clip.d -= getReservedPaddingDimens();
+        clip.c += getReservedInnerPaddingDimens();
+        return clip;
+    }();
+
+    const auto savedAlpha = theCanvas->getAlpha();
+    theCanvas->setAlpha(savedAlpha * Default::Filter::getAlpha(this));
+
+    theCanvas->pushClip(viewportClip);
+    theCanvas->pushClip(cellClip); //they could overlap
+
+
+    //Draw boxeee
+    {
+        //>Draw borders<
+
+        theCanvas->pushClip(borderLessCell);
+
         const auto elementColor = Default::Filter::getElementColor(this);
-
-        theCanvas->pushCursor(getReservedInnerMarginDimens());
-        //-->>draw borders<<--
-        //rounded corner clips
-
-        theCanvas->pushCursor(getReservedInnerBorderDimens());
-        //Draw background color (which ignores padding)
-
         if(elementColor)
-        {
-            Rect renderingArea = myViewport.d;
-            myViewport.d -= getReservedBorderDimens();
-            myViewport.d -= getReservedMarginDimens();
-            //Rounded corners ughhhhh
-            theCanvas->fillRect(renderingArea, *elementColor, alpha);
-        }
+            theCanvas->fillRect(borderLessCell, *elementColor);
 
-        //Widget stuffs!
-        if(myWidget.isSet())
-        {
-            theCanvas->pushCursor(getReservedInnerPaddingDimens());
-            theCanvas->pushClip(drawingArea.d);
-
-            myWidget.draw(theCanvas);
-
-            theCanvas->popClip();
-            theCanvas->popCursor(); //Pad
-        }
-
-
-        theCanvas->popCursor(); //Border
-        theCanvas->popCursor(); //Margins
+        theCanvas->popClip(); //borderlessCell
     }
 
-    theCanvas->popClip();
-    theCanvas->popCursor(); //Viewport
+    if(myWidget.isSet() && myWidget.isDrawable())
+    {
+        theCanvas->pushClip(contentClip);
+        theCanvas->setOffset(contentClip.c);
+
+        myWidget.draw(theCanvas);
+
+        theCanvas->resetOffset();
+        theCanvas->popClip(); //contentClip
+    }
+
+    theCanvas->popClip();//cellClip
+    theCanvas->popClip();//viewportClip
+    theCanvas->setAlpha(savedAlpha); //restored alpha :)
 }
 
 

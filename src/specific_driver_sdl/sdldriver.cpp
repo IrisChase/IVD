@@ -565,7 +565,7 @@ void SDLdriver::refresh()
             }
 
             item->shape(prop);
-            item->setViewportOffset(Coords());
+            item->setOffset(Coords());
 
             invalidateHoverDesperately();
 
@@ -629,7 +629,7 @@ void SDLdriver::refresh()
                 auto canvas = window->getCanvas();
                 canvas->clear();
 
-                item->drawConcrete(canvas);
+                item->render(canvas, Coords());
                 window->present();
             }
 

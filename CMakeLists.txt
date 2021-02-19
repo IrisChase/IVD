@@ -47,8 +47,6 @@ src/expression.h
 src/geometry.h
 src/geometryproposal.h
 src/keywords.h
-src/material.cpp
-src/material.h
 src/standardstatekeys.h
 src/statekey.h
 src/statemanager.h

@@ -27,6 +27,7 @@ struct WidgetBlueprints
     void (*dtor)(IVD_Widget*) = nullptr;
     int (*getFillPrecedence)(IVD_Widget*, const int) = nullptr;
     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*) = nullptr;
+    IVD_Space* (*getSpace)(IVD_Widget*); //Widgets only know about drawing area
 
     //Widget specific
     void (*draw)(IVD_Widget*, IVD_Canvas*) = nullptr; //canbe null
@@ -56,6 +57,9 @@ public:
     bool isSet()
     { return underlyingWidget.get(); }
 
+    bool isDrawable()
+    { return blueprints.draw; }
+
     void destroy()
     { underlyingWidget.reset(); }
 
@@ -68,6 +72,12 @@ public:
                                                        getForAngle(0, 1, theAngel));
         return prec == 0 ? FillPrecedence::Greedy
                          : FillPrecedence::Shrinky;
+    }
+
+    Dimens getSpace()
+    {
+        IVD_Space* space = blueprints.getSpace(underlyingWidget.get());
+        return *reinterpret_cast<Dimens*>(space);
     }
 
     void shape(const GeometryProposal prop)
