@@ -74,13 +74,15 @@ IVD_Widget* IVD_environment_widget_create(IVD_Environment*, const char* name, IV
 void IVD_environment_widget_destroy(IVD_Environment*, IVD_Widget*);
 
 
-void IVD_environment_register_layout(IVD_Environment*,
+void IVD_environment_register_layout(IVD_Environment* environment,
                                      const char* name,
                                      IVD_Widget* (*ctor)(),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
-                                     IVD_Space* (*getSpace)(IVD_Widget *));
+                                     void (*draw)(IVD_Widget*, IVD_Canvas*),
+                                     IVD_Space* (*getSpace)(IVD_Widget *),
+                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Point *));
 
 
 //Register multiple types?

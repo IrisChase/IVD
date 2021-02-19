@@ -28,10 +28,10 @@ struct WidgetBlueprints
     int (*getFillPrecedence)(IVD_Widget*, const int) = nullptr;
     void (*shape)(IVD_Widget*, IVD_GeometryProposal*) = nullptr;
     IVD_Space* (*getSpace)(IVD_Widget*); //Widgets only know about drawing area
-
-    //Widget specific
     void (*draw)(IVD_Widget*, IVD_Canvas*) = nullptr; //canbe null
     int (*detectCollisionPoint)(IVD_Widget*, IVD_Point*) = nullptr; //canbe null
+
+    //Widget specific
     void (*triggerHandler)(IVD_Widget*, const char*) = nullptr;
 };
 
@@ -82,10 +82,10 @@ public:
         return result;
     }
 
-    void shape(const GeometryProposal prop)
+    void shape(GeometryProposal prop)
     {
         blueprints.shape(get(),
-                         reinterpret_cast<const IVD_GeometryProposal*>(&prop));
+                         reinterpret_cast<IVD_GeometryProposal*>(&prop));
     }
 
     void draw(Canvas* canvas)
@@ -94,10 +94,10 @@ public:
                         reinterpret_cast<IVD_Canvas*>(canvas));
     }
 
-    bool detectCollisionPoint(const Coords point)
+    bool detectCollisionPoint(Coords point)
     {
         return blueprints.detectCollisionPoint(get(),
-                                               reinterpret_cast<const IVD_Point*>(&point));
+                                               reinterpret_cast<IVD_Point*>(&point));
     }
 
     void handleTrigger(const std::string triggerName)

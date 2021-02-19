@@ -82,8 +82,10 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
-                                     IVD_Space* (*getSpace)(IVD_Widget*))
-{ castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, getSpace, nullptr, nullptr, nullptr}); }
+                                     void (*draw)(IVD_Widget*, IVD_Canvas*),
+                                     IVD_Space* (*getSpace)(IVD_Widget *),
+                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Point *))
+{ castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, getSpace, draw, detectCollisionPoint, nullptr}); }
 
 
 //Register multiple types?

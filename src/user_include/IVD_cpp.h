@@ -75,6 +75,8 @@ public:
     virtual FillPrecedence getFillPrecedence(const Angle angle) = 0;
     virtual void shape(const GeometryProposal prop) = 0;
     virtual Space getSpace() = 0;
+    virtual void draw(Canvas theCanvas) = 0;
+    virtual bool detectCollisionPoint(const Point point) { return false; }
 };
 
 class UserWidget : public UserLayout
@@ -82,9 +84,7 @@ class UserWidget : public UserLayout
 public:
     virtual ~UserWidget();
 
-    virtual void draw(Canvas theCanvas) = 0;
     virtual void trigger(const std::string trig) {}
-    virtual bool detectCollisionPoint(const Point point) { return false; }
 };
 
 namespace Internals
@@ -170,7 +170,7 @@ public:
     Environment(): internal(IVD_create_environment(), &IVD_destroy_environment) {}
 
     template<typename T>
-    void registerWidget(const std::string name, T* (*factory)())
+    void register_widget(const std::string name, T* (*factory)())
     {
         //---->VOODOO<----
         auto castFactory = reinterpret_cast<IVD_Widget* (*)()>(factory);
@@ -189,7 +189,25 @@ public:
     }
 
     template<typename T>
-    T* createUnmanagedUserWidget(const std::string name, T* parent = nullptr)
+    void register_layout(const std::string name, T* (*factory)())
+    {
+        //---->VOODOO<----
+        auto castFactory = reinterpret_cast<IVD_Widget* (*)()>(factory);
+        //---->VOODOO<----
+
+        IVD_environment_register_layout(internal.get(),
+                                        name.c_str(),
+                                        castFactory,
+                                        Internals::userWidgetDestructorHook,
+                                        Internals::userWidgetGetFillPrecedenceHook,
+                                        Internals::userWidgetShapeHook,
+                                        Internals::userWidgetDrawHook,
+                                        Internals::userWidgetGetSpaceHook,
+                                        Internals::userWidgetDetectCollisionPointHook);
+    }
+
+    template<typename T>
+    T* create_unmanaged_user_widget(const std::string name, T* parent = nullptr)
     {
         IVD_Widget* widget = IVD_environment_widget_create(internal.get(),
                                                            name.c_str(),
@@ -199,9 +217,9 @@ public:
 
 
     template<typename T>
-    ManagedUserWidget<T> createManagedUserWidget(const std::string name, T* parent = nullptr)
+    ManagedUserWidget<T> create_managed_user_widget(const std::string name, T* parent = nullptr)
     {
-        T* unmanaged = createUnmanagedUserWidget(name, parent);
+        T* unmanaged = create_unmanaged_user_widget(name, parent);
 
         std::function<void()> dtor = [&]
         { IVD_environment_widget_destroy(internal.get(), unmanaged); };
