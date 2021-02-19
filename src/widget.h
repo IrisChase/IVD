@@ -26,12 +26,12 @@ struct WidgetBlueprints
     IVD_Widget* (*ctor)() = nullptr;
     void (*dtor)(IVD_Widget*) = nullptr;
     int (*getFillPrecedence)(IVD_Widget*, const int) = nullptr;
-    void (*shape)(IVD_Widget*, const IVD_GeometryProposal*) = nullptr;
+    void (*shape)(IVD_Widget*, IVD_GeometryProposal*) = nullptr;
     IVD_Space* (*getSpace)(IVD_Widget*); //Widgets only know about drawing area
 
     //Widget specific
     void (*draw)(IVD_Widget*, IVD_Canvas*) = nullptr; //canbe null
-    int (*detectCollisionPoint)(IVD_Widget*, const IVD_Point*) = nullptr; //canbe null
+    int (*detectCollisionPoint)(IVD_Widget*, IVD_Point*) = nullptr; //canbe null
     void (*triggerHandler)(IVD_Widget*, const char*) = nullptr;
 };
 
@@ -77,7 +77,9 @@ public:
     Dimens getSpace()
     {
         IVD_Space* space = blueprints.getSpace(underlyingWidget.get());
-        return *reinterpret_cast<Dimens*>(space);
+        Dimens result = *reinterpret_cast<Dimens*>(space);
+        IVD_space_free(space);
+        return result;
     }
 
     void shape(const GeometryProposal prop)

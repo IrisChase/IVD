@@ -63,10 +63,10 @@ void IVD_environment_register_widget(IVD_Environment *environment, const char* n
                                      IVD_Widget* (*ctor)(),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
-                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
+                                     void (*shape)(IVD_Widget *, IVD_GeometryProposal *),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
                                      IVD_Space* (*getSpace)(IVD_Widget *), //canbe null
-                                     int (*detectCollisionPoint)(IVD_Widget*, const IVD_Point*), //canbe null
+                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Point *), //canbe null
                                      void (*triggerHandler)(IVD_Widget*, const char*));
 
 //IVD manages widget lifetimes so they can be "deleted later"
@@ -79,7 +79,7 @@ void IVD_environment_register_layout(IVD_Environment*,
                                      IVD_Widget* (*ctor)(),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
-                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
+                                     void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      IVD_Space* (*getSpace)(IVD_Widget *));
 
 

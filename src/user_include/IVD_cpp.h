@@ -28,284 +28,139 @@ extern "C"
 namespace IVD
 {
 
-namespace Internals //Reference this namespace at your own peril.
+enum class FillPrecedence
 {
-
-inline void printRuntimeError(const std::string& str)
-{
-    std::cerr << "IVD Runtime Error: " << str << "." << std::endl;
-}
-
-inline void errorCouldNotFindAccessor(const std::string& type, const std::string& key)
-{
-    printRuntimeError(std::string("Could not find " + type + ", for key: " + key + "."));
-    //TODO: This error needs to be accessible programatically.
-}
-
-//Save *minutes* of typing with this one weird template!
-template<typename MapT>
-typename MapT::mapped_type findFunction(MapT map, const char* key)
-{
-    auto it = map.find(key);
-    if(it != map.end()) return it->second;
-    return typename MapT::mapped_type{};
-}
-
-template<typename proto>
-using FunctionMap = std::map<std::string, std::function<proto>>;
-
-struct InstanceData
-{
-    FunctionMap<double()> numberGetters;
-    FunctionMap<std::string()> stringGetters;
-
-    FunctionMap<void(double)> numberSetters;
-    FunctionMap<void(const std::string&)> stringSetters;
-
-    FunctionMap<void()> triggers;
-
-    std::string lastStringGetResult; //Cleverrrrrrrrrr
-
-    static InstanceData* fromVoid(void* data)
-    { return reinterpret_cast<InstanceData*>(data); }
+    Greedy,
+    Shrinky,
 };
 
-inline void destroyItemData(void* data)
-{ delete reinterpret_cast<InstanceData*>(data); }
+#define IVD_ANGLE_HORIZONTAL 0
+#define IVD_ANGLE_VERTICAL 1
 
-
-inline double numberGetterCallbackHook(const char* key, void* data)
+enum class Angle
 {
-    auto func = findFunction(InstanceData::fromVoid(data)->numberGetters, key);
-    if(func) return func();
+    Horizontal,
+    Vertical,
+};
 
-    errorCouldNotFindAccessor("Number Getter", key);
+class GeometryProposal
+{
+public:
+    GeometryProposal(IVD_GeometryProposal* internalProp)
+    {}
+};
 
-    return 0; //I guess... Although there should be a warning for this behavior...
+class Canvas
+{
+public:
+    Canvas(IVD_Canvas* internalCanvas)
+    {}
+};
+
+struct Space
+{
+    int w;
+    int h;
+};
+
+struct Point
+{
+    int x;
+    int y;
+};
+
+class UserLayout
+{
+public:
+    virtual FillPrecedence getFillPrecedence(const Angle angle) = 0;
+    virtual void shape(const GeometryProposal prop) = 0;
+    virtual Space getSpace() = 0;
+};
+
+class UserWidget : public UserLayout
+{
+public:
+    virtual ~UserWidget();
+
+    virtual void draw(Canvas theCanvas) = 0;
+    virtual void trigger(const std::string trig) {}
+    virtual bool detectCollisionPoint(const Point point) { return false; }
+};
+
+namespace Internals
+{
+
+IVD_Widget* cast(UserWidget* widget)
+{ return reinterpret_cast<IVD_Widget*>(widget); }
+
+UserWidget* cast(IVD_Widget* widget)
+{ return reinterpret_cast<UserWidget*>(widget); }
+
+void userWidgetDestructorHook(IVD_Widget* widget)
+{ delete cast(widget); }
+
+int userWidgetGetFillPrecedenceHook(IVD_Widget* widget, const int angle)
+{
+    const Angle inputAngle =
+            angle == IVD_ANGLE_VERTICAL ? Angle::Vertical
+                                        : Angle::Horizontal;
+
+    const FillPrecedence resultPrec = cast(widget)->getFillPrecedence(inputAngle);
+
+    return resultPrec == FillPrecedence::Greedy ? IVD_FILL_PRECEDENCE_GREEDY
+                                                : IVD_FILL_PRECEDENCE_SHRINKY;
 }
 
-inline const char* stringGetterCallbackHook(const char* key, void* data)
+void userWidgetShapeHook(IVD_Widget* widget, IVD_GeometryProposal* prop)
+{ cast(widget)->shape(GeometryProposal(prop)); }
+
+void userWidgetDrawHook(IVD_Widget* widget, IVD_Canvas* canvas)
+{ cast(widget)->draw(Canvas(canvas)); }
+
+IVD_Space* userWidgetGetSpaceHook(IVD_Widget* widget)
 {
-    auto* inst = InstanceData::fromVoid(data);
-    auto func = findFunction(inst->stringGetters, key);
-    if(func)
-    {
-        //Without this, closures would not be able to return copies of their own local strings.
-        inst->lastStringGetResult = func();
-        return inst->lastStringGetResult.c_str(); //CLEVER GURRRLLLLLLL
-    }
+    const Space space = cast(widget)->getSpace();
+    //Alloc AFTER in case getSpace throws, although it should be in a try block here anyway...
+    // TODO XXX
 
-    errorCouldNotFindAccessor("String Getter", key);
-
-    return "";
+    IVD_Space* result = IVD_space_alloc();
+    *IVD_space_h(result) = space.h;
+    *IVD_space_w(result) = space.w;
+    return result;
 }
 
-inline int numberConstCheckCallbackHook(const char* key, void* data)
-{ return !InstanceData::fromVoid(data)->numberSetters.count(key); }
-
-inline int stringConstCheckCallbackHook(const char* key, void* data)
-{ return !InstanceData::fromVoid(data)->stringSetters.count(key); }
-
-inline void numberSetterCallbackHook(const char* key, double num, void* data)
+int userWidgetDetectCollisionPointHook(IVD_Widget* widget, IVD_Point* point)
 {
-    auto func = findFunction(InstanceData::fromVoid(data)->numberSetters, key);
-    if(func) func(num);
-    else errorCouldNotFindAccessor("Number Setter", key);
+    const Point p{*IVD_point_x(point), *IVD_point_y(point)};
+    return cast(widget)->detectCollisionPoint(p);
 }
 
-inline void stringSetterCallbackHook(const char* key, const char* value, void* data)
-{
-    auto func = findFunction(InstanceData::fromVoid(data)->stringSetters, key);
-    if(func) func(value);
-    else errorCouldNotFindAccessor("String Setter", key);
-}
-
-
-inline void triggerCallbackHook(const char* key, void* data)
-{
-    auto func = findFunction(InstanceData::fromVoid(data)->triggers, key);
-    if(func) func();
-    else errorCouldNotFindAccessor("Trigger", key);
-}
-
-
-inline void setupAllCallbacksies(IVD_Instance* instance)
-{
-    IVD_instance_set_number_getter(instance, &numberGetterCallbackHook);
-    IVD_instance_set_string_getter(instance, &stringGetterCallbackHook);
-
-    IVD_instance_set_check_number_const(instance, &numberConstCheckCallbackHook);
-    IVD_instance_set_check_string_const(instance, &stringConstCheckCallbackHook);
-
-    IVD_instance_set_number_setter(instance, &numberSetterCallbackHook);
-    IVD_instance_set_string_setter(instance, &stringSetterCallbackHook);
-
-    IVD_instance_set_trigger_callback(instance, &triggerCallbackHook);
-}
+void userWidgetTriggerHook(IVD_Widget* widget, const char* trig)
+{ cast(widget)->trigger(trig); }
 
 }//Internals
 
-class Model;
-
-class Instance
+template<typename T>
+class ManagedUserWidget
 {
-    friend class Model;
+    friend class Environment; //So we can have a protected constructor
+    std::function<void(T*)> destroyLaterBinding;
 
-protected:
-    IVD_Instance* internal;
-    Internals::InstanceData* myData;
+    T* myWigee;
 
-public:
-    Instance(): internal(nullptr), myData(nullptr) {}
-    Instance(IVD_Instance* model, Internals::InstanceData* data): internal(model), myData(data) {}
-    Instance(IVD_Instance* instance):
-        internal(instance),
-        myData(reinterpret_cast<Internals::InstanceData*>(IVD_instance_get_user_data(instance)))
+    ManagedUserWidget(T* theWidget,
+                      std::function<void()> dtorBinding):
+        myWigee(theWidget),
+        destroyLaterBinding(dtorBinding)
     {}
 
-    void set_state(const std::string state) const
-    { IVD_instance_set_state(internal, state.c_str()); }
-
-    void unset_state(const std::string& state) const
-    { IVD_instance_unset_state(internal, state.c_str()); }
-
-    Model actualize_child_model(const std::string& name) const;
-    Model get_child_model() const;
-
-    double get_number(const std::string& key) const
-    { return myData->numberGetters[key](); }
-
-    std::string get_string(const std::string& key) const
-    { return myData->stringGetters[key](); }
-
-    void bind_accessors(const std::string key, double& number)
-    {
-        set_number_getter(key, [&]() { return number; });
-        set_number_setter(key, [&](double newNum) { number = newNum; });
-    }
-
-    void bind_accessors(const std::string key, const double& number)
-    {
-        set_number_getter(key, [&]() { return number; });
-    }
-
-    void bind_accessors(const std::string key, std::string& str)
-    {
-        set_string_getter(key, [&]() { return str; });
-        set_string_setter(key, [&](std::string newNum) { str = newNum; });
-    }
-
-    void bind_accessors(const std::string key, const std::string& str)
-    {
-        set_string_getter(key, [&] { return str; });
-    }
-
-
-    void set_number(const std::string key, double num) const
-    { IVD_instance_set_number(internal, key.c_str(), num); }
-
-    void set_string(const std::string key, const std::string value) const
-    { IVD_instance_set_string(internal, key.c_str(), value.c_str()); }
-
-
-    void set_number_getter(const std::string& key, std::function<double()> fun) const
-    { myData->numberGetters[key] = fun; }
-
-    void set_string_getter(const std::string& key, std::function<std::string()> fun) const
-    { myData->stringGetters[key] = fun; }
-
-
-    void set_number_setter(const std::string& key, std::function<void(double)> fun) const
-    { myData->numberSetters[key] = fun; }
-
-    void set_string_setter(const std::string& key, std::function<void(const std::string&)> fun) const
-    { myData->stringSetters[key] = fun; }
-
-
-    void set_trigger(const std::string& key, std::function<void()> trigger) const
-    { myData->triggers[key] = trigger; }
-
-    bool operator==(const Instance& other)
-    { return other.internal == internal && other.myData == myData; }
-};
-
-class Model
-{
-    friend class Environment;
-    friend class Instance;
-    IVD_Model* internal;
-
 public:
-    Model(): internal(nullptr) {}
-    Model(IVD_Model* model): internal(model) {}
+    ~ManagedUserWidget()
+    { destroyLaterBinding(); }
 
-    class iterator
-    {
-        IVD_Instance* pos;
-
-    public:
-        iterator(): pos(nullptr) {}
-        iterator(IVD_Instance* pos): pos(pos) {}
-
-        bool operator==(const iterator& other)
-        { return pos == other.pos; }
-
-        bool operator!=(const iterator& other)
-        { return pos != other.pos; }
-
-        Instance operator*()
-        { return Instance(pos); }
-
-        Instance operator->()
-        { return Instance(pos); }
-
-        iterator& operator++()
-        {
-            if(pos) pos = IVD_instance_next(pos);
-            return *this;
-        }
-
-        iterator operator++(int)
-        {
-            iterator temp = *this;
-            this->operator++();
-            return temp;
-        }
-    };
-
-    iterator begin()
-    { return iterator(IVD_model_first(internal)); }
-
-    iterator end()
-    { return iterator(); }
-
-    int size() const { return IVD_model_instance_count(internal); }
-
-    void erase_later(const Instance& item) const
-    { IVD_model_erase_later(internal, item.internal); }
-
-    Instance add_instance() const
-    {
-        IVD_Instance* internalInstance = IVD_model_add_instance(internal);
-
-        auto* itemData = new Internals::InstanceData;
-        IVD_instance_set_user_data(internalInstance, itemData, &Internals::destroyItemData);
-
-        Internals::setupAllCallbacksies(internalInstance);
-
-        return Instance(internalInstance, itemData);
-    }
-
-    void swap_instances(const Instance& a, const Instance& b) const
-    { IVD_container_swap(internal, a.internal, b.internal); }
+    T* get()
+    { return myWigee; }
 };
-
-inline Model Instance::actualize_child_model(const std::string& name) const
-{ return Model(IVD_instance_actualize_child_model(internal, name.c_str())); }
-
-inline Model Instance::get_child_model() const
-{ return Model(IVD_instance_get_child_model(internal)); }
-
 
 class Environment
 {
@@ -314,8 +169,45 @@ class Environment
 public:
     Environment(): internal(IVD_create_environment(), &IVD_destroy_environment) {}
 
-    Model add_model(const std::string& name)
-    {  return Model(IVD_environment_add_model(internal.get(), name.c_str())); }
+    template<typename T>
+    void registerWidget(const std::string name, T* (*factory)())
+    {
+        //---->VOODOO<----
+        auto castFactory = reinterpret_cast<IVD_Widget* (*)()>(factory);
+        //---->VOODOO<----
+
+        IVD_environment_register_widget(internal.get(),
+                                        name.c_str(),
+                                        castFactory,
+                                        Internals::userWidgetDestructorHook,
+                                        Internals::userWidgetGetFillPrecedenceHook,
+                                        Internals::userWidgetShapeHook,
+                                        Internals::userWidgetDrawHook,
+                                        Internals::userWidgetGetSpaceHook,
+                                        Internals::userWidgetDetectCollisionPointHook,
+                                        Internals::userWidgetTriggerHook);
+    }
+
+    template<typename T>
+    T* createUnmanagedUserWidget(const std::string name, T* parent = nullptr)
+    {
+        IVD_Widget* widget = IVD_environment_widget_create(internal.get(),
+                                                           name.c_str(),
+                                                           reinterpret_cast<IVD_Widget*>(parent));
+        return reinterpret_cast<T*>(widget);
+    }
+
+
+    template<typename T>
+    ManagedUserWidget<T> createManagedUserWidget(const std::string name, T* parent = nullptr)
+    {
+        T* unmanaged = createUnmanagedUserWidget(name, parent);
+
+        std::function<void()> dtor = [&]
+        { IVD_environment_widget_destroy(internal.get(), unmanaged); };
+
+        return ManagedUserWidget<T>(unmanaged, dtor);
+    }
 
     int load_IVD_from_file(const std::string& path)
     { return IVD_environment_load_file(internal.get(), path.c_str()); }

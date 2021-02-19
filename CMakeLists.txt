@@ -95,6 +95,9 @@ src/material/freelayoutmaterial.cpp
 src/material/stacklayoutmaterial.h
 src/material/stacklayoutmaterial.cpp
 
+src/widgets/boxlayout.h
+src/widgets/boxlayout.cpp
+
 src/allmaterials.h
 
 src/specific_driver_sdl/cairocanvas.cpp

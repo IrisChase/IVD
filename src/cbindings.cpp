@@ -62,10 +62,10 @@ void IVD_environment_register_widget(IVD_Environment* environment,
                                      IVD_Widget* (*ctor)(),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
-                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
+                                     void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),//canbe null
                                      IVD_Space* (*getSpace)(IVD_Widget*),
-                                     int (*detectCollisionPoint)(IVD_Widget*, const IVD_Point*), //canbe null
+                                     int (*detectCollisionPoint)(IVD_Widget*, IVD_Point*), //canbe null
                                      void (*triggerHandler)(IVD_Widget*, const char*))
 { castEnv(environment)->registerWidgetBlueprints(name, {name, true, ctor, dtor, getFillPrecedence, shape, getSpace, draw, detectCollisionPoint, triggerHandler}); }
 
@@ -81,7 +81,7 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      IVD_Widget* (*ctor)(),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
-                                     void (*shape)(IVD_Widget*, const IVD_GeometryProposal*),
+                                     void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      IVD_Space* (*getSpace)(IVD_Widget*))
 { castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, getSpace, nullptr, nullptr, nullptr}); }
 
