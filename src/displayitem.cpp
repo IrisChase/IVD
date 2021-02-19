@@ -18,6 +18,8 @@
 #include "defaults.h"
 #include "canvas.h"
 
+#include "states.h"
+
 #include "assert.h"
 
 namespace IVD
@@ -369,6 +371,29 @@ void DisplayItem::render(Canvas *theCanvas, const Coords offset)
     theCanvas->popClip();//cellClip
     theCanvas->popClip();//viewportClip
     theCanvas->setAlpha(savedAlpha); //restored alpha :)
+}
+
+void DisplayItem::updateHoverInclusive(StateManager* theStateManager, const Coords point)
+{
+    for(DisplayItem* child : children)
+        child->updateHoverExclusive(theStateManager, point - myCellRect.c);
+
+    if(myCellRect.checkCollision(point))
+        theStateManager->mutateIfObserved(StateKey(States::Item::HoverInclusive, this), true);
+}
+
+bool DisplayItem::updateHoverExclusive(StateManager* theStateManager, const Coords point)
+{
+    for(DisplayItem* child : children)
+        if(child->updateHoverExclusive(theStateManager, point - myCellRect.c))
+            return true;
+
+    if(myCellRect.checkCollision(point))
+    {
+        theStateManager->mutateIfObserved(StateKey(States::Item::HoverExclusive, this), true);
+        return true;
+    }
+    return false;
 }
 
 

@@ -315,22 +315,16 @@ void Environment::markAsBadCanvas(DisplayItem *item)
 
 void Environment::updateHover()
 {
-    myStateManager.mutateAll(States::Item::Hover, false);
+    myStateManager.mutateAll(States::Item::HoverExclusive, false);
+    myStateManager.mutateAll(States::Item::HoverInclusive, false);
 
     DisplayItem* root = myDriver->getWindowItemWithMouseFocus();
     if(!root) return;
 
-    Rect mouseRect;
-    mouseRect.c = myDriver->getMousePointRelativeToWindow();
-    mouseRect.d = Dimens(1,1);
+    const Coords mousePoint = myDriver->getMousePointRelativeToWindow();
 
-    root->getMaterial()->applyToColliding(mouseRect, [&](DisplayItem* item) -> bool
-    {
-        myStateManager.mutateIfObserved(StateKey(States::Item::Hover, item), true);
-
-        //Exclusive.
-        return true;
-    });
+    root->updateHoverExclusive(&myStateManager, mousePoint);
+    root->updateHoverInclusive(&myStateManager, mousePoint);
 }
 
 void Environment::run()

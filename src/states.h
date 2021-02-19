@@ -56,7 +56,8 @@ inline Symbol getButtonRelease(const Symbol button)
 namespace Item
 {
 
-const Symbol Hover = "IVD-Item-Hover";
+const Symbol HoverExclusive = "IVD-Item-Hover";
+const Symbol HoverInclusive = "IVD-Item-Hover-Inclusive";
 
 //const Symbol GeometryChanged = "IVD-Item-Geometry-Changed";
 
