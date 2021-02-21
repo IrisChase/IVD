@@ -72,6 +72,7 @@ void IVD_environment_register_widget(IVD_Environment *environment, const char* n
 
 //IVD manages widget lifetimes so they can be "deleted later"
 IVD_Widget* IVD_environment_widget_create(IVD_Environment*, const char* name, IVD_Widget* parent);
+IVD_Widget* IVD_environment_widget_create_from_class(IVD_Environment*, const char* className, IVD_Widget* parent);
 void IVD_environment_widget_destroy(IVD_Environment*, IVD_Widget*);
 
 
@@ -138,6 +139,10 @@ void IVD_widget_set_offset(IVD_Widget*, const IVD_Coords*);
 
 void IVD_widget_draw(IVD_Environment*, IVD_Widget*);
 void IVD_widget_process_collision_point(IVD_Environment*, IVD_Widget*, IVD_Coords*);
+
+void IVD_widget_get_children(IVD_Environment *environment, IVD_Widget* parent, IVD_Widget*** result, int* size);
+
+IVD_Widget* IVD_widget_get_child_for_named_cell(IVD_Environment* environment, IVD_Widget* parent, const char* name);
 
 //void IVD_draw_X(IVD_Canvas*, ...); //canvas cursor is already set to the correct offset.
 

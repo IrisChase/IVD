@@ -73,6 +73,10 @@ void IVD_environment_register_widget(IVD_Environment* environment,
 //IVD manages widget lifetimes so they can be "deleted later"
 IVD_Widget* IVD_environment_widget_create(IVD_Environment* environment, const char* name, IVD_Widget* parent)
 { return castEnv(environment)->createWidget(name, parent); }
+
+IVD_Widget* IVD_environment_widget_create_from_class(IVD_Environment* environment, const char* className, IVD_Widget* parent)
+{ return castEnv(environment)->createWidgetFromClass(className, parent); }
+
 void IVD_environment_widget_destroy(IVD_Environment* environment, IVD_Widget* widget)
 { castEnv(environment)->destroyWidget(widget); }
 
@@ -197,6 +201,13 @@ void IVD_widget_process_collision_point(IVD_Environment* environment,
                                         IVD_Coords* coords)
 { castEnv(environment)->distributeCollisionPointOnWidget(widget, coords); }
 
+void IVD_widget_get_children(IVD_Environment* environment, IVD_Widget *parent, IVD_Widget*** result, int* size)
+{ castEnv(environment)->getWidgetChildren(parent, result, size); }
+
+IVD_Widget* IVD_widget_get_child_for_named_cell(IVD_Environment* environment, IVD_Widget* parent, const char* name)
+{
+
+}
 //--------------------Accessors
 
 }//extern "C"

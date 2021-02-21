@@ -196,8 +196,17 @@ public:
     bool compileFile(const char* path);
     void compile(std::string code);
 
-    const std::list<Element>& getElements()
+    //Would love for this to be const
+    // but I don't have all day TODO
+    std::list<Element>& getElements()
     { return finalizedElements; }
+
+    Element* getElementForClass(const std::string className)
+    {
+        if(myClasses.count(className))
+            return &myClasses.at(className).elem;
+        return nullptr;
+    }
 
     std::vector<std::string> getErrorMessages()
     { return errorMessages; }

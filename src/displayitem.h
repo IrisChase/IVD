@@ -292,6 +292,11 @@ public:
     const std::set<DisplayItem*>& getChildren()
     { return children; }
 
+    std::vector<IVD_Widget*> getChildWidgetInStampOrder();
+
+    IVD_Widget* getChildWidgetForNamedCell(const std::string name);
+
+
     const int childCount()
     { return children.size(); }
 };

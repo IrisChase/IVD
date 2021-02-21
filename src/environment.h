@@ -47,9 +47,14 @@ class Environment
     StateManager myStateManager;
     std::unique_ptr<OIIO::ImageCache, std::function<void(OIIO::ImageCache*)>> myImageCache;
 
-    std::list<Element> elems;
-
     std::vector<VirtualStateKeyPrecursor> deferredVirtualStateKeys;
+    struct DeferredPositioning
+    {
+        DisplayItem* item;
+        IVD_Widget* parent;
+    };
+
+    std::vector<DeferredPositioning> deferredPositioning;
 
     std::map<DisplayItem*, std::unique_ptr<DisplayItem>> instances;
 
@@ -76,6 +81,7 @@ class Environment
 
     void initOthers();
     void processDeferredVirtualStates();
+    void processDeferredPositioning();
 
     DisplayItem* setupNewDisplayItem(Element* elem);
     void destroyDisplayItem(DisplayItem* item);
@@ -107,11 +113,16 @@ public:
     { layoutBlueprints[name] = blueprints; }
 
     IVD_Widget* createWidget(const std::string name, IVD_Widget* parent);
+    IVD_Widget* createWidgetFromClass(const std::string className, IVD_Widget* parent);
 
     void destroyWidget(IVD_Widget* widget);
 
     void drawWidget(IVD_Widget* widget);
     void distributeCollisionPointOnWidget(IVD_Widget* widget, const Coords coords);
+
+    void getWidgetChildren(IVD_Widget*, IVD_Widget*** result, int* size);
+
+    IVD_Widget* getChildWidgetForNamedCell(IVD_Widget* parent, const std::string name);
 
     const char* getCompilerErrors()
     { return myComp.getErrorMessageDigest().c_str(); }

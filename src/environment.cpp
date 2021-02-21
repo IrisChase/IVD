@@ -83,6 +83,13 @@ void Environment::processDeferredVirtualStates()
     deferredVirtualStateKeys.clear();
 }
 
+void Environment::processDeferredPositioning()
+{
+    for(auto pair : deferredPositioning)
+        positionDisplayItemInDrawTree(pair.item, pair.parent);
+    processDeferredVirtualStates();
+}
+
 DisplayItem* Environment::setupNewDisplayItem(Element* elem)
 {
     DisplayItem* item = nullptr;
@@ -330,6 +337,8 @@ void Environment::run()
     {
         reprodyne_mark_frame();
 
+        processDeferredPositioning();
+
         const uint64_t lastStateStampBeforeLoop = myStateManager.getLastStamp();
 
         {
@@ -422,9 +431,7 @@ int Environment::loadFromIVDFile(const char* path)
     if(!myComp.compileFile(path)) return IVD_STATUS_FILE_NOT_FOUND;
     if(myComp.getErrorMessages().size()) return IVD_STATUS_COMPILE_ERROR;
 
-    elems = myComp.getElements();
-
-    for(Element& elem : elems)
+    for(Element& elem : myComp.getElements())
     {
         elementLookupByPath[elem.getPath()] = &elem;
 
@@ -453,8 +460,40 @@ IVD_Widget* Environment::createWidget(const std::string name, IVD_Widget* parent
 
     userOwnedWidgets[widget] = item;
 
-    positionDisplayItemInDrawTree(item, parent);
-    processDeferredVirtualStates();
+    //We have to defer parenting because otherwise
+    // the children potentially created in the constructor
+    // of widget will be trying to position in a parent not
+    // yet registered in userOwnedWidgets.
+    deferredPositioning.push_back({item, parent});
+}
+
+IVD_Widget* Environment::createWidgetFromClass(const std::string className, IVD_Widget* parent)
+{
+    Element* classElement = myComp.getElementForClass(className);
+    if(!classElement)
+    {
+        //todo runtime error
+        return nullptr;
+    }
+
+    DisplayItem* item = setupNewDisplayItem(classElement);
+    //IVD_Widget* widget = ; //Need special blueprints for blank widgets...
+    //ORRRRR
+    //WE COULD BE NAUGHTY
+    //REAL NAUGHTY
+    //WHEW
+    // AND JUST USE THE ITEM POINTER BECAUSE ALL WE NEED IS A WAY TO LOOK
+    // THE ITEM BACK UP ANYWAY. WE DON'T ACTUALLY NEED A WIDGET HERE
+    //Widgets are just opaque things that can be anything anyway, and in
+    // this case we kind of own them soo
+
+    //DRUNK WE POWEREEEEEE
+    IVD_Widget* widget = reinterpret_cast<IVD_Widget*>(item);
+    userOwnedWidgets[widget] = item; //YO DAWG I HERD U LIKE YOURSELF
+    deferredPositioning.push_back({item, parent});
+
+    //THIS ONLY WORKS BECAUSE WE DON'T ACTUALLY SETUP A WIDGET ON DisplayItem*
+    //!!!!!!!
 }
 
 void Environment::destroyWidget(IVD_Widget* widget)
@@ -462,13 +501,31 @@ void Environment::destroyWidget(IVD_Widget* widget)
     DisplayItem* item = userOwnedWidgets.at(widget);
     userOwnedWidgets.erase(widget);
     markAsBadGeometry(item); //okayyyy is this safe AT ALL?? With models there was a comment about root windows XXX
-    destroyDisplayItem(item);
+    destroyDisplayItem(item); //Calls the dtor in the blueprints.
+    //Unlike construction, child destruction should be straight forward.
 }
 
 void Environment::distributeCollisionPointOnWidget(IVD_Widget* widget, const Coords coords)
 {
     userOwnedWidgets.at(widget)->updateHover(&myStateManager, coords);
 }
+
+void Environment::getWidgetChildren(IVD_Widget* widget, IVD_Widget*** result, int* size)
+{
+    DisplayItem* item = userOwnedWidgets.at(widget);
+    thread_local static std::vector<IVD_Widget*> children; //fucking sue me
+    children = item->getChildWidgetInStampOrder();
+
+    *result = &children[0];
+    *size = children.size();
+}
+
+IVD_Widget* Environment::getChildWidgetForNamedCell(IVD_Widget* parent, const std::string name)
+{
+    DisplayItem* item = userOwnedWidgets.at(parent);
+    return item->getChildWidgetForNamedCell(name);
+}
+
 
 double Environment::getInteger(DisplayItem* context, const ScopedValueKey key)
 {

@@ -393,6 +393,37 @@ void DisplayItem::updateHover(StateManager* theStateManager, const Coords point)
     }
 }
 
+std::vector<IVD_Widget*> DisplayItem::getChildWidgetInStampOrder()
+{
+    std::vector<IVD_Widget*> result;
+    for(DisplayItem* child : children)
+    {
+        assert(child->myWidget.isSet());
+        result.push_back(child->myWidget.get());
+    }
+
+    auto compareStamp = [&](DisplayItem* left, DisplayItem* right)
+    {
+        return left->getElementStamp() < right->getElementStamp();
+    };
+    std::sort(result.begin(), result.end(), compareStamp);
+
+    return result;
+}
+
+IVD_Widget* DisplayItem::getChildWidgetForNamedCell(const std::string name)
+{
+    //Don't give a damn about how inefficient this is for now.
+    auto cells = getAttr().getLiteralList(AttributeKey::CellNames);
+    auto children = getChildWidgetInStampOrder();
+
+    for(int i = 0; i != cells.size() && i < children.size(); ++i)
+        if(cells[i] == name)
+            return children[i];
+
+    return nullptr;
+}
+
 
 
 }//IVD
