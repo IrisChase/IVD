@@ -27,9 +27,9 @@ struct WidgetBlueprints
     void (*dtor)(IVD_Widget*) = nullptr;
     int (*getFillPrecedence)(IVD_Widget*, const int) = nullptr;
     void (*shape)(IVD_Widget*, IVD_GeometryProposal*) = nullptr;
-    IVD_Space* (*getSpace)(IVD_Widget*); //Widgets only know about drawing area
+    IVD_Dimens* (*getSpace)(IVD_Widget*); //Widgets only know about drawing area
     void (*draw)(IVD_Widget*, IVD_Canvas*) = nullptr; //canbe null
-    int (*detectCollisionPoint)(IVD_Widget*, IVD_Point*) = nullptr; //canbe null
+    int (*detectCollisionPoint)(IVD_Widget*, IVD_Coords*) = nullptr; //canbe null
 
     //Widget specific
     void (*triggerHandler)(IVD_Widget*, const char*) = nullptr;
@@ -60,6 +60,9 @@ public:
     bool isDrawable()
     { return blueprints.draw; }
 
+    bool isLayout()
+    { return !blueprints.isWidget; }
+
     void destroy()
     { underlyingWidget.reset(); }
 
@@ -76,9 +79,9 @@ public:
 
     Dimens getSpace()
     {
-        IVD_Space* space = blueprints.getSpace(underlyingWidget.get());
+        IVD_Dimens* space = blueprints.getSpace(underlyingWidget.get());
         Dimens result = *reinterpret_cast<Dimens*>(space);
-        IVD_space_free(space);
+        IVD_dimens_free(space);
         return result;
     }
 
@@ -97,7 +100,7 @@ public:
     bool detectCollisionPoint(Coords point)
     {
         return blueprints.detectCollisionPoint(get(),
-                                               reinterpret_cast<IVD_Point*>(&point));
+                                               reinterpret_cast<IVD_Coords*>(&point));
     }
 
     void handleTrigger(const std::string triggerName)

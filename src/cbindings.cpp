@@ -64,8 +64,8 @@ void IVD_environment_register_widget(IVD_Environment* environment,
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),//canbe null
-                                     IVD_Space* (*getSpace)(IVD_Widget*),
-                                     int (*detectCollisionPoint)(IVD_Widget*, IVD_Point*), //canbe null
+                                     IVD_Dimens* (*getSpace)(IVD_Widget*),
+                                     int (*detectCollisionPoint)(IVD_Widget*, IVD_Coords*), //canbe null
                                      void (*triggerHandler)(IVD_Widget*, const char*))
 { castEnv(environment)->registerWidgetBlueprints(name, {name, true, ctor, dtor, getFillPrecedence, shape, getSpace, draw, detectCollisionPoint, triggerHandler}); }
 
@@ -83,8 +83,8 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
-                                     IVD_Space* (*getSpace)(IVD_Widget *),
-                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Point *))
+                                     IVD_Dimens* (*getSpace)(IVD_Widget *),
+                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Coords *))
 { castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, getSpace, draw, detectCollisionPoint, nullptr}); }
 
 
@@ -101,39 +101,39 @@ void IVD_environment_register_widget_attribute(IVD_Environment*,
 //----------------------------------------------------------------------------------------------Dust Bindings
 
 
-static IVD::Dimens* castSpace(IVD_Space* space)
+static IVD::Dimens* castSpace(IVD_Dimens* space)
 { return reinterpret_cast<IVD::Dimens*>(space); }
 
-static IVD_Space* castSpace(IVD::Dimens* space)
-{ return reinterpret_cast<IVD_Space*>(space); }
+static IVD_Dimens* castSpace(IVD::Dimens* space)
+{ return reinterpret_cast<IVD_Dimens*>(space); }
 
-IVD_Space* IVD_space_alloc()
+IVD_Dimens* IVD_dimens_alloc()
 { return castSpace(new IVD::Dimens()); }
 
-void IVD_space_free(IVD_Space* space)
+void IVD_dimens_free(IVD_Dimens* space)
 { delete castSpace(space); }
 
-int* IVD_space_w(IVD_Space* space)
+int* IVD_dimens_w(IVD_Dimens* space)
 { return &castSpace(space)->w; }
-int* IVD_space_h(IVD_Space* space)
+int* IVD_dimens_h(IVD_Dimens* space)
 { return &castSpace(space)->h; }
 
 
-static IVD::Coords* castPoint(IVD_Point* point)
+static IVD::Coords* castPoint(IVD_Coords* point)
 { return reinterpret_cast<IVD::Coords*>(point); }
 
-static IVD_Point* castPoint(IVD::Coords* point)
-{ return reinterpret_cast<IVD_Point*>(point); }
+static IVD_Coords* castPoint(IVD::Coords* point)
+{ return reinterpret_cast<IVD_Coords*>(point); }
 
-IVD_Point* IVD_coords_alloc()
+IVD_Coords* IVD_coords_alloc()
 { return castPoint(new IVD::Coords()); }
 
-void IVD_point_free(IVD_Point* point)
+void IVD_coords_free(IVD_Coords* point)
 { delete castPoint(point); }
 
-int* IVD_point_x(IVD_Point* point)
+int* IVD_coords_x(IVD_Coords* point)
 { return &castPoint(point)->x; }
-int* IVD_point_y(IVD_Point* point)
+int* IVD_coords_y(IVD_Coords* point)
 { return &castPoint(point)->y; }
 
 
@@ -146,13 +146,13 @@ IVD_Rect* IVD_rect_alloc()
 void IVD_rect_free(IVD_Rect* rect)
 { delete castRect(rect); }
 
-IVD_Space* IVD_rect_get_space(IVD_Rect* rect)
+IVD_Dimens* IVD_rect_get_dimens(IVD_Rect* rect)
 { return castSpace(&castRect(rect)->d); }
-IVD_Point* IVD_rect_get_point(IVD_Rect* rect)
+IVD_Coords* IVD_rect_get_coords(IVD_Rect* rect)
 { return castPoint(&castRect(rect)->c); }
-void IVD_rect_set_space(IVD_Rect* rect, IVD_Space* space)
+void IVD_rect_set_space(IVD_Rect* rect, IVD_Dimens* space)
 { castRect(rect)->d = *castSpace(space); }
-void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point)
+void IVD_rect_set_point(IVD_Rect* rect, IVD_Coords* point)
 { castRect(rect)->c = *castPoint(point); }
 
 
@@ -166,7 +166,7 @@ IVD_GeometryProposal* IVD_geoprop_alloc()
 void IVD_geoprop_free(IVD_GeometryProposal* prop)
 { delete castGeoprop(prop); }
 
-IVD_Space* IVD_geoprop_proposed_space(IVD_GeometryProposal* prop)
+IVD_Dimens* IVD_geoprop_proposed_space(IVD_GeometryProposal* prop)
 { return castSpace(&castGeoprop(prop)->proposedDimensions); }
 
 int* IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop)
@@ -181,10 +181,10 @@ int* IVD_geoprop_shrink_horizontal(IVD_GeometryProposal* prop)
 int* IVD_geoprop_shrink_vertical(IVD_GeometryProposal* prop)
 { return &castGeoprop(prop)->shrinkForAngle(IVD::Angle::Vertical); }
 
-int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space)
+int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Dimens* space)
 { return castGeoprop(prop)->verifyCompliance(*castSpace(space)); }
 
-void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space)
+void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Dimens* space)
 { *castSpace(space) = castGeoprop(prop)->roundConflicts(*castSpace(space)); }
 
 

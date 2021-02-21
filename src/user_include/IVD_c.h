@@ -29,8 +29,8 @@ struct IVD_Environment;
 struct IVD_Widget;
 //register IVD_Widget as layout to be used with layout attribute
 
-struct IVD_Space;
-struct IVD_Point;
+struct IVD_Dimens;
+struct IVD_Coords;
 struct IVD_Rect;
 struct IVD_GeometryProposal;
 struct IVD_Style;
@@ -65,8 +65,8 @@ void IVD_environment_register_widget(IVD_Environment *environment, const char* n
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget *, IVD_GeometryProposal *),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
-                                     IVD_Space* (*getSpace)(IVD_Widget *), //canbe null
-                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Point *), //canbe null
+                                     IVD_Dimens* (*getSpace)(IVD_Widget *), //canbe null
+                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Coords *), //canbe null
                                      void (*triggerHandler)(IVD_Widget*, const char*));
 
 //IVD manages widget lifetimes so they can be "deleted later"
@@ -81,8 +81,8 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
-                                     IVD_Space* (*getSpace)(IVD_Widget *),
-                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Point *));
+                                     IVD_Dimens* (*getSpace)(IVD_Widget *),
+                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Coords *));
 
 
 //Register multiple types?
@@ -98,43 +98,45 @@ void IVD_environment_register_widget_attribute(IVD_Environment*,
 
 
 //----------------------------------------------------------------------------------------------Dust Bindings
-IVD_Space* IVD_space_alloc();
-void IVD_space_free(IVD_Space* space);
-int* IVD_space_w(IVD_Space* space);
-int* IVD_space_h(IVD_Space* space);
+IVD_Dimens* IVD_dimens_alloc();
+void IVD_dimens_free(IVD_Dimens* space);
+int* IVD_dimens_w(IVD_Dimens* space);
+int* IVD_dimens_h(IVD_Dimens* space);
 
-IVD_Point* IVD_coords_alloc();
-void   IVD_point_free(IVD_Point* point);
-int*   IVD_point_x(IVD_Point* point);
-int*   IVD_point_y(IVD_Point* point);
+IVD_Coords* IVD_coords_alloc();
+void   IVD_coords_free(IVD_Coords* point);
+int*   IVD_coords_x(IVD_Coords* point);
+int*   IVD_coords_y(IVD_Coords* point);
 
 IVD_Rect* IVD_rect_alloc();
 void IVD_rect_free(IVD_Rect* rect);
-IVD_Space* IVD_rect_get_space(IVD_Rect* rect); //Still owned by *rect
-IVD_Point* IVD_rect_get_point(IVD_Rect* rect);
-void IVD_rect_set_space(IVD_Rect* rect, IVD_Space* space); //Copies values
-void IVD_rect_set_point(IVD_Rect* rect, IVD_Point* point);
+IVD_Dimens* IVD_rect_get_dimens(IVD_Rect* rect); //Still owned by *rect
+IVD_Coords* IVD_rect_get_coords(IVD_Rect* rect);
+void IVD_rect_set_space(IVD_Rect* rect, IVD_Dimens* space); //Copies values
+void IVD_rect_set_point(IVD_Rect* rect, IVD_Coords* point);
 
 //-------------------------------------------------------------------------------------------GeometryProposal
 IVD_GeometryProposal* IVD_geoprop_alloc();
 IVD_GeometryProposal* IVD_geoprop_alloc_copy(IVD_GeometryProposal*);
 void IVD_geoprop_free(IVD_GeometryProposal* prop);
-IVD_Space* IVD_geoprop_proposed_space(IVD_GeometryProposal* prop);
+IVD_Dimens* IVD_geoprop_proposed_space(IVD_GeometryProposal* prop);
 int* IVD_geoprop_expand_horizontal(IVD_GeometryProposal* prop);
 int* IVD_geoprop_expand_vertical(IVD_GeometryProposal* prop);
 int* IVD_geoprop_shrink_horizontal(IVD_GeometryProposal* prop);
 int* IVD_geoprop_shrink_vertical(IVD_GeometryProposal* prop);
-int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Space* space);
-void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Space* space);
+int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Dimens* space);
+void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Dimens* space);
 
 
 //-----------------------------------------------------------------------------------------------------Widget
-IVD_Space* IVD_widget_get_space(const IVD_Widget*);
+IVD_Dimens* IVD_widget_get_dimens(const IVD_Widget*);
 int IVD_get_fill_precedence(const IVD_Widget*, int); //Angle -> FillPrecedence
 
 void IVD_widget_shape(IVD_Widget*, const IVD_GeometryProposal*);
-void IVD_widget_set_offset(IVD_Widget*, const IVD_Point*);
+void IVD_widget_set_offset(IVD_Widget*, const IVD_Coords*);
 
+void IVD_widget_draw(IVD_Widget*);
+void IVD_widget_process_collision_point(IVD_Widget*, IVD_Coords*);
 
 //void IVD_draw_X(IVD_Canvas*, ...); //canvas cursor is already set to the correct offset.
 

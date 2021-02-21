@@ -71,8 +71,11 @@ src/referenceattributeset.cpp
 
 
 src/user_include/IVD_c.h
-src/user_include/IVD_cpp.h
 src/user_include/IVD_status.h
+src/user_include/IVD_constants_c.h
+src/user_include/cpp/IVD_cpp.h
+src/user_include/cpp/IVD_geometry.h
+src/user_include/cpp/IVD_geometry_proposal.h
 
 src/widget.h
 
@@ -154,7 +157,7 @@ target_include_directories(ivd PRIVATE PRIVATE ${IVD_INTERNAL_INCLUDES})
 target_link_libraries(ivd PRIVATE ${IVD_COMMON_LIBS})
 
 set_target_properties(ivd PROPERTIES PUBLIC_HEADER
-  "${PROJECT_SOURCE_DIR}/src/user_include/IVD_c.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_cpp.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_status.h")
+  "${PROJECT_SOURCE_DIR}/src/user_include/cpp/IVD_geometry_proposal.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_c.h;${PROJECT_SOURCE_DIR}/src/user_include/cpp/IVD_geometry.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_constants.h;${PROJECT_SOURCE_DIR}/src/user_include/cpp/IVD_cpp.h;${PROJECT_SOURCE_DIR}/src/user_include/IVD_status.h")
 
 
 add_executable(ivdRepro ${ivd_core_sources} src/tests/recordplayback.cpp)

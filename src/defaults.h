@@ -50,7 +50,6 @@ const bool modelOrder = true;
 const std::string quitTrigger = "IVD-Core-Quit";
 
 const Angle angle = Angle::Adjacent;
-const Alignment alignment = Alignment::Inner;
 const int alignmentProperty = Property::Inner;
 
 const int WindowSizeStrategy = Property::TopDown;

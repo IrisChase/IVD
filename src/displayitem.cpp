@@ -1,4 +1,4 @@
-// Copyright 2020 Iris Chase
+// Copyright 2021 Iris Chase
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -362,7 +362,7 @@ void DisplayItem::render(Canvas *theCanvas, const Coords offset)
         theCanvas->pushClip(contentClip);
         theCanvas->setOffset(contentClip.c);
 
-        myWidget.draw(theCanvas);
+        myWidget.draw(myWidget.isLayout() ? nullptr : theCanvas);
 
         theCanvas->resetOffset();
         theCanvas->popClip(); //contentClip
