@@ -110,6 +110,9 @@ public:
 
     void destroyWidget(IVD_Widget* widget);
 
+    void drawWidget(IVD_Widget* widget);
+    void distributeCollisionPointOnWidget(IVD_Widget* widget, const Coords coords);
+
     const char* getCompilerErrors()
     { return myComp.getErrorMessageDigest().c_str(); }
 

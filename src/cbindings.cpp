@@ -66,8 +66,9 @@ void IVD_environment_register_widget(IVD_Environment* environment,
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),//canbe null
                                      IVD_Dimens* (*getSpace)(IVD_Widget*),
                                      int (*detectCollisionPoint)(IVD_Widget*, IVD_Coords*), //canbe null
+                                     void (*distributeCollisionPoint)(IVD_Widget*, IVD_Coords*),
                                      void (*triggerHandler)(IVD_Widget*, const char*))
-{ castEnv(environment)->registerWidgetBlueprints(name, {name, true, ctor, dtor, getFillPrecedence, shape, getSpace, draw, detectCollisionPoint, triggerHandler}); }
+{ castEnv(environment)->registerWidgetBlueprints(name, {name, true, ctor, dtor, getFillPrecedence, shape, getSpace, draw, distributeCollisionPoint, detectCollisionPoint, triggerHandler}); }
 
 //IVD manages widget lifetimes so they can be "deleted later"
 IVD_Widget* IVD_environment_widget_create(IVD_Environment* environment, const char* name, IVD_Widget* parent)
@@ -84,8 +85,8 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
                                      IVD_Dimens* (*getSpace)(IVD_Widget *),
-                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Coords *))
-{ castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, getSpace, draw, detectCollisionPoint, nullptr}); }
+                                     void (*distributeCollisionPoint)(IVD_Widget*, IVD_Coords*))
+{ castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, getSpace, draw, distributeCollisionPoint, nullptr, nullptr}); }
 
 
 //Register multiple types?
@@ -187,6 +188,14 @@ int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Dimens* space)
 void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Dimens* space)
 { *castSpace(space) = castGeoprop(prop)->roundConflicts(*castSpace(space)); }
 
+//-----------------------------------------------------------------------------------------------------Widget
+void IVD_widget_draw(IVD_Environment* environment, IVD_Widget* widget)
+{ castEnv(environment)->drawWidget(widget); }
+
+void IVD_widget_process_collision_point(IVD_Environment* environment,
+                                        IVD_Widget* widget,
+                                        IVD_Coords* coords)
+{ castEnv(environment)->distributeCollisionPointOnWidget(widget, coords); }
 
 //--------------------Accessors
 

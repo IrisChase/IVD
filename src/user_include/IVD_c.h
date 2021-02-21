@@ -67,6 +67,7 @@ void IVD_environment_register_widget(IVD_Environment *environment, const char* n
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
                                      IVD_Dimens* (*getSpace)(IVD_Widget *), //canbe null
                                      int (*detectCollisionPoint)(IVD_Widget *, IVD_Coords *), //canbe null
+                                     void (*distributeCollisionPoint)(IVD_Widget*, IVD_Coords*),
                                      void (*triggerHandler)(IVD_Widget*, const char*));
 
 //IVD manages widget lifetimes so they can be "deleted later"
@@ -82,7 +83,7 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
                                      IVD_Dimens* (*getSpace)(IVD_Widget *),
-                                     int (*detectCollisionPoint)(IVD_Widget *, IVD_Coords *));
+                                     void (*distributeCollisionPoint)(IVD_Widget *, IVD_Coords *));
 
 
 //Register multiple types?
@@ -135,8 +136,8 @@ int IVD_get_fill_precedence(const IVD_Widget*, int); //Angle -> FillPrecedence
 void IVD_widget_shape(IVD_Widget*, const IVD_GeometryProposal*);
 void IVD_widget_set_offset(IVD_Widget*, const IVD_Coords*);
 
-void IVD_widget_draw(IVD_Widget*);
-void IVD_widget_process_collision_point(IVD_Widget*, IVD_Coords*);
+void IVD_widget_draw(IVD_Environment*, IVD_Widget*);
+void IVD_widget_process_collision_point(IVD_Environment*, IVD_Widget*, IVD_Coords*);
 
 //void IVD_draw_X(IVD_Canvas*, ...); //canvas cursor is already set to the correct offset.
 

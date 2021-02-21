@@ -286,7 +286,7 @@ void DisplayItem::shape(const GeometryProposal officialProposal)
 
     const Dimens proposedCellSpace = shapeDrawingArea(revisedProposal) + getReservedDimens();
 
-    myCellRect = proposedCellSpace;
+    myCellRect.d = proposedCellSpace;
     myViewportRect.d = officialProposal.roundConflicts(proposedCellSpace);
     compliantGeometry = officialProposal.verifyCompliance(myCellRect.d);
 
@@ -360,11 +360,13 @@ void DisplayItem::render(Canvas *theCanvas, const Coords offset)
     if(myWidget.isSet() && myWidget.isDrawable())
     {
         theCanvas->pushClip(contentClip);
-        theCanvas->setOffset(contentClip.c);
+
+        const Coords savedOffset = theCanvas->getOffset();
+        theCanvas->setOffset(savedOffset + contentClip.c);
 
         myWidget.draw(myWidget.isLayout() ? nullptr : theCanvas);
 
-        theCanvas->resetOffset();
+        theCanvas->setOffset(savedOffset);
         theCanvas->popClip(); //contentClip
     }
 
@@ -373,27 +375,22 @@ void DisplayItem::render(Canvas *theCanvas, const Coords offset)
     theCanvas->setAlpha(savedAlpha); //restored alpha :)
 }
 
-void DisplayItem::updateHoverInclusive(StateManager* theStateManager, const Coords point)
+void DisplayItem::updateHover(StateManager* theStateManager, const Coords point)
 {
-    for(DisplayItem* child : children)
-        child->updateHoverExclusive(theStateManager, point - myCellRect.c);
-
-    if(myCellRect.checkCollision(point))
-        theStateManager->mutateIfObserved(StateKey(States::Item::HoverInclusive, this), true);
-}
-
-bool DisplayItem::updateHoverExclusive(StateManager* theStateManager, const Coords point)
-{
-    for(DisplayItem* child : children)
-        if(child->updateHoverExclusive(theStateManager, point - myCellRect.c))
-            return true;
-
     if(myCellRect.checkCollision(point))
     {
-        theStateManager->mutateIfObserved(StateKey(States::Item::HoverExclusive, this), true);
-        return true;
+        if(myWidget.isSet())
+        {
+            const Coords relativePoint = myCellRect.c - point;
+            myWidget.distributeCollisionPoints(relativePoint);
+        }
+        //else without a layout/widget we just assume there's no rules for child collision
+        // because layouts define all that stuff
+
+        if(!theStateManager->checkState(StateKey(States::Item::HoverExclusive, this)))
+            theStateManager->mutateIfObserved(StateKey(States::Item::HoverExclusive, this), true);
+        theStateManager->mutateIfObserved(StateKey(States::Item::HoverInclusive, this), true);
     }
-    return false;
 }
 
 

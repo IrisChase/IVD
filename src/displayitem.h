@@ -285,8 +285,7 @@ public:
 
     void render(Canvas* theCanvas, const Coords offset);
 
-    void updateHoverInclusive(StateManager* theStateManager, const Coords point);
-    bool updateHoverExclusive(StateManager* theStateManager, const Coords point);
+    void updateHover(StateManager* theStateManager, const Coords point);
 
     //I wish the reference for the container could be const,
     // without that propogating to the pointers...

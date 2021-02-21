@@ -321,10 +321,7 @@ void Environment::updateHover()
     DisplayItem* root = myDriver->getWindowItemWithMouseFocus();
     if(!root) return;
 
-    const Coords mousePoint = myDriver->getMousePointRelativeToWindow();
-
-    root->updateHoverExclusive(&myStateManager, mousePoint);
-    root->updateHoverInclusive(&myStateManager, mousePoint);
+    root->updateHover(&myStateManager, myDriver->getMousePointRelativeToWindow());
 }
 
 void Environment::run()
@@ -466,6 +463,11 @@ void Environment::destroyWidget(IVD_Widget* widget)
     userOwnedWidgets.erase(widget);
     markAsBadGeometry(item); //okayyyy is this safe AT ALL?? With models there was a comment about root windows XXX
     destroyDisplayItem(item);
+}
+
+void Environment::distributeCollisionPointOnWidget(IVD_Widget* widget, const Coords coords)
+{
+    userOwnedWidgets.at(widget)->updateHover(&myStateManager, coords);
 }
 
 double Environment::getInteger(DisplayItem* context, const ScopedValueKey key)

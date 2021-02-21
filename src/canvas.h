@@ -15,6 +15,7 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
+#include <vector>
 #include <memory>
 #include "geometry.h"
 #include "color.h"
@@ -35,13 +36,8 @@ class DisplayItem;
 
 class Canvas
 {
-    Coords crunchCursor()
-    {
-        Coords result;
-        for(Coords c : cursorMoves)
-            result += c;
-        return result;
-    }
+    Coords offset;
+
 
 protected:
     //Okay so I promise this is for a real reason and not because I'm too lazy
@@ -51,9 +47,7 @@ protected:
     // children shouldn't know about parent clips.
     std::vector<Rect> clips;
 
-
     double alpha = 1;
-    Coords offset;
 
 public:
     void pushClip(const Rect clip)
@@ -65,8 +59,8 @@ public:
     void setOffset(const Coords theOffset)
     { offset = theOffset; }
 
-    void resetOffset()
-    { offset = Coords(); }
+    Coords getOffset()
+    { return offset; }
 
     void setAlpha(const double theAlpha)
     { alpha = theAlpha; }
@@ -82,7 +76,6 @@ public:
     virtual void clear() = 0;
     
     virtual void fillRect(Rect r, Color theColor) = 0;
-    virtual void fillAdvancedRect(AdvancedRect r, Color theColor, Color::AlphaType alpha) = 0;
     virtual void strokeRect(Rect r, int size, Color theColor, Color::AlphaType alpha) = 0;
     virtual void drawLine(Coords start, Coords end, int size, Color theColor, Color::AlphaType alpha) = 0;
     virtual void drawGradient(Rect box,

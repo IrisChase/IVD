@@ -29,9 +29,10 @@ struct WidgetBlueprints
     void (*shape)(IVD_Widget*, IVD_GeometryProposal*) = nullptr;
     IVD_Dimens* (*getSpace)(IVD_Widget*); //Widgets only know about drawing area
     void (*draw)(IVD_Widget*, IVD_Canvas*) = nullptr; //canbe null
-    int (*detectCollisionPoint)(IVD_Widget*, IVD_Coords*) = nullptr; //canbe null
+    void (*distributeCollisionPoints)(IVD_Widget*, IVD_Coords*) = nullptr;
 
     //Widget specific
+    int (*detectCollisionPoint)(IVD_Widget*, IVD_Coords*) = nullptr; //canbe null
     void (*triggerHandler)(IVD_Widget*, const char*) = nullptr;
 };
 
@@ -95,6 +96,12 @@ public:
     {
         blueprints.draw(get(),
                         reinterpret_cast<IVD_Canvas*>(canvas));
+    }
+
+    void distributeCollisionPoints(Coords point)
+    {
+        return blueprints.distributeCollisionPoints(get(),
+                                                    reinterpret_cast<IVD_Coords*>(&point));
     }
 
     bool detectCollisionPoint(Coords point)
