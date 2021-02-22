@@ -63,7 +63,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
         childProposal.proposedDimensions.get(Adjacent) = proposedAdjacentSize;
 
         material->shape(childProposal);
-        const Dimens childDimens = material->get_dimens();
+        const Dimens childDimens = material->get_full_dimens();
 
         usedAdjacentSpace += childDimens.get(Adjacent);
 
@@ -119,7 +119,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
             // not expand further.
 
             GeometryProposal childProposal = proposal;
-            childProposal.proposedDimensions = material->get_dimens();
+            childProposal.proposedDimensions = material->get_full_dimens();
             childProposal.proposedDimensions.get(Opposite) = usedOppositeSpace;
 
             childProposal.expandForAngle(Opposite) = false;
@@ -128,7 +128,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
             childProposal.shrinkForAngle(Adjacent) = false;
 
             material->shape(childProposal);
-            const Dimens childDimens = material->get_dimens();
+            const Dimens childDimens = material->get_full_dimens();
             usedAdjacentSpace += childDimens.get(Adjacent);
 
             assert(childProposal.verifyCompliance(childDimens));
@@ -170,7 +170,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
             const int cutSize = (usedAdjacentSpace - AvailableAdjacentSpace) / CellCount;
 
             auto adjustingSizeFormula = [&](UserLayout* material) -> int
-            { return zeroGuard(material->get_dimens().get(Adjacent) - cutSize); };
+            { return zeroGuard(material->get_full_dimens().get(Adjacent) - cutSize); };
 
             //(╯°□°）╯︵ ┻━┻
             resetWorkingDimensions();
@@ -200,7 +200,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
             resetWorkingDimensions();
 
             auto padFormula = [&](UserLayout* material) -> int
-            { return material->get_dimens().get(Adjacent) + padSize; };
+            { return material->get_full_dimens().get(Adjacent) + padSize; };
 
             GeometryProposal childProposal = proposal;
             childProposal.shrinkForAngle(Adjacent) = false;
@@ -211,7 +211,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
             //(This could maybe be abstracted with some code from applyToSet TODO)
             for(UserLayout* m : opposet)
             {
-                const Dimens d = m->get_dimens();
+                const Dimens d = m->get_full_dimens();
                 if(d.get(Opposite) > usedOppositeSpace)
                 {
                     //Does this ever happen????? TODO
