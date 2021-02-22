@@ -461,6 +461,18 @@ std::vector<IVD_Widget*> DisplayItem::getChildWidgetInStampOrder()
 
     std::vector<IVD_Widget*> result;
 
+    for(DisplayItem* child : sorted)
+    {
+        if(!child->myWidget.isSet()) continue;
+
+        //Is it a major oversight that elements without "widgets"
+        // don't count and are not returned? Maybe all displayitems
+        // should have widgets by default...
+        //Also don't like that widgets can change due to state changes...
+        //As far as layouts are concerned :/
+        result.push_back(child->getWidget());
+    }
+
     return result;
 }
 
