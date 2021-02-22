@@ -413,13 +413,17 @@ std::vector<IVD_Widget*> DisplayItem::getChildWidgetInStampOrder()
 
 IVD_Widget* DisplayItem::getChildWidgetForNamedCell(const std::string name)
 {
-    //Don't give a damn about how inefficient this is for now.
-    auto cells = getAttr().getLiteralList(AttributeKey::CellNames);
-    auto children = getChildWidgetInStampOrder();
+    for(DisplayItem* child : children)
+    {
+        if(!child->getAttr().checkActive(AttributeKey::PositionWithin)) continue;
 
-    for(int i = 0; i != cells.size() && i < children.size(); ++i)
-        if(cells[i] == name)
-            return children[i];
+        auto optionalKey = child->getAttr().getSingleValueKey(AttributeKey::PositionWithin)->key;
+
+        if(!optionalKey) continue;
+
+        if(*optionalKey == name)
+            return child->getWidget();
+    }
 
     return nullptr;
 }
