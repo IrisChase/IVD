@@ -74,6 +74,8 @@ class DisplayItem
     // eventually.
     FillPrecedence returnGreedyIFEVENONECHILDBLINKS(const Angle theAngle);
 
+    std::optional<std::string> getCellName();
+
 public:
     DisplayItem(Element* elem,
                 Environment* theEnv,

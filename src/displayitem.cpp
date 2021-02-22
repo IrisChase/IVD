@@ -178,6 +178,14 @@ FillPrecedence DisplayItem::returnGreedyIFEVENONECHILDBLINKS(const Angle theAngl
     /// ;; I wanne use lithp :<
 }
 
+std::optional<std::string> DisplayItem::getCellName()
+{
+    if(getAttr().checkActive(AttributeKey::PositionWithin))
+        return std::optional<std::string>();
+
+    return getAttr().getSingleValueKey(AttributeKey::PositionWithin)->key;
+}
+
 int DisplayItem::getJustificationOffset(const int itemSize, const int cellSize)
 {
     const auto optional = Default::Filter::getJustificationProperty(this);
@@ -383,30 +391,75 @@ void DisplayItem::updateHover(StateManager* theStateManager, const Coords point)
         {
             const Coords relativePoint = myCellRect.c - point;
             myWidget.distributeCollisionPoints(relativePoint);
+
+            //Should this have direct integration or just let
+            // the widget do state stuff? I think the latter...
+            //So... Why does it have a return value
+            myWidget.detectCollisionPoint(point); //Rename to "handle"?
         }
         //else without a layout/widget we just assume there's no rules for child collision
         // because layouts define all that stuff
 
+        //Now we handle our own
         if(!theStateManager->checkState(StateKey(States::Item::HoverExclusive, this)))
             theStateManager->mutateIfObserved(StateKey(States::Item::HoverExclusive, this), true);
+
         theStateManager->mutateIfObserved(StateKey(States::Item::HoverInclusive, this), true);
     }
 }
 
 std::vector<IVD_Widget*> DisplayItem::getChildWidgetInStampOrder()
 {
-    std::vector<IVD_Widget*> result;
+
+    std::vector<DisplayItem*> sorted;
     for(DisplayItem* child : children)
     {
         assert(child->myWidget.isSet());
-        result.push_back(child->myWidget.get());
+        sorted.push_back(child->myWidget.get());
     }
 
     auto compareStamp = [&](DisplayItem* left, DisplayItem* right)
     {
         return left->getElementStamp() < right->getElementStamp();
     };
-    std::sort(result.begin(), result.end(), compareStamp);
+    std::sort(sorted.begin(), sorted.end(), compareStamp);
+
+    //---------------------->stable SORT BY NAMED CELLS<------
+    //Just reverse iterate the named cells list, and then sub-iteratorate
+    // the result vector, and move the one to the beginning.
+    //YES I KNOW IT'S SUPER INNEFICIENT. But it might be better
+    // than a clever solution because named cells will probably never be
+    // more than like 10, and the children should typically be == to named cells
+    // so 10*10 isn't a huge deal
+    //It's probably not even worth testing unless this shows up in during
+    // profiling.
+
+    if(myAttrs.checkActive(AttributeKey::CellNames))
+    {
+        auto cells = myAttrs.getLiteralList(AttributeKey::CellNames);
+
+        for(std::vector<std::string>::reverse_iterator rit = cells.rbegin(); rit != cells.rend(); ++rit)
+        {
+            const std::string& cellName = *rit;
+
+            for(std::vector<DisplayItem*>::iterator it = sorted.begin(); it != sorted.end(); ++it)
+            {
+                DisplayItem* child = *it;
+                if(child->getCellName() == cellName)
+                {
+                    sorted.erase(it);
+                    sorted.insert(sorted.begin(), child);
+                    break;
+                }
+            }
+        }
+    }
+
+
+    //Then do a special "first"/"last" reorder if you want that feature
+    // back for whatever reason.
+
+    std::vector<IVD_Widget*> result;
 
     return result;
 }
@@ -415,13 +468,11 @@ IVD_Widget* DisplayItem::getChildWidgetForNamedCell(const std::string name)
 {
     for(DisplayItem* child : children)
     {
-        if(!child->getAttr().checkActive(AttributeKey::PositionWithin)) continue;
+        auto optionalCellName = getCellName();
 
-        auto optionalKey = child->getAttr().getSingleValueKey(AttributeKey::PositionWithin)->key;
+        if(!optionalCellName) continue;
 
-        if(!optionalKey) continue;
-
-        if(*optionalKey == name)
+        if(*optionalCellName == name)
             return child->getWidget();
     }
 
