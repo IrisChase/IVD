@@ -45,7 +45,6 @@ class Environment
     Compiler myComp;
 
     StateManager myStateManager;
-    std::unique_ptr<OIIO::ImageCache, std::function<void(OIIO::ImageCache*)>> myImageCache;
 
     std::vector<VirtualStateKeyPrecursor> deferredVirtualStateKeys;
     struct DeferredPositioning

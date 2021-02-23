@@ -11,7 +11,8 @@ namespace std_widgets
 
 class ImageWidget : public bindings::UserWidget
 {
-    OIIO::ImageCache* cache;
+    //TODO not threadsafe (but does it matter?)
+    static std::unique_ptr<OIIO::ImageCache, std::function<void(OIIO::ImageCache*)>> imageCache;
 
 public:
     virtual FillPrecedence get_fill_precedence(const Angle)

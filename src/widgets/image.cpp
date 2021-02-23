@@ -6,19 +6,20 @@ namespace IVD
 namespace std_widgets
 {
 
+std::unique_ptr<OIIO::ImageCache, std::function<void(OIIO::ImageCache*)>> ImageWidget::imageCache
+    = {OIIO::ImageCache::create(), [](OIIO::ImageCache* cache) { OIIO::ImageCache::destroy(cache); }};
 
 void ImageWidget::shape(const GeometryProposal officialProposal)
 {
     OIIO::ImageSpec spec;
     const char* imagePath = "oof need custom attributes TODO";
-    bool stat = cache->get_imagespec(OIIO::ustring(imagePath), spec);
+    bool stat = imageCache->get_imagespec(OIIO::ustring(imagePath), spec);
 
     if(stat)
         //This is about as simple as it gets.
         myDimens = officialProposal.roundConflicts(Dimens(spec.width, spec.height));
     else
         myDimens = officialProposal.proposedDimensions;
-
 }
 
 void ImageWidget::draw(bindings::Canvas theCanvas)
@@ -26,7 +27,7 @@ void ImageWidget::draw(bindings::Canvas theCanvas)
     const OIIO::ustring path("aiufdshaoiuha");
 
     OIIO::ImageSpec spec;
-    bool stat = cache->get_imagespec(path, spec);
+    bool stat = imageCache->get_imagespec(path, spec);
 
     if(!stat) return;
 
@@ -35,17 +36,17 @@ void ImageWidget::draw(bindings::Canvas theCanvas)
 
     std::vector<unsigned char> pixels(spec.width * spec.height * channelCount);
 
-    stat = cache->get_pixels(path,
-                             0, 0,
-                             spec.x, spec.x + spec.width,
-                             spec.y, spec.y + spec.height,
-                             spec.z, spec.z + spec.depth,
-                             0, channelCount,
-                             OIIO::TypeDesc::UCHAR, &pixels[0]);
+    stat = imageCache->get_pixels(path,
+                                  0, 0,
+                                  spec.x, spec.x + spec.width,
+                                  spec.y, spec.y + spec.height,
+                                  spec.z, spec.z + spec.depth,
+                                  0, channelCount,
+                                  OIIO::TypeDesc::UCHAR, &pixels[0]);
 
     if(!stat)
     {
-        std::cerr << cache->geterror() << std::endl;
+        std::cerr << imageCache->geterror() << std::endl;
         return;
     }
 

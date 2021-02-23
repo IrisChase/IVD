@@ -41,8 +41,6 @@ Environment::Environment():
 
 void Environment::initOthers()
 {
-    myImageCache = typeof (myImageCache){OIIO::ImageCache::create(),
-                                         [](OIIO::ImageCache* cache) { OIIO::ImageCache::destroy(cache); }};
     managedDriver->setStateManager(&myStateManager);
 }
 
@@ -517,9 +515,7 @@ void Environment::destroyIVDelement(IVD_Widget* parent, IVD_Element* elem)
 }
 
 Canvas* Environment::getCanvas()
-{
-    return myDriver->getCanvas();
-}
+{ return myDriver->getCanvas(); }
 
 
 double Environment::getInteger(DisplayItem* context, const ScopedValueKey key)
