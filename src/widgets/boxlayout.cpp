@@ -7,7 +7,7 @@ namespace IVD
 namespace std_widgets
 {
 
-void BoxLayout::shape(const GeometryProposal proposal)
+void BoxLayout::shape(const GeometryProposal officialProposal)
 {
     std::vector<Element> theMaterials;
 
@@ -18,8 +18,8 @@ void BoxLayout::shape(const GeometryProposal proposal)
     const Angle Opposite = (Adjacent == Angle::Horizontal) ? Angle::Vertical
                                                            : Angle::Horizontal;
 
-    const int AvailableAdjacentSpace = proposal.proposedDimensions.get(Adjacent);
-    const int AvailableOppositeSpace = proposal.proposedDimensions.get(Opposite);
+    const int AvailableAdjacentSpace = officialProposal.proposedDimensions.get(Adjacent);
+    const int AvailableOppositeSpace = officialProposal.proposedDimensions.get(Opposite);
 
     std::vector<Element> greedy;
     std::vector<Element> shrinky;
@@ -118,7 +118,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
             // or larger. We won't be suggesting a smaller opposite, so the adjacent should
             // not expand further.
 
-            GeometryProposal childProposal = proposal;
+            GeometryProposal childProposal = officialProposal;
             childProposal.proposedDimensions = material.get_dimens();
             childProposal.proposedDimensions.get(Opposite) = usedOppositeSpace;
 
@@ -144,7 +144,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
         //Otherwise it throws off the overall opposite rule.
         //If it's locked it can't legally grow!!!! Or shrink... No shrinky!
         // extra space goes to the child cell anyway.
-        GeometryProposal childProposal = proposal;
+        GeometryProposal childProposal = officialProposal;
         childProposal.expandForAngle(Adjacent) = true;
         childProposal.shrinkForAngle(Adjacent) = true;
 
@@ -158,9 +158,9 @@ void BoxLayout::shape(const GeometryProposal proposal)
 
 
     //If the sizes are bad, then we adjust
-    if(usedAdjacentSpace > proposal.proposedDimensions.get(Adjacent))
+    if(usedAdjacentSpace > officialProposal.proposedDimensions.get(Adjacent))
     {
-        if(!proposal.expandForAngleConst(Adjacent))
+        if(!officialProposal.expandForAngleConst(Adjacent))
         {
             //No overflow mode, because if we can't expand, we can't expand.
             //So it must go to the children. The default is for the whole thing
@@ -175,7 +175,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
             //(╯°□°）╯︵ ┻━┻
             resetWorkingDimensions();
 
-            GeometryProposal childProposal = proposal;
+            GeometryProposal childProposal = officialProposal;
             childProposal.expandForAngle(Adjacent) = false;
 
             applyToSet(shrinky, childProposal, adjustingSizeFormula);
@@ -184,9 +184,9 @@ void BoxLayout::shape(const GeometryProposal proposal)
         }//Else is just whatev's
     }
 
-    if(usedAdjacentSpace < proposal.proposedDimensions.get(Adjacent))
+    if(usedAdjacentSpace < officialProposal.proposedDimensions.get(Adjacent))
     {
-        if(!proposal.shrinkForAngleConst(Adjacent) && CellCount)
+        if(!officialProposal.shrinkForAngleConst(Adjacent) && CellCount)
         {
             //By default we only expand greedy. But if there is no greedy and we MUST expand...
             //Actually not sure if this is ever greedy, now that I thonk abut it? Can it be? TODO
@@ -202,7 +202,7 @@ void BoxLayout::shape(const GeometryProposal proposal)
             auto padFormula = [&](Element material) -> int
             { return material.get_dimens().get(Adjacent) + padSize; };
 
-            GeometryProposal childProposal = proposal;
+            GeometryProposal childProposal = officialProposal;
             childProposal.shrinkForAngle(Adjacent) = false;
 
             applyToSet(theSet, childProposal, padFormula);

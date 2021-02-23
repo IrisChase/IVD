@@ -81,10 +81,6 @@ src/widget.h
 
 src/shaping/line.h
 
-src/material/rowlayoutmaterial.cpp
-src/material/rowlayoutmaterial.h
-src/material/simplematerial.h
-src/material/simplematerial.cpp
 src/material/fallbackparagraphmaterial.cpp
 src/material/fallbackparagraphmaterial.h
 src/material/inlinelayoutmaterial.h
@@ -93,13 +89,11 @@ src/material/textrunmaterial.h
 src/material/textrunmaterial.cpp
 src/material/imagematerial.h
 src/material/imagematerial.cpp
-src/material/freelayoutmaterial.h
-src/material/freelayoutmaterial.cpp
-src/material/stacklayoutmaterial.h
-src/material/stacklayoutmaterial.cpp
 
 src/widgets/boxlayout.h
 src/widgets/boxlayout.cpp
+src/widgets/stacklayout.h
+src/widgets/stacklayout.cpp
 
 src/allmaterials.h
 
