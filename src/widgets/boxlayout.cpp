@@ -230,6 +230,21 @@ void BoxLayout::shape(const GeometryProposal proposal)
     usedSpace.get(Opposite) = usedOppositeSpace;
 
     myDimens = usedSpace;
+
+    //-----------------------------------------Now compute offsets
+    int adjacentOffset = 0;
+    const int oppositeOffset = 0;
+
+    applyToChildren([&](UserLayout* child)
+    {
+        Coords childCoords;
+        childCoords.get(Adjacent) = adjacentOffset;
+        childCoords.get(Opposite) = oppositeOffset;
+
+        set_offset_on_child(child, childCoords);
+
+        adjacentOffset += child->get_full_dimens().get(Adjacent);
+    });
 }
 
 }//std_widgets

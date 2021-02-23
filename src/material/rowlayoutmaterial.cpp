@@ -32,25 +32,6 @@ void RowLayoutMaterialBase::shapeDrawingArea(const GeometryProposal officialProp
 
 void RowLayoutMaterialBase::setAbsoluteOffset(const Coords offset)
 {
-    setViewportOffset(offset);
-    updateDrawingAreaOffset();
-
-    const Angle RowOpposite = RowAdjacent == Angle::Horizontal ? Angle::Vertical
-                                                               : Angle::Horizontal;
-
-    int adjacentOffset = getDrawingAreaOffset().get(RowAdjacent);
-    const int oppositeOffset = getDrawingAreaOffset().get(RowOpposite);
-
-    for(Material* child : myItem->getChildMaterialsInModelOrder())
-    {
-        Coords childCoords;
-        childCoords.get(RowAdjacent) = adjacentOffset;
-        childCoords.get(RowOpposite) = oppositeOffset;
-
-        child->setAbsoluteOffset(childCoords);
-
-        adjacentOffset += child->getViewport().d.get(RowAdjacent);
-    }
 }
 
 void RowLayoutMaterialBase::drawConcrete(Canvas* theCanvas)
