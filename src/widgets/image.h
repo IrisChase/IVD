@@ -9,7 +9,7 @@ namespace IVD
 namespace std_widgets
 {
 
-class ImageWidget : public UserWidget
+class ImageWidget : public bindings::UserWidget
 {
     OIIO::ImageCache* cache;
 
@@ -18,7 +18,7 @@ public:
     { return FillPrecedence::Shrinky; }
 
     virtual void shape(const GeometryProposal officialProposal);
-    virtual void draw(Canvas theCanvas);
+    virtual void draw(bindings::Canvas theCanvas);
 };
 
 

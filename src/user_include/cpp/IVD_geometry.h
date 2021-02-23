@@ -115,7 +115,7 @@ struct Coords
     { return std::tie(x, y) == std::tie(other.x, other.y); }
 
     bool operator!=(const Coords& other) const
-    { return *this != other; }
+    { return !(*this == other); }
 
     bool operator<(const Coords& other) const
     { return std::tie(x, y) < std::tie(other.x, other.y); }
@@ -198,7 +198,7 @@ struct Dimens
     { return std::tie(w, h) == std::tie(other.w, other.h); }
 
     bool operator!=(const Dimens& other) const
-    { return *this != other; }
+    { return !(*this == other); }
 
     bool operator<(const Dimens& other) const
     { return std::tie(w, h) < std::tie(other.w, other.h); }
@@ -250,7 +250,7 @@ struct Rect
     { return std::tie(c, d) == std::tie(other.c, other.d); }
 
     bool operator!=(const Rect& other) const
-    { return *this != other; }
+    { return !(*this == other); }
 
     bool operator<(const Rect& other) const
     { return std::tie(c, d) < std::tie(other.c, other.d); }

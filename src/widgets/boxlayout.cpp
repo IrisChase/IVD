@@ -9,9 +9,9 @@ namespace std_widgets
 
 void BoxLayout::shape(const GeometryProposal officialProposal)
 {
-    std::vector<Element> theMaterials;
+    std::vector<bindings::Element> theMaterials;
 
-    applyToChildren([&](Element child)
+    applyToChildren([&](bindings::Element child)
     { theMaterials.push_back(child); });
 
     const int CellCount = theMaterials.size();
@@ -21,10 +21,10 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
     const int AvailableAdjacentSpace = officialProposal.proposedDimensions.get(Adjacent);
     const int AvailableOppositeSpace = officialProposal.proposedDimensions.get(Opposite);
 
-    std::vector<Element> greedy;
-    std::vector<Element> shrinky;
+    std::vector<bindings::Element> greedy;
+    std::vector<bindings::Element> shrinky;
 
-    for(Element material : theMaterials)
+    for(bindings::Element material : theMaterials)
     {
         const FillPrecedence Pref = material.get_fill_precedence(Adjacent);
         if(Pref == FillPrecedence::Greedy)
@@ -52,9 +52,9 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
 
     bool invalidOpposite = false;
 
-    auto applyAdjacentFormulaToChild = [&](Element material,
+    auto applyAdjacentFormulaToChild = [&](bindings::Element material,
                                            GeometryProposal childProposal,
-                                           std::function<int(Element)> adjacentFormula)
+                                           std::function<int(bindings::Element)> adjacentFormula)
     {
         //Please leave this here I'm sick of adding it back for debugging
         const auto proposedAdjacentSize = adjacentFormula(material);
@@ -80,11 +80,11 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
         assert(childProposal.verifyCompliance(childDimens));
     };
 
-    auto applyToSet = [&](const std::vector<Element>& items,
+    auto applyToSet = [&](const std::vector<bindings::Element>& items,
                           GeometryProposal childProposal,
-                          std::function<int(Element)> formula)
+                          std::function<int(bindings::Element)> formula)
     {
-        for(Element material : items)
+        for(bindings::Element material : items)
             applyAdjacentFormulaToChild(material, childProposal, formula);
     };
 
@@ -101,7 +101,7 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
         //We don't discriminate between greedy and shrinky this time, because
         // we're only looking to update the child opposites and perhaps
         // shrink our adjacent.
-        for(Element material : theMaterials)
+        for(bindings::Element material : theMaterials)
         {
             //We've already determined the opposite, so lock both opposite shrink and expand.
             //If the opposite is larger, we might recover some adjacent space,
@@ -148,7 +148,7 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
         childProposal.expandForAngle(Adjacent) = true;
         childProposal.shrinkForAngle(Adjacent) = true;
 
-        auto initalCellSizeFormula = [=](Element) -> int
+        auto initalCellSizeFormula = [=](bindings::Element) -> int
         { return zeroGuard((AvailableAdjacentSpace - usedAdjacentSpace) / CellCount); };
 
         applyToSet(shrinky, childProposal, initalCellSizeFormula);
@@ -169,7 +169,7 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
 
             const int cutSize = (usedAdjacentSpace - AvailableAdjacentSpace) / CellCount;
 
-            auto adjustingSizeFormula = [&](Element material) -> int
+            auto adjustingSizeFormula = [&](bindings::Element material) -> int
             { return zeroGuard(material.get_dimens().get(Adjacent) - cutSize); };
 
             //(╯°□°）╯︵ ┻━┻
@@ -199,7 +199,7 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
             const int padSize = (AvailableAdjacentSpace - usedAdjacentSpace) / theSet.size();
             resetWorkingDimensions();
 
-            auto padFormula = [&](Element material) -> int
+            auto padFormula = [&](bindings::Element material) -> int
             { return material.get_dimens().get(Adjacent) + padSize; };
 
             GeometryProposal childProposal = officialProposal;
@@ -209,7 +209,7 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
 
             //One last problem, we gotta add the opposets to the usedAdjacent and Opposite(?) spaces...
             //(This could maybe be abstracted with some code from applyToSet TODO)
-            for(Element m : opposet)
+            for(bindings::Element m : opposet)
             {
                 const Dimens d = m.get_dimens();
                 if(d.get(Opposite) > usedOppositeSpace)
@@ -235,7 +235,7 @@ void BoxLayout::shape(const GeometryProposal officialProposal)
     int adjacentOffset = 0;
     const int oppositeOffset = 0;
 
-    applyToChildren([&](Element child)
+    applyToChildren([&](bindings::Element child)
     {
         Coords childCoords;
         childCoords.get(Adjacent) = adjacentOffset;

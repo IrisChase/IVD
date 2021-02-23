@@ -8,7 +8,7 @@ namespace IVD
 namespace std_widgets
 {
 
-class BoxLayout : public UserLayout
+class BoxLayout : public bindings::UserLayout
 {
     const Angle Adjacent;
 
@@ -21,7 +21,7 @@ public:
 
     virtual void shape(const GeometryProposal officialProposal) final;
 
-    virtual void draw(Canvas theCanvas) final
+    virtual void draw(bindings::Canvas theCanvas) final
     { render_children_unordered(); }
 
     virtual void bubble_children() final

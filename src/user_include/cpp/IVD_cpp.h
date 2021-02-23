@@ -25,6 +25,10 @@
 namespace IVD
 {
 
+namespace bindings
+{
+
+
 class UserWidget;
 class UserLayout;
 
@@ -273,6 +277,10 @@ T* generic_factory()
 
 }//Internals
 
+//ohhhhhhhhhhhhhhhhhhhhhh
+//I rmeember thisssssssssss
+//It's why I called the public interface into Environment "runtime"
+// before...
 
 class Environment
 {
@@ -364,4 +372,5 @@ public:
 
 
 
+}//bindings
 }//IVD

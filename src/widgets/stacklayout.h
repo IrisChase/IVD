@@ -7,14 +7,14 @@ namespace IVD
 namespace std_widgets
 {
 
-class StackLayout : public UserLayout
+class StackLayout : public bindings::UserLayout
 {
     //basically reverse insertion order
-    void applyToChildrenInBubbleOrder(std::function<void(Element)> fun)
+    void applyToChildrenInBubbleOrder(std::function<void(bindings::Element)> fun)
     {
-        std::vector<Element> elements;
+        std::vector<bindings::Element> elements;
 
-        applyToChildren([&](Element elem)
+        applyToChildren([&](bindings::Element elem)
         { elements.push_back(elem); });
 
         for(auto rit = elements.rbegin(); rit != elements.rend(); ++rit)
@@ -27,15 +27,15 @@ public:
 
     virtual void shape(const GeometryProposal officialProposal);
 
-    virtual void draw(Canvas theCanvas)
+    virtual void draw(bindings::Canvas theCanvas)
     {
-        applyToChildren([&](Element elem)
+        applyToChildren([&](bindings::Element elem)
         { elem.render(); });
     }
 
     virtual void bubble_children()
     {
-        applyToChildrenInBubbleOrder([&](Element elem)
+        applyToChildrenInBubbleOrder([&](bindings::Element elem)
         { elem.bubble(); });
     }
 };

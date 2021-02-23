@@ -9,7 +9,7 @@ void StackLayout::shape(const GeometryProposal officalProposal)
 {
     std::vector<Dimens> initialSizes;
 
-    applyToChildren([&](Element elem)
+    applyToChildren([&](bindings::Element elem)
     {
         elem.shape(officalProposal);
         initialSizes.push_back(elem.get_dimens());
@@ -42,7 +42,7 @@ void StackLayout::shape(const GeometryProposal officalProposal)
     GeometryProposal fin;
     fin.proposedDimensions = maxed;
 
-    applyToChildren([&](Element elem)
+    applyToChildren([&](bindings::Element elem)
     {
         elem.shape(fin);
         elem.set_offset(Coords());

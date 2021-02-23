@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     const std::string path = argv[1];
 
-    IVD::Environment rt;
+    IVD::bindings::Environment rt;
 
     rt.register_layout<IVD::std_widgets::HboxLayout>("hbox");
     rt.register_layout<IVD::std_widgets::VboxLayout>("vbox");

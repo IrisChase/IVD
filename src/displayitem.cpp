@@ -274,7 +274,7 @@ FillPrecedence DisplayItem::computerFillPrecedenceForAngle(const Angle theAngle)
 
     if(optionalOverride) return *optionalOverride;
 
-    if(myWidget.isSet())
+    if(myWidget.checkIsSet())
         return myWidget.getFillPrecedence(theAngle);
 
     return FillPrecedence::Shrinky; //DEFAULT
@@ -304,7 +304,7 @@ void DisplayItem::shape(const GeometryProposal officialProposal)
 
 Dimens DisplayItem::shapeDrawingArea(const GeometryProposal officalProposal)
 {
-    if(myWidget.isSet())
+    if(myWidget.checkIsSet())
     {
         myWidget.shape(officalProposal);
         return myWidget.getSpace();
@@ -362,7 +362,7 @@ void DisplayItem::render()
         theCanvas->popClip(); //borderlessCell
     }
 
-    if(myWidget.isSet() && myWidget.isDrawable())
+    if(myWidget.checkIsSet() && myWidget.isDrawable())
     {
         theCanvas->pushClip(contentClip);
         theCanvas->setOffset(contentClip.c);
@@ -384,7 +384,7 @@ void DisplayItem::updateHover()
 
     if(Rect(absoluteCellOffset, myCellDimens).checkCollision(point))
     {
-        if(myWidget.isSet())
+        if(myWidget.checkIsSet())
         {
             myWidget.bubble();
 

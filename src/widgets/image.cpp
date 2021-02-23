@@ -21,7 +21,7 @@ void ImageWidget::shape(const GeometryProposal officialProposal)
 
 }
 
-void ImageWidget::draw(Canvas theCanvas)
+void ImageWidget::draw(bindings::Canvas theCanvas)
 {
     const OIIO::ustring path("aiufdshaoiuha");
 

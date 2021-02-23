@@ -42,11 +42,14 @@ class WidgetWrapper
     WidgetBlueprints blueprints;
     SmartWidgetPointer underlyingWidget;
 
+    bool isSet = false;
+
 public:
     WidgetWrapper(): underlyingWidget(nullptr, nullptr) {}
     WidgetWrapper(const WidgetBlueprints blueprints):
         blueprints(blueprints),
-        underlyingWidget(blueprints.ctor(), blueprints.dtor)
+        underlyingWidget(blueprints.ctor(), blueprints.dtor),
+        isSet(true)
     {}
 
     void reset(const WidgetBlueprints blueprints)
@@ -55,8 +58,8 @@ public:
         underlyingWidget = SmartWidgetPointer(blueprints.ctor(), blueprints.dtor);
     }
 
-    bool isSet()
-    { return underlyingWidget.get(); }
+    bool checkIsSet()
+    { return isSet; }
 
     bool isDrawable()
     { return blueprints.draw; }
