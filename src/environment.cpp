@@ -165,7 +165,7 @@ void Environment::destroyDisplayItem(DisplayItem* item)
 
 void Environment::positionDisplayItemInDrawTree(DisplayItem* item, IVD_Widget* parentWidget = nullptr)
 {
-    if(!parentWidget && userOwnedWidgets.count(item->getWidget()))
+    if(!parentWidget && widgetToDisplayItem.count(item->getWidget()))
         return; //permanent custody
 
     const auto posPath = Default::Filter::getPositionWithin(item);
@@ -187,7 +187,7 @@ void Environment::positionDisplayItemInDrawTree(DisplayItem* item, IVD_Widget* p
     
     if(parentWidget)
     {
-        DisplayItem* parentItem = userOwnedWidgets.at(parentWidget);
+        DisplayItem* parentItem = widgetToDisplayItem.at(parentWidget);
         item->setParent(parentItem);
         markAsBadGeometry(parentItem);
     }
@@ -200,7 +200,7 @@ void Environment::positionDisplayItemInDrawTree(DisplayItem* item, IVD_Widget* p
         {
             std::cerr << "IVD Runtime: Could not position [" << item->getElementPath() << "] ";
 
-            if(userOwnedWidgets.count(item->getWidget()))
+            if(widgetToDisplayItem.count(item->getWidget()))
                 std::cerr << "-> [Widget] ";
 
             std::cerr << "within [" << path << "] "
@@ -224,7 +224,7 @@ void Environment::positionDisplayItemInDrawTree(DisplayItem* item, IVD_Widget* p
 
 void Environment::setWidget(DisplayItem *item)
 {
-    if(userOwnedWidgets.count(item->getWidget()))
+    if(widgetToDisplayItem.count(item->getWidget()))
         return; //it be bound by BLOOD
 
     item->destroyWidget();
@@ -241,7 +241,7 @@ void Environment::setWidget(DisplayItem *item)
     }
     else return; //Otherwise, we leave it blank, because it's not actually needed ^^
 
-    item->setupNewWidget(blueprints);
+    widgetToDisplayItem[item->setupNewWidget(blueprints)] = item;
 }
 
 std::optional<DisplayItem*> Environment::deduceTarget(DisplayItem *context, const ValueKeyPath key)
@@ -461,7 +461,7 @@ IVD_Widget* Environment::createWidget(const std::string name, IVD_Widget* parent
     DisplayItem* item = setupNewDisplayItem(elementModelLookup[name]);
     IVD_Widget* widget = item->setupNewWidget(widgetBlueprints.at(name));
 
-    userOwnedWidgets[widget] = item;
+    widgetToDisplayItem[widget] = item;
 
     //We have to defer parenting because otherwise
     // the children potentially created in the constructor
@@ -487,8 +487,8 @@ IVD_Element* Environment::createIVDelementFromClass(const std::string className,
 
 void Environment::destroyWidget(IVD_Widget* widget)
 {
-    DisplayItem* item = userOwnedWidgets.at(widget);
-    userOwnedWidgets.erase(widget);
+    DisplayItem* item = widgetToDisplayItem.at(widget);
+    widgetToDisplayItem.erase(widget);
 
     if(widgetOwnedDisplayItems.count(widget))
     {
@@ -514,6 +514,11 @@ void Environment::destroyIVDelement(IVD_Widget* parent, IVD_Element* elem)
 
     markAsBadGeometry(item);
     destroyDisplayItem(item);
+}
+
+Canvas* Environment::getCanvas()
+{
+    return myDriver->getCanvas();
 }
 
 

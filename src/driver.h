@@ -22,6 +22,7 @@ namespace IVD
 
 class DisplayItem;
 class StateManager;
+class Canvas;
 
 class Driver
 {
@@ -51,6 +52,8 @@ public:
     virtual void invalidateCanvas(DisplayItem* item) = 0;
     virtual void invalidateTitleText(DisplayItem* item) = 0;
     virtual void invalidateVisibility(DisplayItem* item) = 0;
+
+    virtual Canvas* getCanvas() = 0;
 
     virtual void refresh() = 0;
 

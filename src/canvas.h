@@ -46,7 +46,7 @@ protected:
 
     Coords offset;
 
-    double alpha = 1;
+    double alpha = 255;
 
 public:
     void pushClip(const Rect clip)

@@ -22,6 +22,7 @@ class StackLayout : public bindings::UserLayout
     }
 
 public:
+    StackLayout(IVD_Environment* theEnv): bindings::UserLayout(theEnv) {}
     virtual FillPrecedence get_fill_precedence(const Angle angel)
     { return any_greedy_children_for_angle(angel); }
 

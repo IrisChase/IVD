@@ -58,7 +58,7 @@ class Environment
 
     std::map<DisplayItem*, std::unique_ptr<DisplayItem>> instances;
 
-    std::map<IVD_Widget*, DisplayItem*> userOwnedWidgets;
+    std::map<IVD_Widget*, DisplayItem*> widgetToDisplayItem;
 
     std::map<IVD_Widget*, std::set<DisplayItem*>> widgetOwnedDisplayItems;
 
@@ -120,8 +120,11 @@ public:
     void destroyWidget(IVD_Widget* widget);
     void destroyIVDelement(IVD_Widget* parent, IVD_Element* elem);
 
+    //Doesn't work for layoutssssssss....
     DisplayItem* getUnderlyingDisplayItemForWidget(IVD_Widget* widget)
-    { return userOwnedWidgets.at(widget); }
+    { return widgetToDisplayItem.at(widget); }
+
+    Canvas* getCanvas();
 
     Coords getMouseOffsetRelativeToWindow();
 

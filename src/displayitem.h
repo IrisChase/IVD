@@ -114,15 +114,12 @@ public:
 
     IVD_Widget* setupNewWidget(const WidgetBlueprints blueprints)
     {
-        myWidget.reset(blueprints);
+        myWidget.reset(myEnv, blueprints);
         return myWidget.get();
     }
 
     IVD_Widget* getWidget()
     { return myWidget.get(); }
-
-    void setCanvas(Canvas* uhTheCanvas)
-    { theCanvas = uhTheCanvas; }
 
     void reactToTrigger(const std::string trigg)
     { myWidget.handleTrigger(trigg); }

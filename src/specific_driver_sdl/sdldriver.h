@@ -65,6 +65,8 @@ class SDLdriver : public Driver
 
     Coords queriedMousePoint;
 
+    Canvas* currentCanvas;
+
     bool hoverInvalidated;
 
     void invalidateHover(const Coords point, const Uint32 windowID);
@@ -91,6 +93,9 @@ public:
 
     bool checkHoverInvalidated()
     { return hoverInvalidated; }
+
+    Canvas* getCanvas()
+    { return currentCanvas; }
 
     DisplayItem* getWindowItemWithMouseFocus()
     { return rootWithMouseFocus; }

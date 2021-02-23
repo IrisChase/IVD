@@ -323,6 +323,7 @@ void DisplayItem::computerAbsoluteOffsets(const Coords parentViewportOffset)
 
 void DisplayItem::render()
 {
+    Canvas* theCanvas = myEnv->getCanvas();
     const Rect viewportClip(absoluteViewportOffset, myViewportDimens);
     //Cell offset already takes margins into account
     const Rect cellClip(absoluteCellOffset, myCellDimens);

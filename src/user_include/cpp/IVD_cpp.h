@@ -151,6 +151,7 @@ protected:
     }
 
 public:
+    UserLayout(IVD_Environment* myEnv): myEnv(myEnv) {}
     virtual ~UserLayout() {}
     Dimens get_content_dimens() { return myDimens; }
 
@@ -270,9 +271,9 @@ inline void userWidgetTriggerHook(IVD_Widget* widget, const char* trig)
 { cast(widget)->trigger(trig); }
 
 template<typename T>
-T* generic_factory()
+T* generic_factory(IVD_Environment* theEnv)
 {
-    return new T;
+    return new T(theEnv);
 }
 
 }//Internals
@@ -292,10 +293,10 @@ public:
     template<typename T>
     void register_widget(const std::string name)
     {
-        T* (*factory)() = Internals::generic_factory<T>; //WE CAN DO THAT???
+        T* (*factory)(IVD_Environment*) = Internals::generic_factory<T>; //WE CAN DO THAT???
 
         //---->VOODOO<----
-        auto castFactory = reinterpret_cast<IVD_Widget* (*)()>(factory);
+        auto castFactory = reinterpret_cast<IVD_Widget* (*)(IVD_Environment*)>(factory);
         //---->VOODOO<----
 
         IVD_environment_register_widget(internal.get(),
@@ -314,9 +315,9 @@ public:
     template<typename T>
     void register_layout(const std::string name)
     {
-        T* (*factory)() = Internals::generic_factory<T>;
+        T* (*factory)(IVD_Environment*) = Internals::generic_factory<T>;
         //---->VOODOO<----
-        auto castFactory = reinterpret_cast<IVD_Widget* (*)()>(factory);
+        auto castFactory = reinterpret_cast<IVD_Widget* (*)(IVD_Environment*)>(factory);
         //---->VOODOO<----
 
         IVD_environment_register_layout(internal.get(),

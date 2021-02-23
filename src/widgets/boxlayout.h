@@ -13,7 +13,9 @@ class BoxLayout : public bindings::UserLayout
     const Angle Adjacent;
 
 public:
-    BoxLayout(const Angle theAngel): Adjacent(theAngel) {}
+    BoxLayout(IVD_Environment* theEnv, const Angle theAngel):
+        bindings::UserLayout(theEnv),
+        Adjacent(theAngel) {}
     ~BoxLayout() override {}
 
     virtual FillPrecedence get_fill_precedence(const Angle angle) final
@@ -31,14 +33,14 @@ public:
 class VboxLayout : public BoxLayout
 {
 public:
-    VboxLayout(): BoxLayout(Angle::Vertical) {}
+    VboxLayout(IVD_Environment* theEnv): BoxLayout(theEnv, Angle::Vertical) {}
     ~VboxLayout() override {}
 };
 
 class HboxLayout : public BoxLayout
 {
 public:
-    HboxLayout(): BoxLayout(Angle::Horizontal) {}
+    HboxLayout(IVD_Environment* theEnv): BoxLayout(theEnv, Angle::Horizontal) {}
     ~HboxLayout() override {}
 };
 

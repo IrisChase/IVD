@@ -60,7 +60,7 @@ const char* IVD_environment_get_compiler_errors(IVD_Environment*);
 void IVD_environment_run(IVD_Environment*);
 
 void IVD_environment_register_widget(IVD_Environment *environment, const char* name,
-                                     IVD_Widget* (*ctor)(),
+                                     IVD_Widget* (*ctor)(IVD_Environment*),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget *, IVD_GeometryProposal *),
@@ -79,7 +79,7 @@ void IVD_environment_element_destroy(IVD_Environment*, IVD_Widget* parent, IVD_E
 
 void IVD_environment_register_layout(IVD_Environment* environment,
                                      const char* name,
-                                     IVD_Widget* (*ctor)(),
+                                     IVD_Widget* (*ctor)(IVD_Environment*),
                                      void (*dtor)(IVD_Widget*),
                                      int (*getFillPrecedence)(IVD_Widget*, const int),
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),

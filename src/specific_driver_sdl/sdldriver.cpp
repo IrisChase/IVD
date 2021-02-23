@@ -629,7 +629,7 @@ void SDLdriver::refresh()
                 auto canvas = window->getCanvas();
                 canvas->clear();
 
-                item->setCanvas(canvas);
+                currentCanvas = canvas;
                 item->render();
 
                 window->present();

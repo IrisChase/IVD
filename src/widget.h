@@ -13,7 +13,7 @@ namespace IVD
 {
 
 class Canvas;
-
+class Environment;
 
 
 //Layouts are just a specialized type of widget
@@ -23,7 +23,7 @@ struct WidgetBlueprints
     //Layout/widget uses these
     std::string name;
     bool isWidget;
-    IVD_Widget* (*ctor)() = nullptr;
+    IVD_Widget* (*ctor)(IVD_Environment*) = nullptr;
     void (*dtor)(IVD_Widget*) = nullptr;
     int (*getFillPrecedence)(IVD_Widget*, const int) = nullptr;
     void (*shape)(IVD_Widget*, IVD_GeometryProposal*) = nullptr;
@@ -39,33 +39,34 @@ struct WidgetBlueprints
 class WidgetWrapper
 {
     typedef std::unique_ptr<IVD_Widget, void(*)(IVD_Widget*)> SmartWidgetPointer;
-    WidgetBlueprints blueprints;
+    WidgetBlueprints myBlueprints;
     SmartWidgetPointer underlyingWidget;
 
     bool isSet = false;
 
 public:
     WidgetWrapper(): underlyingWidget(nullptr, nullptr) {}
-    WidgetWrapper(const WidgetBlueprints blueprints):
-        blueprints(blueprints),
-        underlyingWidget(blueprints.ctor(), blueprints.dtor),
+    WidgetWrapper(Environment* theEnv, const WidgetBlueprints blueprints):
+        myBlueprints(blueprints),
+        underlyingWidget(blueprints.ctor(reinterpret_cast<IVD_Environment*>(theEnv)), blueprints.dtor),
         isSet(true)
     {}
 
-    void reset(const WidgetBlueprints blueprints)
+    void reset(Environment* theEnv, const WidgetBlueprints blueprints)
     {
         underlyingWidget.reset();
-        underlyingWidget = SmartWidgetPointer(blueprints.ctor(), blueprints.dtor);
+        underlyingWidget = SmartWidgetPointer(blueprints.ctor(reinterpret_cast<IVD_Environment*>(theEnv)), blueprints.dtor);
+        myBlueprints = blueprints;
     }
 
     bool checkIsSet()
-    { return isSet; }
+    { return bool(underlyingWidget); }
 
     bool isDrawable()
-    { return blueprints.draw; }
+    { return myBlueprints.draw; }
 
     bool isLayout()
-    { return !blueprints.isWidget; }
+    { return !myBlueprints.isWidget; }
 
     void destroy()
     { underlyingWidget.reset(); }
@@ -75,7 +76,7 @@ public:
 
     FillPrecedence getFillPrecedence(Angle theAngel)
     {
-        const auto prec = blueprints.getFillPrecedence(get(),
+        const auto prec = myBlueprints.getFillPrecedence(get(),
                                                        getForAngle(0, 1, theAngel));
         return prec == 0 ? FillPrecedence::Greedy
                          : FillPrecedence::Shrinky;
@@ -83,26 +84,30 @@ public:
 
     Dimens getSpace()
     {
-        IVD_Dimens* space = blueprints.getSpace(underlyingWidget.get());
+        IVD_Dimens* space = myBlueprints.getSpace(underlyingWidget.get());
         Dimens result = *reinterpret_cast<Dimens*>(space);
         IVD_dimens_free(space);
         return result;
     }
 
     void shape(GeometryProposal prop)
-    { blueprints.shape(get(), reinterpret_cast<IVD_GeometryProposal*>(&prop)); }
+    { myBlueprints.shape(get(), reinterpret_cast<IVD_GeometryProposal*>(&prop)); }
 
     void draw(Canvas* canvas)
-    { blueprints.draw(get(), reinterpret_cast<IVD_Canvas*>(canvas)); }
+    { myBlueprints.draw(get(), reinterpret_cast<IVD_Canvas*>(canvas)); }
 
     void bubble()
-    { return blueprints.bubbler(get()); }
+    { return myBlueprints.bubbler(get()); }
 
     bool detectCollisionPoint(Coords point)
-    { return blueprints.detectCollisionPoint(get(), reinterpret_cast<IVD_Coords*>(&point)); }
+    {
+        if(!myBlueprints.detectCollisionPoint)
+            return false;
+        return myBlueprints.detectCollisionPoint(get(), reinterpret_cast<IVD_Coords*>(&point));
+    }
 
     void handleTrigger(const std::string triggerName)
-    { blueprints.triggerHandler(get(), triggerName.c_str()); }
+    { myBlueprints.triggerHandler(get(), triggerName.c_str()); }
 };
 
 
