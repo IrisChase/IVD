@@ -17,6 +17,8 @@
 #include <functional>
 #include <iostream>
 
+#include "assert.h"
+
 namespace IVD
 {
 
@@ -38,6 +40,7 @@ void CairoCanvas::drawWith(Color theColor,
 {
     cairo_save(myCai);
     clip();
+    cairo_move_to(myCai, offset.x, offset.y);
     cairo_set_source_rgba(myCai,
                           (theColor.red + 1) / 256.0,
                           (theColor.green + 1) / 256.0,
@@ -85,10 +88,6 @@ void CairoCanvas::fillRect(Rect r, Color theColor)
     });
 }
 
-void CairoCanvas::fillAdvancedRect(AdvancedRect r, Color theColor, Color::AlphaType alpha)
-{
-    fillRect(r.r, theColor); //shhhhhhhhhhhhhhhhhhh
-}
 
 void CairoCanvas::strokeRect(Rect r, int size, Color theColor, Color::AlphaType alpha)
 {
@@ -113,10 +112,10 @@ assert(false);
 
 void CairoCanvas::drawDropShadow(Rect box, int size, Color theColor, Color::AlphaType )
 {
-assert(false);
+    assert(false);
 }
 
-void CairoCanvas::drawBitmapRGBoptionalA(Rect dest, Bitmap image)
+void CairoCanvas::drawBitmapRGBoptionalA(Coords dest, int imageStride, int width, int height, int channels, unsigned char* data)
 {
     //Goddddddddd we have to rearrange the pixel data ughh...
     const auto format = CAIRO_FORMAT_ARGB32;
@@ -134,25 +133,25 @@ void CairoCanvas::drawBitmapRGBoptionalA(Rect dest, Bitmap image)
 
 #endif
 
-    const int stride = cairo_format_stride_for_width(format, image.width);
+    const int stride = cairo_format_stride_for_width(format, width);
 
     const int dstPixelWidth = 4;
-    const int srcPixelWidth = image.channels;
+    const int srcPixelWidth = channels;
 
-    std::vector<unsigned char> theTrueNameOfBaal(stride * image.height * image.channels);
+    std::vector<unsigned char> theTrueNameOfBaal(stride * height * channels);
 
-    for(int row = 0; row != image.height; ++row)
+    for(int row = 0; row != height; ++row)
     {
-        unsigned char* src = image.data + image.width * image.channels * row;
+        unsigned char* src = data + width * channels * row;
         unsigned char* dst = &theTrueNameOfBaal[0] + stride * row;
 
         int di = 0;
         int si = 0;
 
-        while(si != image.width * image.channels)
+        while(si != width * channels)
         {
             //Pixel, *not* subpixel!
-            unsigned char alpha = dst[di + destinationAlphaOffset] = image.channels == 4 ? src[si + 3]
+            unsigned char alpha = dst[di + destinationAlphaOffset] = channels == 4 ? src[si + 3]
                                                                                          : 0xff;
             dst[di + destinationRedOffset]   = src[si + 0] * -alpha;
             dst[di + destinationGreenOffset] = src[si + 1] * -alpha;
@@ -166,27 +165,24 @@ void CairoCanvas::drawBitmapRGBoptionalA(Rect dest, Bitmap image)
 
     cairo_surface_t* mySurf = cairo_image_surface_create_for_data(&theTrueNameOfBaal[0],
                                                                   format,
-                                                                  image.width,
-                                                                  image.height,
+                                                                  width,
+                                                                  height,
                                                                   stride);
 
     cairo_save(myCai);
     clip();
 
     //Does this need to be offset by .5?
-    cairo_rectangle(myCai, dest.c.x, dest.c.y, dest.d.w, dest.d.h);
-    cairo_set_source_surface(myCai, mySurf, dest.c.x, dest.c.y);
-
-    //Cram the little fucker in there.
-    cairo_scale(myCai,
-                dest.d.w  / image.width,
-                dest.d.h  / image.height);
+    Coords trueDest = dest + offset;
+    cairo_rectangle(myCai, trueDest.x, trueDest.y, width, height);
+    cairo_set_source_surface(myCai, mySurf, trueDest.x, trueDest.y);
 
 
     cairo_fill(myCai);
 
     cairo_restore(myCai);
     cairo_surface_destroy(mySurf);
+
 }
 
 void CairoCanvas::flush()
@@ -214,7 +210,6 @@ Bitmap CairoCanvas::getBitmap()
 
     return bitmap;
 }
-
 
 
 }//IVD

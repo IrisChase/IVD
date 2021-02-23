@@ -159,7 +159,7 @@ public:
     //This just defines collision order
     //Call "process_collision_point_for_child
     // for all children
-    virtual void bubble_children() = 0;
+    virtual void bubble_children() {}
 };
 
 class UserWidget : public UserLayout
@@ -203,6 +203,24 @@ public:
     Canvas(IVD_Canvas* internalCanvas):
         internalCanvas(internalCanvas)
     {}
+
+
+    virtual void drawBitmapRGBoptionalA(Coords dest,
+                                        int width,
+                                        int height,
+                                        int stride,
+                                        int channels,
+                                        unsigned char* data)
+    {
+        IVD_canvas_draw_image(internalCanvas,
+                              dest.x,
+                              dest.y,
+                              width,
+                              height,
+                              stride,
+                              channels,
+                              data);
+    }
 
     //Image and font are the only things that aren't handled by
     // the regular thangs

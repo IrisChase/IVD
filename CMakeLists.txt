@@ -1,16 +1,16 @@
-# Copyright 2020 Iris Chase
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
+#Copyright 2021 Iris Chase
 #
-#       http://www.apache.org/licenses/LICENSE-2.0
+#Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
 #
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
 cmake_minimum_required(VERSION 3.12)
 
@@ -81,21 +81,12 @@ src/widget.h
 
 src/shaping/line.h
 
-src/material/fallbackparagraphmaterial.cpp
-src/material/fallbackparagraphmaterial.h
-src/material/inlinelayoutmaterial.h
-src/material/inlinelayoutmaterial.cpp
-src/material/textrunmaterial.h
-src/material/textrunmaterial.cpp
-src/material/imagematerial.h
-src/material/imagematerial.cpp
-
 src/widgets/boxlayout.h
 src/widgets/boxlayout.cpp
 src/widgets/stacklayout.h
 src/widgets/stacklayout.cpp
-
-src/allmaterials.h
+src/widgets/image.h
+src/widgets/image.cpp
 
 src/specific_driver_sdl/cairocanvas.cpp
 src/specific_driver_sdl/cairocanvas.h
@@ -196,14 +187,6 @@ target_link_libraries(ivdruntime PRIVATE ivd)
 add_executable(ivdserializingcompiler src/tests/serializingcompiler.cpp)
 target_include_directories(ivdserializingcompiler PRIVATE src contrib)
 target_link_libraries(ivdserializingcompiler PRIVATE ivd)
-
-add_executable(ivdmodeltests
-    src/tests/modeltests.cpp
-    src/tests/catch2testmain.cpp
-    src/tests/linkedlist.cpp
-    src/tests/nestedmodels.cpp)
-target_include_directories(ivdmodeltests PRIVATE src contrib)
-target_link_libraries(ivdmodeltests PRIVATE ivd)
 
 
 

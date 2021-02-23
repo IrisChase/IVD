@@ -12,9 +12,11 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "user_include/IVD_cpp.h"
+#include "user_include/cpp/IVD_cpp.h"
 #include <reprodyne.h>
 
+#include "widgets/boxlayout.h"
+#include "widgets/stacklayout.h"
 
 int main(int argc, char** argv)
 {
@@ -49,6 +51,9 @@ int main(int argc, char** argv)
 
     //Run
     IVD::Environment rt;
+    rt.register_layout<IVD::std_widgets::HboxLayout>("hbox");
+    rt.register_layout<IVD::std_widgets::VboxLayout>("vbox");
+    rt.register_layout<IVD::std_widgets::StackLayout>("stack");
     rt.load_IVD_from_file(ivdFile);
     rt.run();
 

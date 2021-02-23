@@ -23,6 +23,8 @@
 namespace IVD
 {
 
+class DisplayItem;
+
 struct Bitmap
 {
     int stride; //Is stride really necessary at this layer of abstraction?
@@ -31,8 +33,6 @@ struct Bitmap
     int channels;
     unsigned char* data;
 };
-
-class DisplayItem;
 
 class Canvas
 {
@@ -43,6 +43,8 @@ protected:
     //The reason is that clips are cumulative, and need to be unwound, and
     // children shouldn't know about parent clips.
     std::vector<Rect> clips;
+
+    Coords offset;
 
     double alpha = 1;
 
@@ -58,6 +60,12 @@ public:
 
     double getAlpha()
     { return alpha; }
+
+    void setOffset(const Coords theOffset)
+    { offset = theOffset; }
+
+    void resetOffset()
+    { offset = Coords(); }
 
 
     virtual void setSize(const Dimens size) = 0;
@@ -77,7 +85,12 @@ public:
                       Angle theAngle) = 0;
     virtual void drawDropShadow(Rect box, int size, Color theColor, Color::AlphaType alpha) = 0;
 
-    virtual void drawBitmapRGBoptionalA(Rect dest, Bitmap image) = 0;
+    virtual void drawBitmapRGBoptionalA(Coords dest,
+                                        int stride,
+                                        int width,
+                                        int height,
+                                        int channels,
+                                        unsigned char* data) = 0;
 
     virtual void drawText(Coords origin, const std::string text, DisplayItem* style) = 0;
     

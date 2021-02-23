@@ -255,4 +255,25 @@ IVD_Element* IVD_widget_get_child_element_for_named_cell(IVD_Environment* enviro
 }
 //--------------------Accessors
 
+void IVD_canvas_draw_image(IVD_Canvas* canvas,
+                           int x,
+                           int y,
+                           int width,
+                           int height,
+                           int stride,
+                           int channels,
+                           unsigned char* data)
+{
+    IVD::Canvas* myCanvas = reinterpret_cast<IVD::Canvas*>(canvas);
+
+    //absolute drawing offset is already set by the
+    // owning DisplayItem, the x,y here are relative
+    myCanvas->drawBitmapRGBoptionalA(IVD::Coords(x,y),
+                                     stride,
+                                     width,
+                                     height,
+                                     channels,
+                                     data);
+}
+
 }//extern "C"

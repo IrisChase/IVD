@@ -37,13 +37,9 @@ int main(int argc, char** argv)
 
     IVD::Environment rt;
 
-    const char* hboxName =  "hbox";
-    const char* vboxName =  "vbox";
-    const char* stackName = "stack";
-
-    rt.register_layout<IVD::std_widgets::HboxLayout>(hboxName);
-    rt.register_layout<IVD::std_widgets::VboxLayout>(vboxName);
-    rt.register_layout<IVD::std_widgets::StackLayout>(stackName);
+    rt.register_layout<IVD::std_widgets::HboxLayout>("hbox");
+    rt.register_layout<IVD::std_widgets::VboxLayout>("vbox");
+    rt.register_layout<IVD::std_widgets::StackLayout>("stack");
 
     const int stat = rt.load_IVD_from_file(path.c_str());
 

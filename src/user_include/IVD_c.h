@@ -148,6 +148,15 @@ IVD_Element* IVD_widget_get_child_element_for_named_cell(IVD_Environment* enviro
 
 //void IVD_draw_X(IVD_Canvas*, ...); //canvas cursor is already set to the correct offset.
 
+void IVD_canvas_draw_image(IVD_Canvas*,
+                           int x,
+                           int y,
+                           int width,
+                           int height,
+                           int stride,
+                           int channels,
+                           unsigned char* data);
+
 //------------------------------------------------------------------------------------------------------Style
 IVD_Style* IVD_create_style(const IVD_Environment* theEnv, const char* className);
 void IVD_destroy_style(const IVD_Environment* theEnv, IVD_Style* style);

@@ -365,9 +365,11 @@ void DisplayItem::render()
     if(myWidget.isSet() && myWidget.isDrawable())
     {
         theCanvas->pushClip(contentClip);
+        theCanvas->setOffset(contentClip.c);
 
         myWidget.draw(myWidget.isLayout() ? nullptr : theCanvas);
 
+        theCanvas->resetOffset();
         theCanvas->popClip(); //contentClip
     }
 
