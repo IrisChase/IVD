@@ -399,7 +399,7 @@ void DisplayItem::updateHover()
         // because layouts define all that stuff
 
         //Now we handle our own
-        if(!theStateManager->checkState(StateKey(States::Item::HoverExclusive, this)))
+        if(!theStateManager->checkAny(StateKey(States::Item::HoverExclusive))) //horribly inefficient
             theStateManager->mutateIfObserved(StateKey(States::Item::HoverExclusive, this), true);
 
         theStateManager->mutateIfObserved(StateKey(States::Item::HoverInclusive, this), true);

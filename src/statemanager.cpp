@@ -152,6 +152,16 @@ void StateManager::insertVirtualState(VirtualStateKey vskey)
     }
 }
 
+bool StateManager::checkAny(const StateKey key)
+{
+    for(auto range : states.at(key.identity))
+    {
+        if(range.second.check())
+            return true;
+    }
+    return false;
+}
+
 bool StateManager::mutateIfObserved(const StateKey key, const bool active)
 {
     auto state = findState(key);

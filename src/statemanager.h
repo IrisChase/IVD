@@ -127,6 +127,8 @@ public:
         return state->check();
     }
 
+    bool checkAny(const StateKey key);
+
     uint64_t getStamp(const StateKey key)
     {
         State* state = findState(key);
