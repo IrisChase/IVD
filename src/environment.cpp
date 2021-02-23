@@ -490,6 +490,13 @@ void Environment::destroyWidget(IVD_Widget* widget)
 {
     DisplayItem* item = userOwnedWidgets.at(widget);
     userOwnedWidgets.erase(widget);
+
+    if(widgetOwnedDisplayItems.count(widget))
+    {
+        for(DisplayItem* item : widgetOwnedDisplayItems.at(widget))
+            destroyDisplayItem(item);
+    }
+
     markAsBadGeometry(item); //okayyyy is this safe AT ALL?? With models there was a comment about root windows XXX
     destroyDisplayItem(item); //Calls the dtor in the blueprints.
     //Unlike construction, child destruction should be straight forward.
