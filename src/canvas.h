@@ -36,9 +36,6 @@ class DisplayItem;
 
 class Canvas
 {
-    Coords offset;
-
-
 protected:
     //Okay so I promise this is for a real reason and not because I'm too lazy
     // to add clips this to all the drawing functions, which theoretically
@@ -55,12 +52,6 @@ public:
 
     void popClip()
     { clips.pop_back(); }
-
-    void setOffset(const Coords theOffset)
-    { offset = theOffset; }
-
-    Coords getOffset()
-    { return offset; }
 
     void setAlpha(const double theAlpha)
     { alpha = theAlpha; }

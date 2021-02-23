@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "IVD_geometry.h"
 
 namespace IVD
@@ -28,6 +29,25 @@ public:
         allowedShrinkVertical   = *IVD_geoprop_shrink_vertical(other);
 
         proposedDimensions = IVD_geoprop_proposed_space(other);
+    }
+
+    std::unique_ptr<IVD_GeometryProposal, void(*)(IVD_GeometryProposal*)> createSmartPointerProp()
+    {
+        auto managedProp = std::unique_ptr<IVD_GeometryProposal, void(*)(IVD_GeometryProposal*)>
+                (IVD_geoprop_alloc(), IVD_geoprop_free);
+
+        auto propPointer = managedProp.get();
+        *IVD_geoprop_expand_horizontal(propPointer) = allowedExpandHorizontal;
+        *IVD_geoprop_expand_vertical(propPointer)   = allowedExpandVertical;
+
+        *IVD_geoprop_shrink_horizontal(propPointer) = allowedShrinkHorizontal;
+        *IVD_geoprop_shrink_vertical(propPointer)   = allowedShrinkVertical;
+
+        IVD_Dimens* proposed = IVD_geoprop_proposed_space(propPointer);
+        *IVD_dimens_h(proposed) = proposedDimensions.h;
+        *IVD_dimens_w(proposed) = proposedDimensions.w;
+
+        return std::move(managedProp);
     }
 
     Dimens proposedDimensions;

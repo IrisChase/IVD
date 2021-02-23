@@ -37,6 +37,7 @@ class DisplayItem
     const int elementStamp;
     Element* myElem;
     Environment* myEnv;
+    StateManager* theStateManager;
     DisplayItem* parent;
 
     const ValueKeyPath elementPath;
@@ -48,10 +49,20 @@ class DisplayItem
     //Cell is the actual box we want, adjusted for margins?
     //Viewport is the space we have to position in.
     bool compliantGeometry = false;
-    Rect myCellRect;
-    Rect myViewportRect; //We need the viewport for the clip
+    Dimens myCellDimens;
+    Dimens myViewportDimens; //We need the viewport for the clip
+
+    Coords relativeViewportOffset; //Relative to parent
+    Coords relativeCellOffset; //Relative to viewport
+
+    //These are very invalid during shaping
+    Coords absoluteViewportOffset;
+    Coords absoluteCellOffset;
+
 
     WidgetWrapper myWidget;
+
+    Canvas* theCanvas = nullptr;
 
     std::set<DisplayItem*> children;
 
@@ -79,6 +90,7 @@ class DisplayItem
 public:
     DisplayItem(Element* elem,
                 Environment* theEnv,
+                StateManager* theStateManager,
                 const ReferenceAttributeSet& theDefaultState,
                 const ValueKeyPath &elemPath,
                 const int elementStamp):
@@ -88,6 +100,7 @@ public:
         elementPath(elemPath),
         elementStamp(elementStamp),
         defaultState(theDefaultState),
+        theStateManager(theStateManager),
         myAttrs(this)
     {
         reprodyne_open_scope(this);
@@ -107,6 +120,9 @@ public:
 
     IVD_Widget* getWidget()
     { return myWidget.get(); }
+
+    void setCanvas(Canvas* uhTheCanvas)
+    { theCanvas = uhTheCanvas; }
 
     void reactToTrigger(const std::string trigg)
     { myWidget.handleTrigger(trigg); }
@@ -270,33 +286,34 @@ public:
 
     std::optional<FillPrecedence> filterFillPrecedenceForAngle(const Angle theAngle);
 
-    FillPrecedence getFillPrecedenceForAngle(const Angle theAngle);
+    void setOffset(const Coords offset)
+    { relativeViewportOffset = offset; }
 
-    Rect getViewport()
-    { return myViewportRect; }
-
-    Rect getCell()
-    { return myCellRect; }
+    Dimens getViewportDimens() const
+    { return myViewportDimens; }
 
     FillPrecedence computerFillPrecedenceForAngle(const Angle theAngle);
     void shape(const GeometryProposal officialProposal);
     Dimens shapeDrawingArea(const GeometryProposal officalProposal);
 
-    void setOffset(const Coords offset)
-    { myViewportRect.c = offset; }
+    //This figures the absolute offset for the viewport, not the cell!
+    //The relative offset for the viewport, is the offset relative to the parent
+    // layout.
+    void computerAbsoluteOffsets(const Coords parentViewportOffset);
 
-    void render(Canvas* theCanvas, const Coords offset);
+    //Canvas should always be set before call to render
+    void render();
 
-    void updateHover(StateManager* theStateManager, const Coords point);
+    void updateHover();
 
     //I wish the reference for the container could be const,
     // without that propogating to the pointers...
     const std::set<DisplayItem*>& getChildren()
     { return children; }
 
-    std::vector<IVD_Widget*> getChildWidgetInStampOrder();
+    std::vector<IVD_Element*> getChildWidgetInStampOrder();
 
-    IVD_Widget* getChildWidgetForNamedCell(const std::string name);
+    IVD_Element* getChildElementForNamedCell(const std::string name);
 
 
     const int childCount()

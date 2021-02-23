@@ -34,7 +34,7 @@ struct IVD_Coords;
 struct IVD_Rect;
 struct IVD_GeometryProposal;
 struct IVD_Style;
-//struct IVD_Element; // superceded by Widget
+struct IVD_Element;
 struct IVD_Canvas;
 
 //----------------------------------------------------------------------------------Function pointer typedefs
@@ -67,13 +67,14 @@ void IVD_environment_register_widget(IVD_Environment *environment, const char* n
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
                                      IVD_Dimens* (*getSpace)(IVD_Widget *), //canbe null
                                      int (*detectCollisionPoint)(IVD_Widget *, IVD_Coords *), //canbe null
-                                     void (*distributeCollisionPoint)(IVD_Widget*, IVD_Coords*),
+                                     void (*distributeCollisionPoint)(IVD_Widget*),
                                      void (*triggerHandler)(IVD_Widget*, const char*));
 
 //IVD manages widget lifetimes so they can be "deleted later"
 IVD_Widget* IVD_environment_widget_create(IVD_Environment*, const char* name, IVD_Widget* parent);
-IVD_Widget* IVD_environment_widget_create_from_class(IVD_Environment*, const char* className, IVD_Widget* parent);
+IVD_Element* IVD_environment_create_element_from_class(IVD_Environment*, const char* className, IVD_Widget* parent);
 void IVD_environment_widget_destroy(IVD_Environment*, IVD_Widget*);
+void IVD_environment_element_destroy(IVD_Environment*, IVD_Widget* parent, IVD_Element*); //Seems like this could do some real damage...
 
 
 void IVD_environment_register_layout(IVD_Environment* environment,
@@ -84,7 +85,7 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
                                      IVD_Dimens* (*getSpace)(IVD_Widget *),
-                                     void (*distributeCollisionPoint)(IVD_Widget *, IVD_Coords *));
+                                     void (*distributeCollisionPoint)(IVD_Widget*));
 
 
 //Register multiple types?
@@ -130,19 +131,20 @@ int IVD_geoprop_verify_compliance(IVD_GeometryProposal* prop, IVD_Dimens* space)
 void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Dimens* space);
 
 
-//-----------------------------------------------------------------------------------------------------Widget
-IVD_Dimens* IVD_widget_get_dimens(const IVD_Widget*);
-int IVD_get_fill_precedence(const IVD_Widget*, int); //Angle -> FillPrecedence
+//----------------------------------------------------------------------------------------------------Element
+IVD_Dimens* IVD_element_get_dimens(const IVD_Element*);
+int IVD_element_get_fill_precedence(IVD_Element*, int angle); //Angle -> FillPrecedence
 
-void IVD_widget_shape(IVD_Widget*, const IVD_GeometryProposal*);
-void IVD_widget_set_offset(IVD_Widget*, const IVD_Coords*);
+void IVD_element_shape(IVD_Element*, IVD_GeometryProposal*);
+void IVD_element_set_offset(IVD_Element*, IVD_Coords*);
 
-void IVD_widget_draw(IVD_Environment*, IVD_Widget*);
-void IVD_widget_process_collision_point(IVD_Environment*, IVD_Widget*, IVD_Coords*);
+void IVD_element_draw(IVD_Element*);
+void IVD_element_bubble(IVD_Element*);
 
-void IVD_widget_get_children(IVD_Environment *environment, IVD_Widget* parent, IVD_Widget*** result, int* size);
+IVD_Element* IVD_widget_get_underlying_element(IVD_Environment*, IVD_Widget*);
 
-IVD_Widget* IVD_widget_get_child_for_named_cell(IVD_Environment* environment, IVD_Widget* parent, const char* name);
+void IVD_widget_get_child_elements(IVD_Environment*, IVD_Widget*, IVD_Element*** result, int* size);
+IVD_Element* IVD_widget_get_child_element_for_named_cell(IVD_Environment* environment, IVD_Widget*, const char* name);
 
 //void IVD_draw_X(IVD_Canvas*, ...); //canvas cursor is already set to the correct offset.
 

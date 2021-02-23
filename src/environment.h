@@ -60,6 +60,8 @@ class Environment
 
     std::map<IVD_Widget*, DisplayItem*> userOwnedWidgets;
 
+    std::map<IVD_Widget*, std::set<DisplayItem*>> widgetOwnedDisplayItems;
+
     //This is for tracking items that need recomputing.
     std::set<DisplayItem*> itemsWithChangedAttributeSets;
 
@@ -113,14 +115,15 @@ public:
     { layoutBlueprints[name] = blueprints; }
 
     IVD_Widget* createWidget(const std::string name, IVD_Widget* parent);
-    IVD_Widget* createWidgetFromClass(const std::string className, IVD_Widget* parent);
+    IVD_Element* createIVDelementFromClass(const std::string className, IVD_Widget* parent);
 
     void destroyWidget(IVD_Widget* widget);
+    void destroyIVDelement(IVD_Widget* parent, IVD_Element* elem);
 
-    void drawWidget(IVD_Widget* widget);
-    void distributeCollisionPointOnWidget(IVD_Widget* widget, const Coords coords);
+    DisplayItem* getUnderlyingDisplayItemForWidget(IVD_Widget* widget)
+    { return userOwnedWidgets.at(widget); }
 
-    void getWidgetChildren(IVD_Widget*, IVD_Widget*** result, int* size);
+    Coords getMouseOffsetRelativeToWindow();
 
     IVD_Widget* getChildWidgetForNamedCell(IVD_Widget* parent, const std::string name);
 

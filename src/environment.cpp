@@ -97,6 +97,7 @@ DisplayItem* Environment::setupNewDisplayItem(Element* elem)
         std::unique_ptr<DisplayItem> itemUniquePtr =
             std::make_unique<DisplayItem>(elem,
                                           this,
+                                          &myStateManager,
                                           elem->getDefaultAttr(),
                                           elem->getPath(),
                                           elem->getElementStamp());
@@ -328,8 +329,11 @@ void Environment::updateHover()
     DisplayItem* root = myDriver->getWindowItemWithMouseFocus();
     if(!root) return;
 
-    root->updateHover(&myStateManager, myDriver->getMousePointRelativeToWindow());
+    root->updateHover();
 }
+
+Coords Environment::getMouseOffsetRelativeToWindow()
+{ return myDriver->getMousePointRelativeToWindow(); }
 
 void Environment::run()
 {
@@ -467,33 +471,19 @@ IVD_Widget* Environment::createWidget(const std::string name, IVD_Widget* parent
     deferredPositioning.push_back({item, parent});
 }
 
-IVD_Widget* Environment::createWidgetFromClass(const std::string className, IVD_Widget* parent)
+IVD_Element* Environment::createIVDelementFromClass(const std::string className, IVD_Widget* parent)
 {
     Element* classElement = myComp.getElementForClass(className);
-    if(!classElement)
+    if(!classElement || !parent)
     {
         //todo runtime error
         return nullptr;
     }
 
     DisplayItem* item = setupNewDisplayItem(classElement);
-    //IVD_Widget* widget = ; //Need special blueprints for blank widgets...
-    //ORRRRR
-    //WE COULD BE NAUGHTY
-    //REAL NAUGHTY
-    //WHEW
-    // AND JUST USE THE ITEM POINTER BECAUSE ALL WE NEED IS A WAY TO LOOK
-    // THE ITEM BACK UP ANYWAY. WE DON'T ACTUALLY NEED A WIDGET HERE
-    //Widgets are just opaque things that can be anything anyway, and in
-    // this case we kind of own them soo
-
-    //DRUNK WE POWEREEEEEE
-    IVD_Widget* widget = reinterpret_cast<IVD_Widget*>(item);
-    userOwnedWidgets[widget] = item; //YO DAWG I HERD U LIKE YOURSELF
     deferredPositioning.push_back({item, parent});
 
-    //THIS ONLY WORKS BECAUSE WE DON'T ACTUALLY SETUP A WIDGET ON DisplayItem*
-    //!!!!!!!
+    return reinterpret_cast<IVD_Element*>(item);
 }
 
 void Environment::destroyWidget(IVD_Widget* widget)
@@ -505,25 +495,19 @@ void Environment::destroyWidget(IVD_Widget* widget)
     //Unlike construction, child destruction should be straight forward.
 }
 
-void Environment::distributeCollisionPointOnWidget(IVD_Widget* widget, const Coords coords)
+void Environment::destroyIVDelement(IVD_Widget* parent, IVD_Element* elem)
 {
-    userOwnedWidgets.at(widget)->updateHover(&myStateManager, coords);
-}
+    if(!parent)
+    {
+        //todo
+        std::terminate(); //HOLD IT RIGHT THERE
+    }
 
-void Environment::getWidgetChildren(IVD_Widget* widget, IVD_Widget*** result, int* size)
-{
-    DisplayItem* item = userOwnedWidgets.at(widget);
-    thread_local static std::vector<IVD_Widget*> children; //fucking sue me
-    children = item->getChildWidgetInStampOrder();
+    DisplayItem* item = reinterpret_cast<DisplayItem*>(elem);
+    widgetOwnedDisplayItems.at(parent).erase(item);
 
-    *result = &children[0];
-    *size = children.size();
-}
-
-IVD_Widget* Environment::getChildWidgetForNamedCell(IVD_Widget* parent, const std::string name)
-{
-    DisplayItem* item = userOwnedWidgets.at(parent);
-    return item->getChildWidgetForNamedCell(name);
+    markAsBadGeometry(item);
+    destroyDisplayItem(item);
 }
 
 

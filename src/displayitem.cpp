@@ -164,7 +164,7 @@ FillPrecedence DisplayItem::returnGreedyIFEVENONECHILDBLINKS(const Angle theAngl
 
     auto pred = [theAngle](DisplayItem* child)
     {
-        return child->getFillPrecedenceForAngle(theAngle) == FillPrecedence::Greedy;
+        return child->computerFillPrecedenceForAngle(theAngle) == FillPrecedence::Greedy;
     };
     return std::any_of(children.begin(), children.end(), pred) ? FillPrecedence::Greedy
                                                                : FillPrecedence::Shrinky;
@@ -294,12 +294,12 @@ void DisplayItem::shape(const GeometryProposal officialProposal)
 
     const Dimens proposedCellSpace = shapeDrawingArea(revisedProposal) + getReservedDimens();
 
-    myCellRect.d = proposedCellSpace;
-    myViewportRect.d = officialProposal.roundConflicts(proposedCellSpace);
-    compliantGeometry = officialProposal.verifyCompliance(myCellRect.d);
+    myCellDimens = proposedCellSpace;
+    myViewportDimens = officialProposal.roundConflicts(proposedCellSpace);
+    compliantGeometry = officialProposal.verifyCompliance(myCellDimens);
 
     //Cell alignment
-    myCellRect.c = getCellAlignmentOffsetMindingReserved(myCellRect.d, myViewportRect.d);
+    relativeCellOffset = getCellAlignmentOffsetMindingReserved(myCellDimens, myViewportDimens);
 }
 
 Dimens DisplayItem::shapeDrawingArea(const GeometryProposal officalProposal)
@@ -312,23 +312,20 @@ Dimens DisplayItem::shapeDrawingArea(const GeometryProposal officalProposal)
     else return officalProposal.proposedDimensions;
 }
 
-void DisplayItem::render(Canvas *theCanvas, const Coords offset)
+void DisplayItem::computerAbsoluteOffsets(const Coords parentViewportOffset)
 {
-    const Rect viewportClip = [&]()
-    {
-        Rect clip = myViewportRect;
-        clip.c += offset;
-        return clip;
-    }();
+    absoluteViewportOffset = parentViewportOffset + relativeViewportOffset;
+    absoluteCellOffset = absoluteViewportOffset + relativeCellOffset;
 
+    for(DisplayItem* child : children)
+        child->computerAbsoluteOffsets(absoluteViewportOffset);
+}
+
+void DisplayItem::render()
+{
+    const Rect viewportClip(absoluteViewportOffset, myViewportDimens);
     //Cell offset already takes margins into account
-    const Rect cellClip = [&]()
-    {
-        Rect clip = myCellRect;
-        clip.c += offset;
-        return clip;
-    }();
-
+    const Rect cellClip(absoluteCellOffset, myCellDimens);
     const Rect borderLessCell = [&]() -> Rect
     {
         Rect clip = cellClip;
@@ -354,7 +351,7 @@ void DisplayItem::render(Canvas *theCanvas, const Coords offset)
 
     //Draw boxeee
     {
-        //>Draw borders<
+        //--->Draw borders<---
 
         theCanvas->pushClip(borderLessCell);
 
@@ -369,12 +366,8 @@ void DisplayItem::render(Canvas *theCanvas, const Coords offset)
     {
         theCanvas->pushClip(contentClip);
 
-        const Coords savedOffset = theCanvas->getOffset();
-        theCanvas->setOffset(savedOffset + contentClip.c);
-
         myWidget.draw(myWidget.isLayout() ? nullptr : theCanvas);
 
-        theCanvas->setOffset(savedOffset);
         theCanvas->popClip(); //contentClip
     }
 
@@ -383,19 +376,21 @@ void DisplayItem::render(Canvas *theCanvas, const Coords offset)
     theCanvas->setAlpha(savedAlpha); //restored alpha :)
 }
 
-void DisplayItem::updateHover(StateManager* theStateManager, const Coords point)
+void DisplayItem::updateHover()
 {
-    if(myCellRect.checkCollision(point))
+    const Coords point = myEnv->getMouseOffsetRelativeToWindow();
+
+    if(Rect(absoluteCellOffset, myCellDimens).checkCollision(point))
     {
         if(myWidget.isSet())
         {
-            const Coords relativePoint = myCellRect.c - point;
-            myWidget.distributeCollisionPoints(relativePoint);
+            myWidget.distributeCollisionPoints();
 
             //Should this have direct integration or just let
             // the widget do state stuff? I think the latter...
-            //So... Why does it have a return value
-            myWidget.detectCollisionPoint(point); //Rename to "handle"?
+            //So... Why does it have a return value TODO
+            const Coords relativePoint = point - absoluteCellOffset + getReservedInnerPaddingDimens();
+            myWidget.detectCollisionPoint(relativePoint); //Rename to "handle"?
         }
         //else without a layout/widget we just assume there's no rules for child collision
         // because layouts define all that stuff
@@ -408,15 +403,11 @@ void DisplayItem::updateHover(StateManager* theStateManager, const Coords point)
     }
 }
 
-std::vector<IVD_Widget*> DisplayItem::getChildWidgetInStampOrder()
+std::vector<IVD_Element*> DisplayItem::getChildWidgetInStampOrder()
 {
-
     std::vector<DisplayItem*> sorted;
     for(DisplayItem* child : children)
-    {
-        assert(child->myWidget.isSet());
-        sorted.push_back(child->myWidget.get());
-    }
+        sorted.push_back(child);
 
     auto compareStamp = [&](DisplayItem* left, DisplayItem* right)
     {
@@ -459,24 +450,15 @@ std::vector<IVD_Widget*> DisplayItem::getChildWidgetInStampOrder()
     //Then do a special "first"/"last" reorder if you want that feature
     // back for whatever reason.
 
-    std::vector<IVD_Widget*> result;
+    std::vector<IVD_Element*> result;
 
     for(DisplayItem* child : sorted)
-    {
-        if(!child->myWidget.isSet()) continue;
-
-        //Is it a major oversight that elements without "widgets"
-        // don't count and are not returned? Maybe all displayitems
-        // should have widgets by default...
-        //Also don't like that widgets can change due to state changes...
-        //As far as layouts are concerned :/
-        result.push_back(child->getWidget());
-    }
+        result.push_back(reinterpret_cast<IVD_Element*>(child));
 
     return result;
 }
 
-IVD_Widget* DisplayItem::getChildWidgetForNamedCell(const std::string name)
+IVD_Element* DisplayItem::getChildElementForNamedCell(const std::string name)
 {
     for(DisplayItem* child : children)
     {
@@ -485,7 +467,7 @@ IVD_Widget* DisplayItem::getChildWidgetForNamedCell(const std::string name)
         if(!optionalCellName) continue;
 
         if(*optionalCellName == name)
-            return child->getWidget();
+            return reinterpret_cast<IVD_Element*>(child);
     }
 
     return nullptr;
