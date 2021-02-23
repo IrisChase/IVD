@@ -14,8 +14,10 @@
 
 #include <iostream>
 
-#include "user_include/IVD_cpp.h"
+#include "user_include/cpp/IVD_cpp.h"
 
+#include "widgets/boxlayout.h"
+#include "widgets/stacklayout.h"
 
 int main(int argc, char** argv)
 {
@@ -34,6 +36,15 @@ int main(int argc, char** argv)
     const std::string path = argv[1];
 
     IVD::Environment rt;
+
+    const char* hboxName =  "hbox";
+    const char* vboxName =  "vbox";
+    const char* stackName = "stack";
+
+    rt.register_layout<IVD::std_widgets::HboxLayout>(hboxName);
+    rt.register_layout<IVD::std_widgets::VboxLayout>(vboxName);
+    rt.register_layout<IVD::std_widgets::StackLayout>(stackName);
+
     const int stat = rt.load_IVD_from_file(path.c_str());
 
     if(stat == IVD_STATUS_SUCCESS)

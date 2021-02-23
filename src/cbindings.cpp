@@ -67,9 +67,9 @@ void IVD_environment_register_widget(IVD_Environment* environment,
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),//canbe null
                                      IVD_Dimens* (*getSpace)(IVD_Widget*),
                                      int (*detectCollisionPoint)(IVD_Widget*, IVD_Coords*), //canbe null
-                                     void (*distributeCollisionPoint)(IVD_Widget*),
+                                     void (*bubbler)(IVD_Widget*),
                                      void (*triggerHandler)(IVD_Widget*, const char*))
-{ castEnv(environment)->registerWidgetBlueprints(name, {name, true, ctor, dtor, getFillPrecedence, shape, getSpace, draw, distributeCollisionPoint, detectCollisionPoint, triggerHandler}); }
+{ castEnv(environment)->registerWidgetBlueprints(name, {name, true, ctor, dtor, getFillPrecedence, shape, getSpace, draw, bubbler, detectCollisionPoint, triggerHandler}); }
 
 //IVD manages widget lifetimes so they can be "deleted later"
 IVD_Widget* IVD_environment_widget_create(IVD_Environment* environment, const char* name, IVD_Widget* parent)
@@ -93,8 +93,8 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
                                      IVD_Dimens* (*getSpace)(IVD_Widget*),
-                                     void (*distributeCollisionPoint)(IVD_Widget*))
-{ castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, getSpace, draw, distributeCollisionPoint, nullptr, nullptr}); }
+                                     void (*bubbler)(IVD_Widget*))
+{ castEnv(environment)->registerLayoutBlueprints(name, {name, false, ctor, dtor, getFillPrecedence, shape, getSpace, draw, bubbler, nullptr, nullptr}); }
 
 
 //Register multiple types?

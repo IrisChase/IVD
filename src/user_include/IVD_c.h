@@ -85,7 +85,7 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      void (*shape)(IVD_Widget*, IVD_GeometryProposal*),
                                      void (*draw)(IVD_Widget*, IVD_Canvas*),
                                      IVD_Dimens* (*getSpace)(IVD_Widget *),
-                                     void (*distributeCollisionPoint)(IVD_Widget*));
+                                     void (*bubbler)(IVD_Widget*));
 
 
 //Register multiple types?

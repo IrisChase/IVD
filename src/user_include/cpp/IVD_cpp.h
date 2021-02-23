@@ -239,7 +239,7 @@ IVD_Dimens* userWidgetGetDimensHook(IVD_Widget* widget)
     return result;
 }
 
-void userWidgetDistributeCollisionPoint(IVD_Widget* widget)
+void userWidgetBubble(IVD_Widget* widget)
 { cast(widget)->bubble_children(); }
 int userWidgetDetectCollisionCoordsHook(IVD_Widget* widget, IVD_Coords* coords)
 { return cast(widget)->detect_collision_point(Coords(coords)); }
@@ -281,7 +281,7 @@ public:
                                         Internals::userWidgetDrawHook,
                                         Internals::userWidgetGetDimensHook,
                                         Internals::userWidgetDetectCollisionCoordsHook,
-                                        Internals::userWidgetDistributeCollisionPoint,
+                                        Internals::userWidgetBubble,
                                         Internals::userWidgetTriggerHook);
     }
 
@@ -301,7 +301,7 @@ public:
                                         Internals::userWidgetShapeHook,
                                         Internals::userWidgetDrawHook,
                                         Internals::userWidgetGetDimensHook,
-                                        Internals::userWidgetDistributeCollisionPoint);
+                                        Internals::userWidgetBubble);
     }
 
     template<typename T>

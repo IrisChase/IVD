@@ -384,7 +384,7 @@ void DisplayItem::updateHover()
     {
         if(myWidget.isSet())
         {
-            myWidget.distributeCollisionPoints();
+            myWidget.bubble();
 
             //Should this have direct integration or just let
             // the widget do state stuff? I think the latter...
