@@ -22,18 +22,36 @@
 //I'm so sorry.
 
 
-extern "C"
-{
-#include "user_include/IVD_c.h"
-
-
-//--------------------------------------------------------------------------------------Environment
 static IVD::Environment* castEnv(IVD_Environment* environment)
 { return reinterpret_cast<IVD::Environment*>(environment); }
 static IVD::WidgetWrapper* castWidget(IVD_Widget* widget)
 { return reinterpret_cast<IVD::WidgetWrapper*>(widget); }
 static IVD_Widget* castWidget(IVD::WidgetWrapper* widget)
 { return reinterpret_cast<IVD_Widget*>(widget); }
+static IVD::Dimens* castDimens(IVD_Dimens* space)
+{ return reinterpret_cast<IVD::Dimens*>(space); }
+
+static IVD_Dimens* castDimens(IVD::Dimens* space)
+{ return reinterpret_cast<IVD_Dimens*>(space); }
+static IVD::Coords* castPoint(IVD_Coords* point)
+{ return reinterpret_cast<IVD::Coords*>(point); }
+
+static IVD_Coords* castPoint(IVD::Coords* point)
+{ return reinterpret_cast<IVD_Coords*>(point); }
+
+static IVD::DisplayItem* cast(IVD_Element* elem)
+{ return reinterpret_cast<IVD::DisplayItem*>(elem); }
+
+static const IVD::DisplayItem* cast(const IVD_Element* elem)
+{ return reinterpret_cast<const IVD::DisplayItem*>(elem); }
+
+
+extern "C"
+{
+#include "user_include/IVD_c.h"
+
+
+//--------------------------------------------------------------------------------------Environment
 
 IVD_Environment* IVD_create_environment()
 { return reinterpret_cast<IVD_Environment*>(new IVD::Environment()); }
@@ -110,11 +128,6 @@ void IVD_environment_register_widget_attribute(IVD_Environment*,
 //----------------------------------------------------------------------------------------------Dust Bindings
 
 
-static IVD::Dimens* castDimens(IVD_Dimens* space)
-{ return reinterpret_cast<IVD::Dimens*>(space); }
-
-static IVD_Dimens* castDimens(IVD::Dimens* space)
-{ return reinterpret_cast<IVD_Dimens*>(space); }
 
 IVD_Dimens* IVD_dimens_alloc()
 { return castDimens(new IVD::Dimens()); }
@@ -128,11 +141,6 @@ int* IVD_dimens_h(IVD_Dimens* space)
 { return &castDimens(space)->h; }
 
 
-static IVD::Coords* castPoint(IVD_Coords* point)
-{ return reinterpret_cast<IVD::Coords*>(point); }
-
-static IVD_Coords* castPoint(IVD::Coords* point)
-{ return reinterpret_cast<IVD_Coords*>(point); }
 
 IVD_Coords* IVD_coords_alloc()
 { return castPoint(new IVD::Coords()); }
@@ -197,12 +205,6 @@ void IVD_geoprop_round_conflicts(IVD_GeometryProposal* prop, IVD_Dimens* space)
 { *castDimens(space) = castGeoprop(prop)->roundConflicts(*castDimens(space)); }
 
 //-----------------------------------------------------------------------------------------------------Widget
-static IVD::DisplayItem* cast(IVD_Element* elem)
-{ return reinterpret_cast<IVD::DisplayItem*>(elem); }
-
-static const IVD::DisplayItem* cast(const IVD_Element* elem)
-{ return reinterpret_cast<const IVD::DisplayItem*>(elem); }
-
 IVD_Dimens* IVD_element_get_dimens(const IVD_Element* elem)
 {
     thread_local static IVD::Dimens dimens;

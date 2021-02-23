@@ -19,6 +19,8 @@
 #include "geometry.h"
 #include "valuekey.h"
 
+#include "keywords.h"
+
 #include "irisutils/lexcompare.h"
 
 namespace IVD

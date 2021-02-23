@@ -13,7 +13,6 @@
 //   limitations under the License.
 
 #include "environment.h"
-#include "allmaterials.h"
 #include "displayitem.h"
 #include "states.h"
 #include "defaults.h"

@@ -15,7 +15,7 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include "material.h"
+/*
 
 namespace IVD
 {
@@ -245,5 +245,7 @@ Dimens line(Cont theMaterials, const GeometryProposal proposal, const Angle Adja
 
 }//Shaping
 }//IVD
+
+*/
 
 #endif // LINE_H

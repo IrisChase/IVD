@@ -13,7 +13,6 @@
 //   limitations under the License.
 
 #include "valuekey.h"
-#include "modelitembase.h"
 #include "expression.h"
 
 #include <sstream>

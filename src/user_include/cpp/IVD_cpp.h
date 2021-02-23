@@ -31,13 +31,13 @@ class UserLayout;
 namespace Internals //reference at your own peril
 {
 
-IVD_Widget* cast(UserLayout* widget)
+inline IVD_Widget* cast(UserLayout* widget)
 { return reinterpret_cast<IVD_Widget*>(widget); }
 
-IVD_Widget* cast(UserWidget* widget)
+inline IVD_Widget* cast(UserWidget* widget)
 { return reinterpret_cast<IVD_Widget*>(widget); }
 
-UserWidget* cast(IVD_Widget* widget)
+inline UserWidget* cast(IVD_Widget* widget)
 { return reinterpret_cast<UserWidget*>(widget); }
 
 
@@ -165,7 +165,7 @@ public:
 class UserWidget : public UserLayout
 {
 public:
-    virtual ~UserWidget();
+    virtual ~UserWidget() {}
 
     virtual bool detect_collision_point(const Coords point) { return false; }
     virtual void trigger(const std::string trig) {}
@@ -230,22 +230,22 @@ public:
 namespace Internals
 {
 
-void userWidgetDestructorHook(IVD_Widget* widget)
+inline void userWidgetDestructorHook(IVD_Widget* widget)
 { delete cast(widget); }
 
-int userWidgetGetFillPrecedenceHook(IVD_Widget* widget, const int angle)
+inline int userWidgetGetFillPrecedenceHook(IVD_Widget* widget, const int angle)
 {
     const auto inputAngle = static_cast<Angle>(angle);
     return static_cast<int>(cast(widget)->get_fill_precedence(inputAngle));
 }
 
-void userWidgetShapeHook(IVD_Widget* widget, IVD_GeometryProposal* prop)
+inline void userWidgetShapeHook(IVD_Widget* widget, IVD_GeometryProposal* prop)
 { cast(widget)->shape(GeometryProposal(prop)); }
 
-void userWidgetDrawHook(IVD_Widget* widget, IVD_Canvas* canvas)
+inline void userWidgetDrawHook(IVD_Widget* widget, IVD_Canvas* canvas)
 { cast(widget)->draw(Canvas(canvas)); }
 
-IVD_Dimens* userWidgetGetDimensHook(IVD_Widget* widget)
+inline IVD_Dimens* userWidgetGetDimensHook(IVD_Widget* widget)
 {
     const Dimens dimens = cast(widget)->get_content_dimens();
     //Alloc AFTER in case getDimens throws, although it should be in a try block here anyway...
@@ -257,12 +257,12 @@ IVD_Dimens* userWidgetGetDimensHook(IVD_Widget* widget)
     return result;
 }
 
-void userWidgetBubble(IVD_Widget* widget)
+inline void userWidgetBubble(IVD_Widget* widget)
 { cast(widget)->bubble_children(); }
-int userWidgetDetectCollisionCoordsHook(IVD_Widget* widget, IVD_Coords* coords)
+inline int userWidgetDetectCollisionCoordsHook(IVD_Widget* widget, IVD_Coords* coords)
 { return cast(widget)->detect_collision_point(Coords(coords)); }
 
-void userWidgetTriggerHook(IVD_Widget* widget, const char* trig)
+inline void userWidgetTriggerHook(IVD_Widget* widget, const char* trig)
 { cast(widget)->trigger(trig); }
 
 template<typename T>

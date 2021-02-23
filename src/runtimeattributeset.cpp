@@ -15,7 +15,6 @@
 #include <unordered_set>
 
 #include "runtimeattributeset.h"
-#include "modelitembase.h"
 #include "environment.h"
 
 namespace IVD

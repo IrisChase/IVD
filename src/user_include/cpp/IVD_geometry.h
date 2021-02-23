@@ -19,7 +19,7 @@
 
 #include <sstream>
 #include <ostream>
-#include "irisutils/lexcompare.h"
+#include <tuple>
 
 #include "../IVD_constants_c.h"
 
@@ -111,7 +111,15 @@ struct Coords
 
     std::string generatePrintout() const;
 
-    IRISUTILS_DEFINE_COMP(Coords, x, y)
+    bool operator==(const Coords& other) const
+    { return std::tie(x, y) == std::tie(other.x, other.y); }
+
+    bool operator!=(const Coords& other) const
+    { return *this != other; }
+
+    bool operator<(const Coords& other) const
+    { return std::tie(x, y) < std::tie(other.x, other.y); }
+
 };
 
 struct Dimens
@@ -186,7 +194,14 @@ struct Dimens
 
     std::string generatePrintout() const;
 
-    IRISUTILS_DEFINE_COMP(Dimens, w, h)
+    bool operator==(const Dimens& other) const
+    { return std::tie(w, h) == std::tie(other.w, other.h); }
+
+    bool operator!=(const Dimens& other) const
+    { return *this != other; }
+
+    bool operator<(const Dimens& other) const
+    { return std::tie(w, h) < std::tie(other.w, other.h); }
 };
 
 inline Coords::Coords(const Dimens& theDimens)
@@ -231,7 +246,14 @@ struct Rect
 
     std::string generatePrintout() const;
 
-    IRISUTILS_DEFINE_COMP(Rect, c, d)
+    bool operator==(const Rect& other) const
+    { return std::tie(c, d) == std::tie(other.c, other.d); }
+
+    bool operator!=(const Rect& other) const
+    { return *this != other; }
+
+    bool operator<(const Rect& other) const
+    { return std::tie(c, d) < std::tie(other.c, other.d); }
 };
 
 

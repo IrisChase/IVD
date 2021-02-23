@@ -599,13 +599,6 @@ inline std::vector<KeywordSymbolValuePair> getSymbolValuePairs()
                 {"padding", AttributeKey::Padding},
 
                 //Property values
-                {"vbox", Property::Vbox},
-                {"hbox", Property::Hbox},
-                {"inline", Property::Inline},
-                {"free-layout", Property::FreeLayout},
-                {"stack", Property::StackLayout},
-                {"standard", Property::Standard},
-                {"image-material", Property::ImageMaterial},
 
                 {"adjacent-is-horizontal", Property::AdjacentIsHorizontal},
                 {"adjacent-is-vertical", Property::AdjacentIsVertical},

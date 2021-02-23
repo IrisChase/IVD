@@ -126,9 +126,8 @@ SET(IVD_COMMON_LIBS
   cairo
   harfbuzz
   freetype
-  ${OPENIMAGEIO_LIBRARIES})
+  OpenImageIO)
 
-message(${REPRODYNE_INCLUDE_DIRS})
 
 SET(IVD_INTERNAL_INCLUDES
   src
