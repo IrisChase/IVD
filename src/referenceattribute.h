@@ -11,6 +11,7 @@ struct ReferenceAttribute
 {
     bool active = false;
     bool clear = false;
+    bool stateModifierAttr = false;
 
     std::optional<int> property;
 

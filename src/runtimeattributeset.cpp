@@ -23,21 +23,25 @@ namespace IVD
 
 RuntimeAttributeSet::RuntimeAttributeSet(DisplayItem* context, const ReferenceAttributeSet& initializerSet):
     myContext(context),
-    attr(initializerSet.size(), AnimatableAttribute()),
-    stateChangingAttributes(initializerSet.stateModifierKeys)
+    attrs(initializerSet.size(), AnimatableAttribute())
 {
+    //We only want the initializer set to initialize the state changing attribute set.
+    //Otherwise we just need the attr size
     assert(myContext);
     for(int key = 0; key != initializerSet.size(); ++key)
     {
-        attr.at(key).init(context, key);
-        context->getEnv()->setupEnvironmentCallbacksOnAttributeForKey(&attr.at(key), key);
+        attrs.at(key).init(context, key);
+        context->getEnv()->setupEnvironmentCallbacksOnAttributeForKey(&attrs.at(key), key);
+
+        if(initializerSet.attr[key].stateModifierAttr)
+            stateChangingAttributes.push_back(&attrs.at(key));
     }
 }
 
 void RuntimeAttributeSet::applyToEachAttribute(std::function<void (AnimatableAttribute&)> fun)
 {
     for(int key = 0; key != AttributeKey::AttributeCount; ++key)
-        fun(attr[key]);
+        fun(attrs[key]);
 }
 
 void RuntimeAttributeSet::beginAttributeSetRecompute()
@@ -58,7 +62,7 @@ void RuntimeAttributeSet::mergeIn(const ReferenceAttributeSet& other)
     setModifiers.push_back(&other.setModifiers);
 
     for(int key = 0; key != AttributeKey::AttributeCount; ++key)
-        attr[key].merge(other.attr[key]);
+        attrs[key].merge(other.attr[key]);
 }
 
 void RuntimeAttributeSet::commitAttributeSetRecompute()
@@ -71,13 +75,13 @@ void RuntimeAttributeSet::executeStateChangers()
 {
     //We only update state modifiers every time the attribute set is updated. Not triggers.
     //TODO unclear code...
-    for(KeyType key : stateChangingAttributes)
+    for(auto attr : stateChangingAttributes)
     {
         //Not considered for quick, logical things
         //TODOOOOOOOO
-        if(attr.at(key).thisIsAhackButCheckIfThereIsDelay()) continue;
+        if(attr->thisIsAhackButCheckIfThereIsDelay()) continue;
 
-        attr.at(key).executeChangeAcceptor();
+        attr->executeChangeAcceptor();
     }
 }
 

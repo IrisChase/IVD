@@ -473,12 +473,12 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     };
 
 
+    //Factory function becauseeeeeee it seems to change all the time
     auto allocateElementPrecursor = [&]()
     {
         return ElementPrecursor(getCurrentToken().codePosition,
                                 getFreshElementStamp(),
-                                attributeKeyspaceSize,
-                                stateKeyListTypeSet);
+                                attrKeyToBodyTypeMap.size());
     };
 
 
@@ -591,7 +591,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         {
             const int sym = getCurrentToken().symbol;
 
-            if(!expressionTypeSet.count(sym))
+            if(!attrKeyToBodyTypeMap.at(sym).expression)
                 throw SyntaxError(getCurrentToken(), "Invalid value for key, expected user token or attribute key.");
 
             result.setKey(getLiteralForSymbol(sym));
@@ -1031,7 +1031,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
     auto parseAttributeWithExpressionType = [&](const int key, ReferenceAttribute* attr)
     {
-        if(!expressionTypeSet.count(key)) return false;
+        if(!attrKeyToBodyTypeMap.at(key).expression) return false;
 
         typedef bool lol;
         lol gotem = false;
@@ -1103,7 +1103,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     {
         std::optional<EasePair> optionalResult;
 
-        if(!expressionTypeSet.count(key)) return optionalResult;
+        if(!attrKeyToBodyTypeMap.at(key).expression) return optionalResult;
         if(!matchSymbolSomft(Keyword::EaseIn) && !matchSymbolSomft(Keyword::EaseOut)) return optionalResult;
 
         const int easeType = getCurrentToken().symbol;
@@ -1139,21 +1139,15 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     auto parseAttributeBodyForKey = [&](const int key, ReferenceAttribute* attr)
     {
         const CodePosition startPos = getCurrentToken().codePosition;
-        const bool stateKeyListType         = stateKeyListTypeSet.count(key);
-        const bool singleValueKeyType       = singleScopedValueKeyTypeSet.count(key);
-        const bool userTokenListType        = userTokenListTypeSet.count(key);
-        const bool userTokenType            = userTokenTypeSet.count(key);
-        const bool positionWithinType       = key == AttributeKey::PositionWithin;
-        const bool colorType                = colorTypeSet.count(key);
-        const bool stringLiteralType        = stringLiteralTypeSet.count(key);
-        const bool propertyBodyType         = propertyTypeSet.count(key);
-        const bool expressionType           = expressionTypeSet.count(key);
+
+        const AttributeBodyTypes types = attrKeyToBodyTypeMap.at(key);
 
         auto parseStateKeyListType = [&](const int key, ReferenceAttribute* attr)
         {
-            if(!stateKeyListType) return false;
+            if(!types.stateKeyList) return false;
 
             attr->active = true;
+            attr->stateModifierAttr = true;
 
             attr->keys.push_back(parseScopedValueKeyForStateKey());
             return true;
@@ -1161,7 +1155,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
         auto parseAttributeWithSingleScopedValueKeyType = [&](const int key, ReferenceAttribute* attr)
         {
-            if(!singleValueKeyType) return false;
+            if(!types.singleScopedValueKey) return false;
 
             attr->active = true;
             attr->singleKey = parseScopedValueKeyForExpression();
@@ -1170,7 +1164,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
         auto parseAttributeWithUserTokenListType = [&](const int key, ReferenceAttribute* attr)
         {
-            if(!userTokenListType) return false;
+            if(!types.userTokenList) return false;
             if(!matchSymbolSomft(Keyword::UserToken)) return false;
 
             attr->active = true;
@@ -1182,7 +1176,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
         auto parseAttributeWithUserTokenType = [&](const int key, ReferenceAttribute* attr)
         {
-            if(!userTokenType) return false;
+            if(!types.userToken) return false;
             if(!matchSymbolSomft(Keyword::UserToken)) return false;
 
             attr->active = true;
@@ -1194,7 +1188,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
         auto parsePositionWithinType = [&](const int key, ReferenceAttribute* attr)
         {
-            if(!positionWithinType) return false;
+            if(!types.positionWithin) return false;
 
             attr->active = true;
             attr->singleKey = parseScopedValueKeyForPositionWithin();
@@ -1208,7 +1202,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
         auto parseAttributeWithColorType = [&](const int key, ReferenceAttribute* attr)
         {
-            if(!colorType) return false;
+            if(!types.color) return false;
             if(!matchSymbolSomft(Keyword::ColorLiteral))
             {
                 if(!matchSymbolSomft(Keyword::UserToken)) return false;
@@ -1239,7 +1233,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
         auto parseAttributeWithStringLiteralType = [&](const int key, ReferenceAttribute* attr)
         {
-            if(!stringLiteralType) return false;
+            if(!types.stringLiteral) return false;
             if(!matchSymbolSomft(Keyword::UserString)) return false;
 
             attr->active = true;
@@ -1251,7 +1245,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
         auto parseAttributeWithPropertyType = [&](const int key, ReferenceAttribute* attr)
         {
-            if(!propertyBodyType) return false;
+            if(!types.property) return false;
 
             const int sym = getCurrentToken().symbol;
             //XXXXXXXXXXXX sym not key!!!! XXX
@@ -1296,14 +1290,14 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
                 doneDidIt = true;
             };
 
-            if(stateKeyListType)        additionally("State Key List");
-            if(userTokenListType)       additionally("User Token List");
-            if(userTokenType)           additionally("User Token");
-            if(positionWithinType)      additionally("Position Within Key");
-            if(colorType)               additionally("Color Literal");
-            if(stringLiteralType)       additionally("String Literal");
-            if(propertyBodyType)        additionally("Property");
-            if(expressionType)          additionally("Expression");
+            if(types.stateKeyList)        additionally("State Key List");
+            if(types.userTokenList)       additionally("User Token List");
+            if(types.userToken)           additionally("User Token");
+            if(types.positionWithin)      additionally("Position Within Key");
+            if(types.color)               additionally("Color Literal");
+            if(types.stringLiteral)       additionally("String Literal");
+            if(types.property)            additionally("Property");
+            if(types.expression)          additionally("Expression");
 
             ss << ".";
 
@@ -1390,8 +1384,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     {
         const int key = getCurrentToken().symbol;
 
-        if(!checkSymbolIsNaturalAttributeKey(key) &&
-                !unnaturalAttributetypeSet.count(key))
+        if(!attrKeyToBodyTypeMap.count(key))
             return false;
 
         nextHard();
@@ -1404,7 +1397,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         }
 
-        if(unnaturalAttributetypeSet.count(key))
+        if(attrKeyToBodyTypeMap.at(key).unnatural)
         {
             parseUnnaturalAttributeBody(key, attrs, scope);
             return true;

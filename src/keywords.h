@@ -24,10 +24,11 @@
 #include <map>
 #include <set>
 
+#include "attributebodytypes.h"
+
 namespace IVD
 {
 
-typedef unsigned int KeyType;
 
 namespace AttributeKey
 {
@@ -255,122 +256,80 @@ enum
 
 }//Spec
 
-inline std::set<int> getAttributeExpressionTypeSet()
+inline std::map<KeyType, AttributeBodyTypes> getStandardAttributes()
 {
     using namespace AttributeKey;
-    return {Margins,
-                Padding,
+    //typedef AttributeBodyTypes B;
 
-                FontSize,
+    //Start with T/F but found this more readable.
+    const bool X = true;
+    const bool O = false;
+    //                                               single scoped value key
+    //                                                state key list
+    //                                              token list |
+    //                                              token|  |  |
+    //                                           string  |  |  |  positionWithin
+    //                                       property |  |  |  | unnatural
+    return {//                           expression|  |  |  |  |color|  |
+        //                                   |  |  |  |  |  |  |  |  |  |
+        {Margins,							{X, O, O, O, O, O, O, O, X, O}},
+        {Padding,							{X, O, O, O, O, O, O, O, X, O}},
+        {FontSize,							{X, O, O, O, O, O, O, O, O, O}},
+        {TranslationO,						{X, O, O, O, O, O, O, O, O, O}},
+        {TranslationA,						{X, O, O, O, O, O, O, O, O, O}},
+        {MarginOppOut,						{X, O, O, O, O, O, O, O, O, O}},
+        {MarginOppIn,						{X, O, O, O, O, O, O, O, O, O}},
+        {MarginAdjIn,						{X, O, O, O, O, O, O, O, O, O}},
+        {MarginAdjOut,						{X, O, O, O, O, O, O, O, O, O}},
+        {PaddingOppOut,						{X, O, O, O, O, O, O, O, O, O}},
+        {PaddingOppIn,						{X, O, O, O, O, O, O, O, O, O}},
+        {PaddingAdjIn,						{X, O, O, O, O, O, O, O, O, O}},
+        {PaddingAdjOut,						{X, O, O, O, O, O, O, O, O, O}},
+        {SizeO,								{X, O, O, O, O, O, O, O, O, O}},
+        {SizeA,								{X, O, O, O, O, O, O, O, O, O}},
 
-                TranslationO,
-                TranslationA,
+        {Orientation,						{O, X, O, O, O, O, O, O, O, O}},
+        {WindowState,						{O, X, O, O, O, O, O, O, O, O}},
+        {Visibility,						{O, X, O, O, O, O, O, O, O, O}},
+        {AlignAdjacent,						{O, X, O, O, O, O, O, O, O, O}},
+        {AlignOpposite,						{O, X, O, O, O, O, O, O, O, O}},
+        {OverrideFillPrecedenceAdjacent,	{O, X, O, O, O, O, O, O, O, O}},
+        {OverrideFillPrecedenceOpposite,	{O, X, O, O, O, O, O, O, O, O}},
+        {Justify,							{O, X, O, O, O, O, O, O, O, O}},
+        {WindowSizeStrategy,				{O, X, O, O, O, O, O, O, O, O}},
+        {ImageSizeProperty,					{O, X, O, O, O, O, O, O, O, O}},
+        {Borderless,						{O, X, O, O, O, O, O, O, O, O}},
+        {Resizable,							{O, X, O, O, O, O, O, O, O, O}},
+        {ModelOrder,						{O, X, O, O, O, O, O, O, O, O}},
+        {Font,								{O, X, X, O, O, O, O, O, O, O}},
 
-                MarginOppOut,
-                MarginOppIn,
-                MarginAdjIn,
-                MarginAdjOut,
+        {TitleText,							{O, O, X, O, O, O, X, O, O, O}},
+        {Text,								{O, O, X, O, O, O, X, O, O, O}},
+        {ImagePath,							{O, O, X, O, O, O, O, O, O, O}},
 
-                PaddingOppOut,
-                PaddingOppIn,
-                PaddingAdjIn,
-                PaddingAdjOut,
+        {Layout,							{O, O, O, X, O, O, O, O, O, O}},
+        {Widget,							{O, O, O, X, O, O, O, O, O, O}},
 
-                SizeO,
-                SizeA,
+        {CellNames,							{O, O, O, O, X, O, O, O, O, O}},
+
+        {Triggers,							{O, O, O, O, O, X, O, O, O, O}},
+        {InduceState,						{O, O, O, O, O, X, O, O, O, O}},
+        {BindState,							{O, O, O, O, O, X, O, O, O, O}},
+        {ToggleState,						{O, O, O, O, O, X, O, O, O, O}},
+        {UnsetState,						{O, O, O, O, O, X, O, O, O, O}},
+        {TriggerState,						{O, O, O, O, O, X, O, O, O, O}},
+        {RadioState,						{O, O, O, O, O, X, O, O, O, O}},
+
+        {ElementColor,						{O, O, O, O, O, O, O, X, O, O}},
+        {FontColor,							{O, O, O, O, O, O, O, X, O, O}},
+        {BorderColor,						{O, O, O, O, O, O, O, X, O, O}},
+
+
+
+        {PositionWithin,					{O, O, O, O, O, O, O, O, O, X}},
     };
 }
 
-inline std::set<int> getAttributePropertyTypeSet()
-{
-    using namespace AttributeKey;
-    return {
-        Orientation,
-
-                WindowState,
-                Visibility,
-
-                AlignAdjacent,
-                AlignOpposite,
-
-                OverrideFillPrecedenceAdjacent,
-                OverrideFillPrecedenceOpposite,
-
-                Justify,
-
-                WindowSizeStrategy,
-
-                ImageSizeProperty,
-
-                Borderless,
-                Resizable,
-                ModelOrder,
-                Font,
-    };
-}
-
-inline std::set<int> getAttributeStringLiteralTypeSet()
-{
-    using namespace AttributeKey;
-    return {
-        TitleText,
-                Text,
-                Font,
-                ImagePath,
-    };
-}
-
-inline std::set<int> getAttributeUserTokenTypeSet()
-{
-    using namespace AttributeKey;
-    return {Layout, Widget};
-}
-
-inline std::set<int> getAttributeUserTokenListTypeSet()
-{
-    using namespace AttributeKey;
-    return {CellNames};
-}
-
-//state key list type
-inline std::set<KeyType> getAttributeStateKeyListTypeSet()
-{
-    using namespace AttributeKey;
-    return {
-    Triggers,
-    InduceState,
-    BindState,
-    ToggleState,
-    UnsetState,
-    TriggerState,
-    RadioState,
-    };
-}
-
-inline std::set<int> getAttributeSingleScopedValueKeyType()
-{
-    using namespace AttributeKey;
-    return {TitleText, Text};
-}
-
-inline std::set<int> getAttributeColorTypeSet()
-{
-    using namespace AttributeKey;
-    return {
-    ElementColor,
-    FontColor,
-    BorderColor,
-    };
-}
-
-inline std::set<int> getAttributeUnnaturalTypeSet()
-{
-    using namespace AttributeKey;
-    return {
-        Margins,
-        Padding,
-    };
-}
 
 //Vector because the order is important
 inline std::map<int, std::vector<int>> getNaturalKeysToUnnaturalKeyMap()

@@ -68,6 +68,7 @@ src/referenceattribute.h
 src/referenceattribute.cpp
 src/referenceattributeset.h
 src/referenceattributeset.cpp
+src/attributebodytypes.h
 
 
 src/user_include/IVD_c.h

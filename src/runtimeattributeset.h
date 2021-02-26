@@ -41,9 +41,11 @@ class RuntimeAttributeSet
 
     DisplayItem* myContext;
 
-    std::set<KeyType> stateChangingAttributes;
-    std::vector<AnimatableAttribute> attr;
-    
+    std::vector<AnimatableAttribute> attrs;
+    //These are pointers into attrs, which is initialized to it's
+    // final size so it should never invalidate.
+    std::vector<AnimatableAttribute*> stateChangingAttributes;
+
     const ReferenceAttributeSet::DeclareModifierMap* declareModifiers;
     std::vector<const ReferenceAttributeSet::SetModifierMap*> setModifiers;
 
@@ -65,37 +67,37 @@ public:
     void setDeclaredInt(const ValueKey key, const double proposed);
 
     bool checkActive(const int key)
-    { return attr[key].checkActive(); }
+    { return attrs[key].checkActive(); }
 
     std::optional<double> getInt(const int key) const
-    { return attr[key].getValue(); }
+    { return attrs[key].getValue(); }
 
     void setInteger(const int key, const double proposed)
-    { attr[key].setValue(proposed); }
+    { attrs[key].setValue(proposed); }
     
     bool isConst(const int key)
-    { return attr[key].checkExprIsConst(); }
+    { return attrs[key].checkExprIsConst(); }
 
     //These don't necessarily have to filter like this, but it's consistent
     // and it might make sense someday to filter them with special declare types
     // or something.
     std::optional<int> getProperty(const int key)
-    { return attr[key].getProperty(); }
+    { return attrs[key].getProperty(); }
 
     std::vector<std::string> getLiteralList(const int key)
-    { return attr[key].getLiteralList(); }
+    { return attrs[key].getLiteralList(); }
 
     std::optional<ScopedValueKey> getSingleValueKey(const int key)
-    { return attr[key].getSingleValueKey(); }
+    { return attrs[key].getSingleValueKey(); }
 
     std::vector<ScopedValueKey> getValueKeyList(const int key) //Optional would be more consistent...
-    { return attr[key].getValueKeyList(); }
+    { return attrs[key].getValueKeyList(); }
 
     std::optional<std::string> getUserToken(const int key) const
-    { return attr[key].getUserToken(); }
+    { return attrs[key].getUserToken(); }
 
     std::optional<Color> getColor(const int key)
-    { return attr[key].getColor(); }
+    { return attrs[key].getColor(); }
 };
 
 }//Attributes
