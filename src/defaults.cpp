@@ -134,9 +134,9 @@ Color getFontColor(DisplayItem* item)
                     : FontColor;
 }
 
-Color::AlphaType getAlpha(DisplayItem* item)
+double getAlpha(DisplayItem* item)
 {
-    return DefaultAlpha;
+    return DefaultAlphaFactor;
 }
 
 std::optional<Color> getElementColor(DisplayItem* item)

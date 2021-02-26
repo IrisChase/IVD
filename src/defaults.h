@@ -38,7 +38,7 @@ const int FontFace = Property::FontSans;
 const int FontSize = 12;
 const Color FontColor = Color(0, 0, 0); //Paint it black
 const Color ElementColor = Color(255, 255, 255);
-const Color::AlphaType DefaultAlpha = 255;
+const double DefaultAlphaFactor = 1;
 
 const std::string TitleText = "IVD Window";
 
@@ -80,7 +80,7 @@ std::string getTitleText(DisplayItem* item);
 std::string getText(DisplayItem* item);
 //Alignment getAlignment(DisplayItem* item, const int attrkey);
 Color getFontColor(DisplayItem* item);
-Color::AlphaType getAlpha(DisplayItem* item);
+double getAlpha(DisplayItem* item);
 std::optional<Color> getElementColor(DisplayItem* item);
 
 bool getVisibility(DisplayItem* item);
