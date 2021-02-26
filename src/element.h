@@ -57,7 +57,7 @@ class Element
         if(it == keyedAttributeMap.end())
         {
             const int pos = keyedAttributes.size(); 
-            keyedAttributes.emplace_back();
+            keyedAttributes.emplace_back(defaultAttr.size(), defaultAttr.stateModifierKeys);
             keyedAttributeMap[key] = pos;
             
             return pos;
@@ -67,7 +67,10 @@ class Element
     }
     
 public:
-    Element(const int stamp): elementStamp(stamp) {}
+    Element(const int stamp, const int attributeCount, std::set<KeyType> stateModifierKeys):
+        elementStamp(stamp),
+        defaultAttr(attributeCount, stateModifierKeys)
+    {}
 
     int getElementStamp() { return elementStamp; }
 

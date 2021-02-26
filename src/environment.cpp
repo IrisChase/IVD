@@ -291,10 +291,10 @@ double Environment::commonExternalAccessor(DisplayItem* context,
         other = *result;
     }
 
-    if(auto optional = getSymbolForLiteral(*key.key))
+    if(auto optional = myComp.getSymbolForLiteral(*key.key))
     {
-        if(value) other->getAttr().setInteger(*key.key, *value);
-        else      return *context->getAttr().getInt(*key.key);
+        if(value) other->getAttr().setDeclaredInt(*key.key, *value);
+        else      return *context->getAttr().getDeclaredInt(*key.key);
     }
     else //User variable
     {
@@ -529,9 +529,9 @@ double Environment::getInteger(DisplayItem* context, const ScopedValueKey key)
 
         //Should this be relative to the item or the window?
         // by default it's relative to window... TODO
-        if(key.key == getLiteralForSymbol(AttributeKey::TranslationO))
+        if(key.key == myComp.getLiteralForSymbol(AttributeKey::TranslationO))
             return myDriver->getMousePointRelativeToWindow().x;
-        if(key.key == getLiteralForSymbol(AttributeKey::TranslationA))
+        if(key.key == myComp.getLiteralForSymbol(AttributeKey::TranslationA))
             return myDriver->getMousePointRelativeToWindow().y;
         //TODO needs scroll distance and there is no keyword for it.
         //Not a mouse

@@ -109,6 +109,27 @@ class Compiler
     std::map<std::string, CodePosition> elementNamePositions;
     std::list<Element> finalizedElements;
 
+    std::map<std::string, int> tokenToSymbolMap;
+    std::map<int, std::string> symbolToTokenMap;
+
+    const std::set<int> delimitingSymbolSet;
+
+    std::set<int> expressionTypeSet;
+    std::set<int> propertyTypeSet;
+    std::set<int> stringLiteralTypeSet;
+    std::set<int> userTokenTypeSet;
+    std::set<int> userTokenListTypeSet;
+    std::set<KeyType> stateKeyListTypeSet;
+    std::set<int> singleScopedValueKeyTypeSet;
+    std::set<int> colorTypeSet;
+    std::set<int> unnaturalAttributetypeSet;
+
+    std::map<int, std::vector<int>> unnaturalKeyMap;
+
+    std::map<int, std::set<int>> validPropertySetMap;
+
+    int attributeKeyspaceSize; //ehhh we need just one set...... TODO
+
     enum class ElementType
     {
         IsClass,
@@ -148,11 +169,11 @@ class Compiler
         
         ScopedVariables vars;
 
-        ElementPrecursor(const CodePosition codePosition, const int stamp):
+        ElementPrecursor(const CodePosition codePosition, const int stamp, const int attrCount, std::set<KeyType> stateModifierKeys):
             codePosition(codePosition),
             stamp(stamp),
             lastVirtualStateStamp(0),
-            elem(stamp),
+            elem(stamp, attrCount, stateModifierKeys),
             currentState(),
             myModel()
         {}
@@ -168,6 +189,34 @@ class Compiler
             name = generatedName.str();
         }
     };
+
+    bool checkSymbolIsNaturalAttributeKey(const int sym)
+    {
+        //HATE THISsssssssssss but benchmark before optimizing
+        // cause caching is more state to damn sync.
+        if(sym == AttributeKey::PositionWithin)
+            return true;
+        if(expressionTypeSet.count(sym))
+            return true;
+        if(propertyTypeSet.count(sym))
+            return true;
+        if(stringLiteralTypeSet.count(sym))
+            return true;
+        if(userTokenTypeSet.count(sym))
+            return true;
+        if(userTokenListTypeSet.count(sym))
+            return true;
+        if(stateKeyListTypeSet.count(sym))
+            return true;
+        if(singleScopedValueKeyTypeSet.count(sym))
+            return true;
+        if(colorTypeSet.count(sym))
+            return true;
+        return false;
+    }
+
+    int getKeyspaceSize()
+    { return tokenToSymbolMap.size(); }
 
     int getFreshElementStamp()
     { return lastElementStamp++; }
@@ -190,11 +239,56 @@ class Compiler
     std::vector<ElementPrecursor> parseTokens(std::vector<Token> tokens);
     void finalizePrecursors(std::vector<ElementPrecursor> precursors);
 
+
+
+    bool checkIsDelimitingSymbol(const int sym)
+    { return delimitingSymbolSet.count(sym); }
+
+    int getSymbolKeyspaceSize()
+    { return tokenToSymbolMap.size(); }
+
 public:
-    Compiler(): lastElementStamp(0) {}
+    Compiler():
+        lastElementStamp(0),
+        tokenToSymbolMap(getTokenToSymbolMap()),
+        symbolToTokenMap(getSymbolToTokenMap()),
+        delimitingSymbolSet(getDelimitingSymbolSet()),
+        expressionTypeSet(getAttributeExpressionTypeSet()),
+        propertyTypeSet(getAttributePropertyTypeSet()),
+        stringLiteralTypeSet(getAttributeStringLiteralTypeSet()),
+        userTokenTypeSet(getAttributeUserTokenTypeSet()),
+        userTokenListTypeSet(getAttributeUserTokenListTypeSet()),
+        stateKeyListTypeSet(getAttributeStateKeyListTypeSet()),
+        singleScopedValueKeyTypeSet(getAttributeSingleScopedValueKeyType()),
+        colorTypeSet(getAttributeColorTypeSet()),
+        unnaturalAttributetypeSet(getAttributeUnnaturalTypeSet()),
+        unnaturalKeyMap(getNaturalKeysToUnnaturalKeyMap()),
+        validPropertySetMap(getAttributeKeyToValidPropertyList()),
+        attributeKeyspaceSize(AttributeKey::LastAttribute)
+    {}
 
     bool compileFile(const char* path);
     void compile(std::string code);
+
+    std::optional<int> getSymbolForLiteral(const std::string token)
+    {
+        std::optional<int> result;
+        auto it = tokenToSymbolMap.find(token);
+        if(it != tokenToSymbolMap.end())
+            result = it->second;
+
+        return result;
+    }
+
+    std::string getLiteralForSymbol(const int sym)
+    {
+        auto it = symbolToTokenMap.find(sym);
+
+        if(it == symbolToTokenMap.end())
+            return "UNDEFINED (todo lol)";
+
+        return it->second;
+    }
 
     //Would love for this to be const
     // but I don't have all day TODO

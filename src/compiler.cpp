@@ -81,12 +81,14 @@ std::string SyntaxError::printout(const char* context) const
         auto filterExpecting = [&](const int sym)
         {
             //This is for _any_ type that isn't really a type...
+            //no idea what the above comment means ~ Iris feb 2021
+            //But this switch does seem incomplete.
             switch(sym)
             {
             case Keyword::UserToken: return "User Token";
             case Keyword::ScalarType:    return "Number";
             case Keyword::FloatType:     return "Float";
-            default: return getLiteralForSymbol(sym);
+            default: return "getLiteralForSymbol(sym) TODO LOLOL";
             }
         };
 
@@ -339,7 +341,9 @@ std::vector<Token> Compiler::tokenizeInput(const std::string code)
         std::string tokenString;
         for(; notEnd(); nextChar())
         {
-            if(checkIsDelimitingSymbol(*pos)) break;
+            auto optionalLiteral = getSymbolForLiteral({*pos});
+            if(optionalLiteral && checkIsDelimitingSymbol(*optionalLiteral))
+                break;
 
             //God how is this so much simpler than my last approach??
             if(*pos == '-' && checkNextIsEq('>')) break;
@@ -469,6 +473,15 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     };
 
 
+    auto allocateElementPrecursor = [&]()
+    {
+        return ElementPrecursor(getCurrentToken().codePosition,
+                                getFreshElementStamp(),
+                                attributeKeyspaceSize,
+                                stateKeyListTypeSet);
+    };
+
+
 
     //-----------------Let the parsing  e X t R a V a G a N z A  BEGIN!-------------------------
     //Free defines are limited in scope to the current translation unit. Should be easy
@@ -578,7 +591,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         {
             const int sym = getCurrentToken().symbol;
 
-            if(!checkAttributeKeyForExpressionBodyType(sym))
+            if(!expressionTypeSet.count(sym))
                 throw SyntaxError(getCurrentToken(), "Invalid value for key, expected user token or attribute key.");
 
             result.setKey(getLiteralForSymbol(sym));
@@ -1018,7 +1031,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
     auto parseAttributeWithExpressionType = [&](const int key, ReferenceAttribute* attr)
     {
-        if(!checkAttributeKeyForExpressionBodyType(key)) return false;
+        if(!expressionTypeSet.count(key)) return false;
 
         typedef bool lol;
         lol gotem = false;
@@ -1090,7 +1103,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     {
         std::optional<EasePair> optionalResult;
 
-        if(!checkAttributeKeyForExpressionBodyType(key)) return optionalResult;
+        if(!expressionTypeSet.count(key)) return optionalResult;
         if(!matchSymbolSomft(Keyword::EaseIn) && !matchSymbolSomft(Keyword::EaseOut)) return optionalResult;
 
         const int easeType = getCurrentToken().symbol;
@@ -1126,15 +1139,15 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     auto parseAttributeBodyForKey = [&](const int key, ReferenceAttribute* attr)
     {
         const CodePosition startPos = getCurrentToken().codePosition;
-        const bool stateKeyListType         = checkAttributeKeyForStateKeyListType(key);
-        const bool singleValueKeyType       = checkAttributeKeyForSingleScopedValueKeyType(key);
-        const bool userTokenListType        = checkAttributeKeyForUserTokenList(key);
-        const bool userTokenType            = checkAttributeKeyForUserTokenType(key);
+        const bool stateKeyListType         = stateKeyListTypeSet.count(key);
+        const bool singleValueKeyType       = singleScopedValueKeyTypeSet.count(key);
+        const bool userTokenListType        = userTokenListTypeSet.count(key);
+        const bool userTokenType            = userTokenTypeSet.count(key);
         const bool positionWithinType       = key == AttributeKey::PositionWithin;
-        const bool colorType                = checkAttributeKeyForColorType(key);
-        const bool stringLiteralType        = checkAttributeKeyForStringLiteralType(key);
-        const bool propertyBodyType         = checkAttributeKeyForPropertyBodyType(key);
-        const bool expressionType           = checkAttributeKeyForExpressionBodyType(key);
+        const bool colorType                = colorTypeSet.count(key);
+        const bool stringLiteralType        = stringLiteralTypeSet.count(key);
+        const bool propertyBodyType         = propertyTypeSet.count(key);
+        const bool expressionType           = expressionTypeSet.count(key);
 
         auto parseStateKeyListType = [&](const int key, ReferenceAttribute* attr)
         {
@@ -1241,6 +1254,8 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             if(!propertyBodyType) return false;
 
             const int sym = getCurrentToken().symbol;
+            //XXXXXXXXXXXX sym not key!!!! XXX
+            // I think we can remove key from all of these then
             if(!(sym >= Property::PropertiesStart && key <= Property::PropertiesEnd)) return false;
 
             attr->active = true;
@@ -1303,7 +1318,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         //key: one, one, one, one;
 
         const CodePosition startPos = getCurrentToken().codePosition;
-        const int baseKey = getNaturalKeysForUnnaturalKey(key)[0];
+        const int baseKey = unnaturalKeyMap.at(key)[0]; //xxx
 
         std::vector<std::optional<ReferenceAttribute>> myAttributes;
 
@@ -1345,14 +1360,14 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
 
         if(myAttributes.size() == 1)
         {
-            for(const int natKey : getNaturalKeysForUnnaturalKey(key))
+            for(const int natKey : unnaturalKeyMap.at(key))
                 if(myAttributes.front())
                     attrs->insertAttribute(*myAttributes.front(), natKey);
         }
-        else if(myAttributes.size() == getNaturalKeysForUnnaturalKey(key).size())
+        else if(myAttributes.size() == unnaturalKeyMap.at(key).size())
         {
             auto it = myAttributes.begin();
-            for(const int natKey : getNaturalKeysForUnnaturalKey(key))
+            for(const int natKey : unnaturalKeyMap.at(key))
             {
                 if(it->has_value()) attrs->insertAttribute(**it, natKey);
                 ++it;
@@ -1363,7 +1378,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             std::stringstream ss;
             ss << "Invalid number of arguments to unatural key "
                << getLiteralForSymbol(key) << ", must be 1 or "
-               << getNaturalKeysForUnnaturalKey(key).size() << ".";
+               << unnaturalKeyMap.at(key).size() << ".";
             throw SyntaxError(startPos, ss.str());
         }
 
@@ -1375,7 +1390,9 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     {
         const int key = getCurrentToken().symbol;
 
-        if(key < AttributeKey::FirstAttribute || key > AttributeKey::LastAttribute) return false;
+        if(!checkSymbolIsNaturalAttributeKey(key) &&
+                !unnaturalAttributetypeSet.count(key))
+            return false;
 
         nextHard();
         matchSymbolHard(Keyword::Colon);
@@ -1387,7 +1404,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
             return true;
         }
 
-        if(checkAttributeKeyForUnnaturalType(key))
+        if(unnaturalAttributetypeSet.count(key))
         {
             parseUnnaturalAttributeBody(key, attrs, scope);
             return true;
@@ -1649,7 +1666,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         //# (|elementName) (HEADER|BODY)
         if(!matchSymbolSomft(Keyword::Pound)) return false;
 
-        ElementPrecursor precursor(getCurrentToken().codePosition, getFreshElementStamp());
+        ElementPrecursor precursor(allocateElementPrecursor());
         precursor.myType = ElementType::IsInstance;
         nextHard(); //Commited now boiii
 
@@ -1675,7 +1692,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
     {
         if(!matchSymbolSomft(Keyword::Dot)) return false;
 
-        ElementPrecursor precursor(getCurrentToken().codePosition, getFreshElementStamp());
+        ElementPrecursor precursor(allocateElementPrecursor());
         precursor.myType = ElementType::IsClass;
 
         nextHard();
@@ -1700,7 +1717,7 @@ std::vector<Compiler::ElementPrecursor> Compiler::parseTokens(std::vector<Token>
         nextHard();
         matchSymbolHard(Keyword::UserToken);
 
-        ElementPrecursor precursor(getCurrentToken().codePosition, getFreshElementStamp());
+        ElementPrecursor precursor(allocateElementPrecursor());
         precursor.myType = ElementType::IsRemora;
         precursor.hostName = getCurrentToken();
 

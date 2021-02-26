@@ -37,11 +37,12 @@ class DisplayItem;
 class RuntimeAttributeSet
 {
     friend class Compiler;
-    friend void ::printOutAttributes(IVD::Element);
+    friend void ::printOutAttributes(IVD::Compiler&, IVD::Element);
 
     DisplayItem* myContext;
 
-    std::array<AnimatableAttribute, AttributeKey::AttributeCount> attr;
+    std::set<KeyType> stateChangingAttributes;
+    std::vector<AnimatableAttribute> attr;
     
     const ReferenceAttributeSet::DeclareModifierMap* declareModifiers;
     std::vector<const ReferenceAttributeSet::SetModifierMap*> setModifiers;
@@ -50,7 +51,7 @@ class RuntimeAttributeSet
 
 public:
     RuntimeAttributeSet(): myContext(nullptr) {}
-    RuntimeAttributeSet(DisplayItem* context);
+    RuntimeAttributeSet(DisplayItem* context, const ReferenceAttributeSet& initializerSet);
 
     void beginAttributeSetRecompute();
     void mergeIn(const ReferenceAttributeSet& other);
@@ -60,8 +61,8 @@ public:
     
     void fireSets();
 
-    std::optional<double> getInt(ValueKey key);
-    void setInteger(const ValueKey key, const double proposed);
+    std::optional<double> getDeclaredInt(ValueKey key);
+    void setDeclaredInt(const ValueKey key, const double proposed);
 
     bool checkActive(const int key)
     { return attr[key].checkActive(); }

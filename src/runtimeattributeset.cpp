@@ -21,11 +21,13 @@ namespace IVD
 {
 
 
-RuntimeAttributeSet::RuntimeAttributeSet(DisplayItem* context):
-    myContext(context)
+RuntimeAttributeSet::RuntimeAttributeSet(DisplayItem* context, const ReferenceAttributeSet& initializerSet):
+    myContext(context),
+    attr(initializerSet.size(), AnimatableAttribute()),
+    stateChangingAttributes(initializerSet.stateModifierKeys)
 {
     assert(myContext);
-    for(int key = 0; key != AttributeKey::AttributeCount; ++key)
+    for(int key = 0; key != initializerSet.size(); ++key)
     {
         attr.at(key).init(context, key);
         context->getEnv()->setupEnvironmentCallbacksOnAttributeForKey(&attr.at(key), key);
@@ -69,7 +71,7 @@ void RuntimeAttributeSet::executeStateChangers()
 {
     //We only update state modifiers every time the attribute set is updated. Not triggers.
     //TODO unclear code...
-    for(KeyType key = AttributeKey::InduceState; key != AttributeKey::LastStateKeyAttr + 1; ++key)
+    for(KeyType key : stateChangingAttributes)
     {
         //Not considered for quick, logical things
         //TODOOOOOOOO
@@ -99,24 +101,14 @@ void RuntimeAttributeSet::fireSets()
     }
 }
 
-std::optional<double> RuntimeAttributeSet::getInt(ValueKey key)
+std::optional<double> RuntimeAttributeSet::getDeclaredInt(ValueKey key)
 {
-    const auto optionalSymbol = getSymbolForLiteral(key.c_str());
-    if(optionalSymbol) return getInt(*optionalSymbol);
-
     if(!declareModifiers->count(key)) return std::optional<double>();
     return declareModifiers->at(key).solve(myContext);
 }
 
-void RuntimeAttributeSet::setInteger(const ValueKey key, const double proposed)
+void RuntimeAttributeSet::setDeclaredInt(const ValueKey key, const double proposed)
 {
-    const auto optionalSymbol = getSymbolForLiteral(key.c_str());
-    if(optionalSymbol)
-    {
-        setInteger(*optionalSymbol, proposed);
-        return;
-    }
-
     assert(declareModifiers->count(key));
 
     const Expression& expr = declareModifiers->at(key);

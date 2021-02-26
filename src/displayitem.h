@@ -101,7 +101,7 @@ public:
         elementStamp(elementStamp),
         defaultState(theDefaultState),
         theStateManager(theStateManager),
-        myAttrs(this)
+        myAttrs(this, theDefaultState)
     {
         reprodyne_open_scope(this);
     }

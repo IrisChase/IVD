@@ -12,13 +12,21 @@ struct ReferenceAttributeSet
     typedef std::map<ValueKey, Expression> DeclareModifierMap;
     typedef std::map<ScopedValueKey, Expression> SetModifierMap;
 
-
-    std::array<ReferenceAttribute, AttributeKey::AttributeCount> attr;
+    std::set<KeyType> stateModifierKeys;
+    std::vector<ReferenceAttribute> attr;
 
     //Set can modify but not observe.
     //Declare can observe, and provide a filter for modification,
     DeclareModifierMap declareModifiers;
     SetModifierMap setModifiers;
+
+    ReferenceAttributeSet(const int attrCount, std::set<KeyType> stateModifierKeys):
+        stateModifierKeys(stateModifierKeys),
+        attr(attrCount, ReferenceAttribute())
+    {}
+
+    int size() const
+    { return attr.size(); }
 
     ReferenceAttribute getAttribute(const int key) const
     { return attr[key]; }

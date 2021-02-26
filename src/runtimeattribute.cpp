@@ -154,7 +154,7 @@ void AnimatableAttribute::animationTick()
     {
         //Scope to displayitem itself because our pointer should be able to change.
         std::string key;
-        key = getLiteralForSymbol(myAttributeKey);
+        key = std::to_string(myAttributeKey);
         key += "-:-animation-ratio";
 
         //Needs to intercept time or we can't validate the correct calculation of the

@@ -24,6 +24,10 @@
 #define IVD_FILL_PRECEDENCE_GREEDY	0
 #define IVD_FILL_PRECEDENCE_SHRINKY	1
 
+#define IVD_USER_ATTRIBUTE_TYPE_STRING 3001
+#define IVD_USER_ATTRIBUTE_TYPE_SCALAR 3002
+#define IVD_USER_ATTRIBUTE_TYPE_TOKEN  3003
+
 struct IVD_Environment;
 
 struct IVD_Widget;
@@ -88,17 +92,22 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      void (*bubbler)(IVD_Widget*));
 
 
-//Register multiple types?
 void IVD_environment_register_layout_attribute(IVD_Environment*,
                                                const char* layoutName,
-                                               const char* attributeKey,
-                                               int attributeType);
+                                               const char* attributeKey);
+
 
 void IVD_environment_register_widget_attribute(IVD_Environment*,
                                                const char* widgetName,
-                                               const char* attributeKey,
+                                               const char* attributeKey);
+
+void IVD_environment_add_layout_attribute_type(IVD_Environment*,
+                                               const char* layoutName,
                                                int attributeType);
 
+void IVD_environment_add_widget_attribute_type(IVD_Environment*,
+                                               const char* widgetName,
+                                               int attributeType);
 
 //----------------------------------------------------------------------------------------------Dust Bindings
 IVD_Dimens* IVD_dimens_alloc();

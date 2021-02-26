@@ -25,8 +25,8 @@
 #include "keywords.h"
 #include "codeposition.h"
 
-namespace IVD { class Element; }
-void printOutAttributes(IVD::Element);
+namespace IVD { class Element; class Compiler; }
+void printOutAttributes(IVD::Compiler&, IVD::Element);
 
 namespace IVD
 {

@@ -1,16 +1,16 @@
-// Copyright 2020 Iris Chase
+//Copyright 2021 Iris Chase
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-//   you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
+//Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
 //
-//       http://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-//   Unless required by applicable law or agreed to in writing, software
-//   distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-//   limitations under the License.
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 #ifndef KEYWORDS_H
 #define KEYWORDS_H
@@ -20,6 +20,9 @@
 
 #include <string>
 #include <optional>
+
+#include <map>
+#include <set>
 
 namespace IVD
 {
@@ -41,10 +44,7 @@ enum
     Font,
     ImagePath,
 
-    //Expression types
-    FirstScalarAttribute,
-
-    FontSize = FirstScalarAttribute,
+    FontSize,
 
     TranslationO,
     TranslationA,
@@ -62,12 +62,9 @@ enum
     SizeO,
     SizeA,
 
-    LastScalarAttribute = SizeA,
-
     //Properties
-    FirstPropertyAttribute,
 
-    Orientation = FirstPropertyAttribute,
+    Orientation,
 
     WindowState,
     Visibility,
@@ -88,29 +85,20 @@ enum
     Resizable,
     ModelOrder,
 
-    LastPropertyAttribute = ModelOrder,
 
-    FirstColorTypeAttr,
-    ElementColor = FirstColorTypeAttr,
+    ElementColor,
     FontColor,
     BorderColor,
 
-    LastColorTypeAttr = BorderColor,
 
 
-    //Scoped value key lists
-    FirstStateKeyAttr,
-
-    Triggers = FirstStateKeyAttr,
+    Triggers,
     InduceState,
     BindState,
     ToggleState,
     UnsetState,
     TriggerState,
     RadioState,
-
-    LastStateKeyAttr = RadioState,
-
 
     Layout,
     Widget,
@@ -267,179 +255,192 @@ enum
 
 }//Spec
 
-
-inline bool checkAttributeKeyForExpressionBodyType(const int key)
-{
-    switch(key)
-    {
-    case AttributeKey::Margins:
-    case AttributeKey::Padding:
-        return true;
-
-    default:
-    if(key >= AttributeKey::FirstScalarAttribute && key <= AttributeKey::LastScalarAttribute)
-        return true;
-    }
-
-    return false;
-}
-
-inline bool checkAttributeKeyForPropertyBodyType(const int key)
+inline std::set<int> getAttributeExpressionTypeSet()
 {
     using namespace AttributeKey;
-    if(key >= FirstPropertyAttribute && key <= LastPropertyAttribute) return true;
+    return {Margins,
+                Padding,
 
-    switch(key)
-    {
-    case Font:
-        return true;
-    default: return false;
-    }
+                FontSize,
+
+                TranslationO,
+                TranslationA,
+
+                MarginOppOut,
+                MarginOppIn,
+                MarginAdjIn,
+                MarginAdjOut,
+
+                PaddingOppOut,
+                PaddingOppIn,
+                PaddingAdjIn,
+                PaddingAdjOut,
+
+                SizeO,
+                SizeA,
+    };
 }
 
-inline bool checkAttributeKeyForStringLiteralType(const int key)
+inline std::set<int> getAttributePropertyTypeSet()
 {
     using namespace AttributeKey;
-    switch(key)
-    {
-    case TitleText:
-    case Text:
-    case Font:
-    case ImagePath:
-        return true;
-    default: return false;
-    }
+    return {
+        Orientation,
+
+                WindowState,
+                Visibility,
+
+                AlignAdjacent,
+                AlignOpposite,
+
+                OverrideFillPrecedenceAdjacent,
+                OverrideFillPrecedenceOpposite,
+
+                Justify,
+
+                WindowSizeStrategy,
+
+                ImageSizeProperty,
+
+                Borderless,
+                Resizable,
+                ModelOrder,
+                Font,
+    };
 }
 
-inline bool checkAttributeKeyForUserTokenType(const int key)
+inline std::set<int> getAttributeStringLiteralTypeSet()
 {
     using namespace AttributeKey;
-    switch(key)
-    {
-    case Layout:
-    case Widget:
-        return true;
-    default: return false;
-    }
+    return {
+        TitleText,
+                Text,
+                Font,
+                ImagePath,
+    };
 }
 
-inline bool checkAttributeKeyForUserTokenList(const int key)
+inline std::set<int> getAttributeUserTokenTypeSet()
 {
     using namespace AttributeKey;
-    switch(key)
-    {
-    case CellNames:
-        return true;
-    default: return false;
-    }
+    return {Layout, Widget};
 }
 
-inline bool checkAttributeKeyForStateKeyListType(const int key)
+inline std::set<int> getAttributeUserTokenListTypeSet()
 {
     using namespace AttributeKey;
-    return key >= FirstStateKeyAttr && key <= LastStateKeyAttr;
+    return {CellNames};
 }
 
-inline bool checkAttributeKeyForSingleScopedValueKeyType(const int key)
+//state key list type
+inline std::set<KeyType> getAttributeStateKeyListTypeSet()
 {
     using namespace AttributeKey;
-    switch(key)
-    {
-    case TitleText:
-    case Text:
-        return true;
-    default: return false;
-    }
+    return {
+    Triggers,
+    InduceState,
+    BindState,
+    ToggleState,
+    UnsetState,
+    TriggerState,
+    RadioState,
+    };
 }
 
-inline bool checkAttributeKeyForColorType(const int key)
+inline std::set<int> getAttributeSingleScopedValueKeyType()
 {
     using namespace AttributeKey;
-    return key >= FirstColorTypeAttr && key <= LastColorTypeAttr;
+    return {TitleText, Text};
 }
 
-inline bool checkAttributeKeyForUnnaturalType(const int key)
-{
-    return key >= AttributeKey::UnnaturalAttributesStart &&
-           key <= AttributeKey::LastUnnatturalAttribute;
-}
-
-inline std::vector<int> getNaturalKeysForUnnaturalKey(const int key)
+inline std::set<int> getAttributeColorTypeSet()
 {
     using namespace AttributeKey;
-
-    switch(key)
-    {
-    case Margins:
-        return {MarginOppOut, MarginOppIn, MarginAdjIn, MarginAdjOut};
-    case Padding:
-        return {PaddingOppOut, PaddingOppIn, PaddingAdjIn, PaddingAdjOut};
-    }
-
-    assert(false);
+    return {
+    ElementColor,
+    FontColor,
+    BorderColor,
+    };
 }
 
-inline std::vector<int> getValidPropertyValuesForType(const int type)
+inline std::set<int> getAttributeUnnaturalTypeSet()
 {
-    switch (type)
-    {
-    case AttributeKey::Font:
-        return {Property::FontSans,
-                Property::FontSansBold,
-                Property::FontSansItalic,
-                Property::FontSansBoldItalic,
-                Property::FontSerif,
-                Property::FontSerifBold,
-                Property::FontSerifItalic,
-                Property::FontSerifBoldItalic,
-                Property::FontMono,
-                Property::FontMonoBold,
-                Property::FontMonoItalic,
-                Property::FontMonoBoldItalic};
-
-    case AttributeKey::Orientation:
-        return {Property::AdjacentIsHorizontal, Property::AdjacentIsVertical};
-
-    case AttributeKey::OverrideFillPrecedenceAdjacent:
-    case AttributeKey::OverrideFillPrecedenceOpposite:
-        return {Property::Greedy, Property::Shrinky};
-
-    case AttributeKey::WindowState:
-        return {Property::Maximized,
-                Property::Minimized,
-                Property::Fullscreen,
-                Property::FullscreenTrue};
-
-    case AttributeKey::Visibility:
-        return {Property::Enable, Property::Disable};
-
-    case AttributeKey::AlignAdjacent:
-    case AttributeKey::AlignOpposite:
-    case AttributeKey::Justify:
-        return {Property::Inner, Property::Center, Property::Outer};
-
-    case AttributeKey::WindowSizeStrategy:
-        return {Property::TopDown, Property::BottomUp};
-
-    case AttributeKey::ImageSizeProperty:
-        return {Property::OneToUnit, Property::Native, Property::Stretch, Property::BestFit};
-
-    case AttributeKey::Borderless:
-    case AttributeKey::Resizable:
-    case AttributeKey::ModelOrder:
-        return {Property::Enable, Property::Disable};
-    }
-
-    assert(false);
+    using namespace AttributeKey;
+    return {
+        Margins,
+        Padding,
+    };
 }
 
-struct KeywordSymbolValuePair
+//Vector because the order is important
+inline std::map<int, std::vector<int>> getNaturalKeysToUnnaturalKeyMap()
 {
-    const char* value;
-    int symbol;
-};
+    using namespace AttributeKey;
+    return {
+        {Margins, {MarginOppOut, MarginOppIn, MarginAdjIn, MarginAdjOut}},
+        {Padding, {PaddingOppOut, PaddingOppIn, PaddingAdjIn, PaddingAdjOut}},
+    };
+}
 
-inline std::vector<KeywordSymbolValuePair> getSymbolValuePairs()
+inline std::map<int, std::set<int>>  getAttributeKeyToValidPropertyList()
+{
+    const std::initializer_list<int> fillprecedenceSet = {Property::Greedy, Property::Shrinky};
+    const std::initializer_list<int> booleanSet = {Property::Enable, Property::Disable};
+    const std::initializer_list<int> alignSet = {Property::Inner, Property::Center, Property::Outer};
+
+    return {
+        {AttributeKey::Font,
+            {Property::FontSans,
+             Property::FontSansBold,
+             Property::FontSansItalic,
+             Property::FontSansBoldItalic,
+             Property::FontSerif,
+             Property::FontSerifBold,
+             Property::FontSerifItalic,
+             Property::FontSerifBoldItalic,
+             Property::FontMono,
+             Property::FontMonoBold,
+             Property::FontMonoItalic,
+             Property::FontMonoBoldItalic}},
+        {AttributeKey::Orientation,
+            {Property::AdjacentIsHorizontal,
+             Property::AdjacentIsVertical}},
+        {AttributeKey::OverrideFillPrecedenceAdjacent,
+                    fillprecedenceSet},
+        {AttributeKey::OverrideFillPrecedenceOpposite,
+                    fillprecedenceSet},
+        {AttributeKey::WindowState,
+            {Property::Maximized,
+             Property::Minimized,
+             Property::Fullscreen,
+             Property::FullscreenTrue}},
+        {AttributeKey::Visibility,
+            {Property::Enable,
+             Property::Disable}},
+        {AttributeKey::AlignAdjacent,
+                    alignSet},
+        {AttributeKey::AlignOpposite,
+                    alignSet},
+        {AttributeKey::Justify,
+                    alignSet},
+        {AttributeKey::WindowSizeStrategy,
+            {Property::TopDown,
+             Property::BottomUp}},
+        {AttributeKey::ImageSizeProperty,
+            {Property::OneToUnit,
+             Property::Native,
+             Property::Stretch,
+             Property::BestFit}},
+        {AttributeKey::Borderless,
+                    booleanSet},
+        {AttributeKey::Resizable,
+                    booleanSet},
+        {AttributeKey::ModelOrder,
+                    booleanSet},
+    };
+}
+
+inline std::map<std::string, int> getTokenToSymbolMap()
 {
     return     {{"@", Keyword::SchoolOperator},
                 {".", Keyword::Dot},
@@ -659,62 +660,38 @@ inline std::vector<KeywordSymbolValuePair> getSymbolValuePairs()
                 };
 }
 
-inline bool checkIsDelimitingSymbol(const int sym)
+inline std::set<int> getDelimitingSymbolSet()
 {
-    //I realize this looks bad, but the idea is that the compiler
-    // can tell that this is a constant mapping... That's the idea.
-    //(And it's honestly a small enough search that linear complexity ain't bad)
-    for(auto pair : getSymbolValuePairs())
-        for(auto candidate : {Keyword::SchoolOperator,
-                              Keyword::Dot,
-                              Keyword::Pound,
-                              Keyword::Arrow,
-                              Keyword::Colon,
-                              Keyword::Comma,
-                              Keyword::Semicolon,
-                              Keyword::OpenBracket,
-                              Keyword::CloseBracket,
-                              Keyword::OpenSquare,
-                              Keyword::CloseSquare,
-                              Keyword::OpenParen,
-                              Keyword::CloseParen,
-                              Keyword::Not,
-                              })
-            if(sym == candidate)
-                return true;
+    return {Keyword::SchoolOperator,
+            Keyword::Dot,
+            Keyword::Pound,
+            Keyword::Arrow,
+            Keyword::Colon,
+            Keyword::Comma,
+            Keyword::Semicolon,
+            Keyword::OpenBracket,
+            Keyword::CloseBracket,
+            Keyword::OpenSquare,
+            Keyword::CloseSquare,
+            Keyword::OpenParen,
+            Keyword::CloseParen,
+            Keyword::Not,
 
-    return false;
+                };
 }
 
-inline std::optional<int> getSymbolForLiteral(const std::string literal)
+//------------------------------------Helpers below, all syntax defined above
+inline std::map<int, std::string> getSymbolToTokenMap()
 {
-    for(auto pair : getSymbolValuePairs())
-        if(pair.value == literal)
-            return pair.symbol;
+    std::map<int, std::string> result;
+    auto aye = getTokenToSymbolMap();
 
-    return std::optional<int>();
+    //This will overwrite aliases :/
+    for(auto pair : aye)
+        result[pair.second] = pair.first;
+
+    return result;
 }
-
-//This is just to make the code in the tokenizer prettier by abstraction.
-//Feel free to make not ugly.
-inline bool checkIsDelimitingSymbol(const char literal)
-{
-    const auto optional = getSymbolForLiteral(std::string({literal}));
-
-    if(!optional) return false;
-
-    return checkIsDelimitingSymbol(*optional);
-}
-
-inline const char* getLiteralForSymbol(const int sym)
-{
-    for(auto pair : getSymbolValuePairs())
-        if(pair.symbol == sym)
-            return pair.value;
-
-    assert(false); //No reason in the world to get here.
-}
-
 
 }//IVD
 

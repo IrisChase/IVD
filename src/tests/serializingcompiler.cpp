@@ -22,7 +22,7 @@
 using IVD::operator<<; //Never done that before.
 
 
-void printOutAttributes(IVD::Element elem)
+void printOutAttributes(IVD::Compiler& comper, IVD::Element elem)
 {
     std::cout << "=================================Element========================================" << std::endl;
     std::cout << "Path: " << elem.getPath() << std::endl;
@@ -54,7 +54,7 @@ void printOutAttributes(IVD::Element elem)
             auto attr = attrSet.attr[i];
             if(!attr.active) continue;
 
-            cout << "------------Attr Key: " << IVD::getLiteralForSymbol(i) << std::endl;
+            cout << "------------Attr Key: " << comper.getLiteralForSymbol(i) << std::endl;
 
             if(attr.delay)
                 cout << "Delay: " << *attr.delay << "ms" << std::endl;
@@ -66,7 +66,7 @@ void printOutAttributes(IVD::Element elem)
                 cout << "Clear Inherit" << std::endl;
 
             if(attr.property)
-                cout << "Property: " << IVD::getLiteralForSymbol(*attr.property) << std::endl;
+                cout << "Property: " << comper.getLiteralForSymbol(*attr.property) << std::endl;
 
             
             if(attr.starting)
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
         std::cout << "---------------------------------------------------" << std::endl;
     }
 
-    for(IVD::Element elem : comp.getElements()) printOutAttributes(elem);
+    for(IVD::Element elem : comp.getElements()) printOutAttributes(comp, elem);
 
     return 0;
 }
