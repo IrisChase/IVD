@@ -1,16 +1,16 @@
-// Copyright 2020 Iris Chase
+//Copyright 2021 Iris Chase
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-//   you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
+//Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
 //
-//       http://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-//   Unless required by applicable law or agreed to in writing, software
-//   distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-//   limitations under the License.
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 #ifndef IVD_ALPHA_C_BINDINGS_H
 #define IVD_ALPHA_C_BINDINGS_H
@@ -91,23 +91,30 @@ void IVD_environment_register_layout(IVD_Environment* environment,
                                      IVD_Dimens* (*getSpace)(IVD_Widget *),
                                      void (*bubbler)(IVD_Widget*));
 
+void IVD_compiler_register_attribute(IVD_Environment*,
+                                     const char* attribute);
 
-void IVD_environment_register_layout_attribute(IVD_Environment*,
-                                               const char* layoutName,
-                                               const char* attributeKey);
+void IVD_compiler_add_attribute_type(IVD_Environment*,
+                                     const char* attribute,
+                                     int attrType);
+
+void IVD_compiler_register_property(IVD_Environment*,
+                                    const char*);
+
+void IVD_compiler_register_property_valid(IVD_Environment*,
+                                          const char* property,
+                                          const char* value);
 
 
-void IVD_environment_register_widget_attribute(IVD_Environment*,
-                                               const char* widgetName,
-                                               const char* attributeKey);
+//More importantly...
+const char* IVD_element_read_attribute_string(IVD_Environment*,
+                                              const char* attribute);
 
-void IVD_environment_add_layout_attribute_type(IVD_Environment*,
-                                               const char* layoutName,
-                                               int attributeType);
+//This would hypothetically compute the expression... If we still
+// wanna have expressions in IVD.
+double IVD_element_read_attribute_expression(IVD_Environment*,
+                                             const char* attribute);
 
-void IVD_environment_add_widget_attribute_type(IVD_Environment*,
-                                               const char* widgetName,
-                                               int attributeType);
 
 //----------------------------------------------------------------------------------------------Dust Bindings
 IVD_Dimens* IVD_dimens_alloc();
